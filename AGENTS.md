@@ -1,3 +1,11 @@
+## Project Configuration
+
+- **Language**: TypeScript
+- **Package Manager**: npm
+- **Add-ons**: tailwindcss
+
+---
+
 # Product Requirements Document for Svicom Living Hub
 
 ## 1. Executive Summary

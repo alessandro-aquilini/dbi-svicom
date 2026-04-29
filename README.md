@@ -15,7 +15,7 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-npx sv@0.15.0 create --template minimal --types ts --add tailwindcss="plugins:typography,forms" --install npm dbi-lab-mvp
+npx sv@0.15.1 create --template minimal --types ts --add tailwindcss="plugins:typography,forms" --install npm /home/ale/Desktop/dbi-svicom
 ```
 
 ## Developing
@@ -40,4 +40,3 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
