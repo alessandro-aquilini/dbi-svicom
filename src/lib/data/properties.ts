@@ -1,3 +1,5 @@
+// Condomini 
+
 export type PropertyStatus = 'attivo' | 'onboarding' | 'in-uscita';
 export type PropertyHealth = 'verde' | 'giallo' | 'rosso';
 

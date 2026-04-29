@@ -1,9 +1,6 @@
 export type EventTone = 'blue' | 'amber' | 'emerald';
 export type EventAudience = 'admin' | 'supplier' | 'resident';
 
-export type EventTone = 'blue' | 'amber' | 'emerald';
-export type EventAudience = 'admin' | 'supplier' | 'resident';
-
 export interface SvicomEvent {
 	id: string;
 	title: string;

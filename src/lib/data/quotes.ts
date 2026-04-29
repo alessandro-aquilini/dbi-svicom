@@ -1,3 +1,5 @@
+// Preventivi 
+
 export type QuoteStatus = 'pending' | 'sent' | 'approved' | 'rejected' | 'expired';
 
 export interface Quote {
