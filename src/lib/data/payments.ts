@@ -50,7 +50,21 @@ export const payments: Payment[] = [
 		description: 'Intervento riparazione perdita locale contatori',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'TCK-482'
+	}, 	
+	{
+		id: 'pay-004',
+		fromId: 'adm-svicom-01',
+		toId: 'frn-secure-entry',
+		amount: 850.0,
+		currency: 'EUR',
+		status: 'paid',
+		dueDate: '2024-04-15',
+		paidAt: '2024-04-14',
+		description: 'Intervento riparazione perdita locale contatori',
+		propertyId: 'cnd-marconi-14',
+		ticketId: 'TCK-482'
 	}
+
 ];
 
 export function getPaymentsByUserId(userId: string): Payment[] {
