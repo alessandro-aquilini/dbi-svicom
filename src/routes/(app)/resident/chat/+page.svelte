@@ -14,9 +14,9 @@
 
 <div class="flex h-[calc(100vh-7.5rem)] flex-col">
 	{#if selectedChat}
+		{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== currentUser.id) ?? '')}
 		<!-- Header -->
 		<div class="border-b border-border px-4 py-3">
-			{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== currentUser.id) ?? '')}
 			<p class="text-sm font-medium text-foreground">{otherUser?.name ?? 'Amministrazione'}</p>
 			<p class="text-xs text-muted-foreground">Conversazione attiva</p>
 		</div>

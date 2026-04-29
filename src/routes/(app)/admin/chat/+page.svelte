@@ -37,8 +37,8 @@
 	<!-- Messages -->
 	<div class="flex flex-1 flex-col">
 		{#if selectedChat}
+			{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== 'adm-svicom-01') ?? '')}
 			<div class="border-b border-border px-4 py-3">
-				{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== 'adm-svicom-01') ?? '')}
 				<p class="text-sm font-medium text-foreground">{otherUser?.name ?? 'Utente'}</p>
 			</div>
 			<div class="flex-1 space-y-3 overflow-y-auto p-4">
