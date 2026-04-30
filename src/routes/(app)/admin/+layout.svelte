@@ -1,17 +1,28 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import {
+		DashboardSquare01Icon,
+		Building03Icon,
+		Note01Icon,
+		Calendar03Icon,
+		Wrench01Icon,
+		BubbleChatIcon,
+		CreditCardIcon,
+		Settings02Icon
+	} from '@hugeicons/core-free-icons';
 
 	let { children } = $props();
 
 	const navItems = [
-		{ label: 'Dashboard', href: '/admin', icon: '📊' },
-		{ label: 'Condomìni', href: '/admin/properties', icon: '🏢' },
-		{ label: 'Pratiche', href: '/admin/tickets', icon: '📋' },
-		{ label: 'Calendario', href: '/admin/calendar', icon: '📅' },
-		{ label: 'Fornitori', href: '/admin/suppliers', icon: '🔧' },
-		{ label: 'Chat', href: '/admin/chat', icon: '💬' },
-		{ label: 'Pagamenti', href: '/admin/payments', icon: '💳' },
-		{ label: 'Impostazioni', href: '/admin/settings', icon: '⚙️' }
+		{ label: 'Dashboard', href: '/admin', icon: DashboardSquare01Icon },
+		{ label: 'Condomìni', href: '/admin/properties', icon: Building03Icon },
+		{ label: 'Pratiche', href: '/admin/tickets', icon: Note01Icon },
+		{ label: 'Calendario', href: '/admin/calendar', icon: Calendar03Icon },
+		{ label: 'Fornitori', href: '/admin/suppliers', icon: Wrench01Icon },
+		{ label: 'Chat', href: '/admin/chat', icon: BubbleChatIcon },
+		{ label: 'Pagamenti', href: '/admin/payments', icon: CreditCardIcon },
+		{ label: 'Impostazioni', href: '/admin/settings', icon: Settings02Icon }
 	];
 
 	function isActive(href: string): boolean {
@@ -43,7 +54,7 @@
 						? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
 						: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'}"
 				>
-					<span class="text-base">{item.icon}</span>
+					<HugeiconsIcon icon={item.icon} size={20} strokeWidth={1.5} />
 					<span>{item.label}</span>
 				</a>
 			{/each}
