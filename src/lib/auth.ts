@@ -20,6 +20,14 @@ export const demoCredentials: DemoCredential[] = [
 		password: 'svicom-demo'
 	},
 	{
+		id: 'plt-svicom-hq',
+		role: 'svicom',
+		label: 'Svicom',
+		description: 'Platform orchestrator',
+		email: 'platform@svicom.it',
+		password: 'svicom-demo'
+	},
+	{
 		id: 'res-bianchi-01',
 		role: 'resident',
 		label: 'Residente',

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'resident' | 'supplier';
+export type UserRole = 'admin' | 'resident' | 'supplier' | 'svicom';
 
 export interface User {
 	id: string;
@@ -10,6 +10,13 @@ export interface User {
 }
 
 export const users: User[] = [
+	{
+		id: 'plt-svicom-hq',
+		role: 'svicom',
+		name: 'Svicom Platform',
+		email: 'platform@svicom.it',
+		phone: '+39 02 0000 0001'
+	},
 	{
 		id: 'adm-svicom-01',
 		role: 'admin',

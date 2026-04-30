@@ -6,14 +6,17 @@
 		UserSettings01Icon,
 		UserMultipleIcon,
 		Wrench01Icon,
+		HierarchyIcon,
 		ArrowRight01Icon
 	} from '@hugeicons/core-free-icons';
 	import { demoCredentials, loginUser, logoutUser } from '$lib/auth';
+	import type { UserRole } from '$lib/data/users';
 
-	const roleIcons: Record<string, typeof UserSettings01Icon> = {
+	const roleIcons: Record<UserRole, typeof UserSettings01Icon> = {
 		admin: UserSettings01Icon,
 		resident: UserMultipleIcon,
-		supplier: Wrench01Icon
+		supplier: Wrench01Icon,
+		svicom: HierarchyIcon
 	};
 
 	let selectedId = $state(demoCredentials[0].id);
