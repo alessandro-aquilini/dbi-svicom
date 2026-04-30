@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { properties } from '$lib/data/properties';
 	import type { TicketPriority, TicketType } from '$lib/data/tickets';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { File01Icon, Tag01Icon, Location01Icon } from '@hugeicons/core-free-icons';
-	import { InfoTip } from '$lib/components/shared';
+	import { InfoTip, DemoDialog } from '$lib/components/shared';
 
 	let title = $state('');
 	let description = $state('');
@@ -12,11 +11,11 @@
 	let priority = $state<TicketPriority>('media');
 	let propertyId = $state(properties[0]?.id ?? '');
 	let location = $state('');
+	let demoOpen = $state(false);
 
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		// Backend read-only: la pratica non viene persistita.
-		goto('/admin/tickets');
+		demoOpen = true;
 	}
 </script>
 
@@ -169,3 +168,5 @@
 		</button>
 	</div>
 </form>
+
+<DemoDialog bind:open={demoOpen} />

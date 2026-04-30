@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { DemoDialog } from '$lib/components/shared';
 	import { getPropertyById } from '$lib/data/properties';
 	import type { TicketPriority, TicketType } from '$lib/data/tickets';
 	import {
@@ -89,6 +89,7 @@
 	let sentPrompt = $state('');
 	let extract = $state<Extract | null>(null);
 	let reducedMotion = $state(false);
+	let demoOpen = $state(false);
 
 	$effect(() => {
 		const m = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -302,7 +303,7 @@
 					{#if extract}
 						<button
 							type="button"
-							onclick={() => goto('/admin/tickets')}
+							onclick={() => (demoOpen = true)}
 							class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
 						>
 							Crea pratica
@@ -313,6 +314,8 @@
 		</div>
 	{/if}
 </div>
+
+<DemoDialog bind:open={demoOpen} />
 
 <style>
 	.prompt-card {
