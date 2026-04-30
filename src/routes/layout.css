@@ -147,6 +147,15 @@
 	body {
 		@apply bg-background text-foreground font-sans;
 	}
+
+	/* Unified focus ring for form fields (overrides @tailwindcss/forms default). */
+	input:focus,
+	textarea:focus,
+	select:focus {
+		outline: 0;
+		border-color: var(--ring);
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 18%, transparent);
+	}
 }
 
 @layer components {

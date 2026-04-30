@@ -44,7 +44,7 @@
 				required
 				maxlength="80"
 				bind:value={title}
-				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 			/>
 		</div>
 
@@ -63,7 +63,7 @@
 				id="description"
 				rows="4"
 				bind:value={description}
-				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 			></textarea>
 		</div>
 	</section>
@@ -87,7 +87,7 @@
 				<select
 					id="type"
 					bind:value={type}
-					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 				>
 					<option value="segnalazione">Segnalazione</option>
 					<option value="intervento">Intervento</option>
@@ -104,7 +104,7 @@
 				<select
 					id="priority"
 					bind:value={priority}
-					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 				>
 					<option value="bassa">Bassa</option>
 					<option value="media">Media</option>
@@ -131,7 +131,7 @@
 				id="property"
 				bind:value={propertyId}
 				required
-				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 			>
 				{#each properties as property (property.id)}
 					<option value={property.id}>{property.name}</option>
@@ -149,7 +149,7 @@
 				id="location"
 				type="text"
 				bind:value={location}
-				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 			/>
 		</div>
 	</section>
