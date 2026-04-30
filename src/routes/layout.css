@@ -5,10 +5,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── Geist Variable Font ─── */
+/* ─── Montserrat Variable Font (matches svicom.com brand) ─── */
 @font-face {
-	font-family: "Geist Variable";
-	src: url("https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-wght-normal.woff2")
+	font-family: "Montserrat";
+	src: url("https://cdn.jsdelivr.net/fontsource/fonts/montserrat:vf@latest/latin-wght-normal.woff2")
 		format("woff2-variations");
 	font-weight: 100 900;
 	font-display: swap;
@@ -17,16 +17,17 @@
 /*
  * ─── Svicom Living Hub Design System ───
  *
- * Primary: #5D7D94 (blue-gray)
+ * Primary: #5D7D94 (blue-gray, brand)
+ * Accent:  #65BC7B (green, brand)
  * Palette: neutral grayscale (oklch)
  * Radius: 0.625rem
- * Font: Geist Variable
+ * Font: Montserrat (brand)
  * Theme: Light only
  */
 
 :root {
 	--radius: 0.625rem;
-	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
 	/* ─ Primary (blue-gray #5D7D94) ─ */
 	--primary: oklch(0.556 0.04 233);
@@ -145,5 +146,24 @@
 	}
 	body {
 		@apply bg-background text-foreground font-sans;
+	}
+}
+
+@layer components {
+	/* Airbnb-style KPI cards: prominent isometric illustration on top */
+	.kpi-card {
+		@apply flex flex-col items-start rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md;
+	}
+	.kpi-illustration {
+		@apply mb-3 flex h-24 w-24 items-center justify-center;
+	}
+	.kpi-illustration:empty {
+		@apply rounded-lg border border-dashed border-border bg-accent/30;
+	}
+	.kpi-label {
+		@apply text-sm text-muted-foreground;
+	}
+	.kpi-value {
+		@apply mt-1 text-3xl font-semibold tracking-tight text-primary;
 	}
 }
