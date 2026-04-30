@@ -150,12 +150,19 @@
 }
 
 @layer components {
-	/* Airbnb-style KPI cards: prominent isometric illustration on top */
+	/* Airbnb-style KPI cards: text on the left, isometric illustration on the right */
 	.kpi-card {
-		@apply flex flex-col items-start rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md;
+		@apply flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-5 transition-shadow;
+		box-shadow: 0 1px 2px 0 color-mix(in oklch, var(--primary) 18%, transparent);
+	}
+	.kpi-card:hover {
+		box-shadow: 0 4px 8px -1px color-mix(in oklch, var(--primary) 22%, transparent);
+	}
+	.kpi-card__text {
+		@apply min-w-0 flex-1;
 	}
 	.kpi-illustration {
-		@apply mb-3 flex h-24 w-24 items-center justify-center;
+		@apply flex h-16 w-16 shrink-0 items-center justify-center;
 	}
 	.kpi-illustration:empty {
 		@apply rounded-lg border border-dashed border-border bg-accent/30;
