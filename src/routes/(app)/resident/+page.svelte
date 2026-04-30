@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { currentUser } from '$lib/data/users';
+	import { getCurrentUser } from '$lib/auth';
 	import { getResidentById } from '$lib/data/residents';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getAnnouncementsByPropertyId } from '$lib/data/announcements';
 
-	const resident = getResidentById(currentUser.id);
+	const currentUser = getCurrentUser();
+	const resident = currentUser ? getResidentById(currentUser.id) : undefined;
 	const property = resident ? getPropertyById(resident.propertyId) : undefined;
 	const announcements = property ? getAnnouncementsByPropertyId(property.id).slice(0, 3) : [];
 </script>
@@ -16,7 +17,7 @@
 <div class="p-4">
 	<!-- Welcome -->
 	<div class="mb-6">
-		<h1 class="text-xl font-semibold text-foreground">Ciao, {currentUser.name.split(' ')[0]} 👋</h1>
+		<h1 class="text-xl font-semibold text-foreground">Ciao, {currentUser ? currentUser.name.split(' ')[0] : 'ospite'} 👋</h1>
 		{#if property}
 			<p class="mt-1 text-sm text-muted-foreground">{property.name} — {resident?.apartment}</p>
 		{/if}

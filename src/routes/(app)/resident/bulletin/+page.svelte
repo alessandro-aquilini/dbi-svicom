@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { currentUser } from '$lib/data/users';
+	import { getCurrentUser } from '$lib/auth';
 	import { getResidentById } from '$lib/data/residents';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getAnnouncementsByPropertyId } from '$lib/data/announcements';
 	import { getUserById } from '$lib/data/users';
 
-	const resident = getResidentById(currentUser.id);
+	const currentUser = getCurrentUser();
+	const resident = currentUser ? getResidentById(currentUser.id) : undefined;
 	const property = resident ? getPropertyById(resident.propertyId) : undefined;
 	const announcements = property ? getAnnouncementsByPropertyId(property.id) : [];
 </script>

@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { getPaymentsByUserId } from '$lib/data/payments';
-	import { currentUser, getUserById } from '$lib/data/users';
+	import { getUserById } from '$lib/data/users';
+	import { getCurrentUser } from '$lib/auth';
 
-	const myPayments = getPaymentsByUserId(currentUser.id);
+	const currentUser = getCurrentUser();
+	const myPayments = currentUser ? getPaymentsByUserId(currentUser.id) : [];
 
 	const statusLabels: Record<string, string> = {
 		paid: 'Pagato',

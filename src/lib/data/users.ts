@@ -113,5 +113,3 @@ export const users: User[] = [
 export function getUserById(id: string): User | undefined {
 	return users.find((u) => u.id === id);
 }
-
-export const currentUser = users[1]; // Marco Bianchi for demo

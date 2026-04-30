@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { currentUser } from '$lib/data/users';
+	import { getCurrentUser } from '$lib/auth';
 	import { getResidentById } from '$lib/data/residents';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getAssembliesByPropertyId } from '$lib/data/assemblies';
 
-	const resident = getResidentById(currentUser.id);
+	const currentUser = getCurrentUser();
+	const resident = currentUser ? getResidentById(currentUser.id) : undefined;
 	const property = resident ? getPropertyById(resident.propertyId) : undefined;
 	const assemblies = property ? getAssembliesByPropertyId(property.id) : [];
 

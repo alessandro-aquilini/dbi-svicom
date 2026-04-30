@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { tickets } from '$lib/data/tickets';
 	import { quotes } from '$lib/data/quotes';
+	import { getCurrentUser } from '$lib/auth';
 
-	// Demo: show stats for the first supplier
-	const supplierId = 'frn-idroclima-nord';
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	const myJobs = tickets.filter((t) => t.assignedToId === supplierId);
 	const myQuotes = quotes.filter((q) => q.supplierId === supplierId);
 </script>

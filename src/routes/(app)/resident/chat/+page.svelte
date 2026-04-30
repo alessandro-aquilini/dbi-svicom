@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId } from '$lib/data/chats';
-	import { currentUser } from '$lib/data/users';
 	import { getUserById } from '$lib/data/users';
 
-	const userChats = getChatsByUserId(currentUser.id);
+	const currentUser = getCurrentUser();
+	const residentId = currentUser?.id ?? 'res-bianchi-01';
+	const userChats = getChatsByUserId(residentId);
+
 	let selectedChatId = $state(userChats[0]?.id ?? '');
 	const selectedChat = $derived(userChats.find((c) => c.id === selectedChatId));
 </script>
@@ -14,7 +17,7 @@
 
 <div class="flex h-[calc(100vh-7.5rem)] flex-col">
 	{#if selectedChat}
-		{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== currentUser.id) ?? '')}
+		{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== residentId) ?? '')}
 		<!-- Header -->
 		<div class="border-b border-border px-4 py-3">
 			<p class="text-sm font-medium text-foreground">{otherUser?.name ?? 'Amministrazione'}</p>
@@ -24,12 +27,12 @@
 		<!-- Messages -->
 		<div class="flex-1 space-y-3 overflow-y-auto p-4">
 			{#each selectedChat.messages as msg}
-				{@const isMine = msg.senderId === currentUser.id}
+				{@const isMine = msg.senderId === residentId}
 				<div class="flex {isMine ? 'justify-end' : 'justify-start'}">
 					<div class="max-w-[75%] rounded-lg px-3 py-2 text-sm {isMine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}">
 						{msg.text}
 						{#if msg.action}
-							<a href="#" class="mt-1 block text-xs underline opacity-80">{msg.action.label}</a>
+							<button type="button" class="mt-1 block text-xs underline opacity-80">{msg.action.label}</button>
 						{/if}
 					</div>
 				</div>

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { currentUser } from '$lib/data/users';
+	import { getCurrentUser } from '$lib/auth';
 	import { getResidentById } from '$lib/data/residents';
 	import { getPropertyById } from '$lib/data/properties';
 
-	const resident = getResidentById(currentUser.id);
+	const currentUser = getCurrentUser();
+	const resident = currentUser ? getResidentById(currentUser.id) : undefined;
 	const property = resident ? getPropertyById(resident.propertyId) : undefined;
 </script>
 
@@ -15,20 +16,20 @@
 	<h1 class="mb-4 text-xl font-semibold text-foreground">Il mio profilo</h1>
 
 	<!-- User info card -->
-	<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
-		<div class="flex items-center gap-4">
-			<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl text-primary">
-				{currentUser.name.charAt(0)}
-			</div>
-			<div>
-				<p class="font-medium text-foreground">{currentUser.name}</p>
-				<p class="text-sm text-muted-foreground">{currentUser.email}</p>
+	{#if currentUser && resident && property}
+		<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
+			<div class="flex items-center gap-4">
+				<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl text-primary">
+					{currentUser.name.charAt(0)}
+				</div>
+				<div>
+					<p class="font-medium text-foreground">{currentUser.name}</p>
+					<p class="text-sm text-muted-foreground">{currentUser.email}</p>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<!-- Property info -->
-	{#if resident && property}
+		<!-- Property info -->
 		<div class="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
 			<h2 class="text-sm font-medium text-foreground">Condominio</h2>
 			<p class="mt-1 text-sm text-muted-foreground">{property.name}</p>

@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { getCurrentUser } from '$lib/auth';
 	import { chats } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
+
+	const currentUser = getCurrentUser();
+	const adminId = currentUser?.id ?? 'adm-svicom-01';
 
 	let selectedChatId = $state(chats[0]?.id ?? '');
 	const selectedChat = $derived(chats.find((c) => c.id === selectedChatId));
@@ -18,7 +22,7 @@
 		</div>
 		<ul class="divide-y divide-border">
 			{#each chats as chat}
-				{@const otherUser = getUserById(chat.participantIds.find((id) => id !== 'adm-svicom-01') ?? '')}
+				{@const otherUser = getUserById(chat.participantIds.find((id) => id !== adminId) ?? '')}
 				<li>
 					<button
 						onclick={() => (selectedChatId = chat.id)}
@@ -37,13 +41,13 @@
 	<!-- Messages -->
 	<div class="flex flex-1 flex-col">
 		{#if selectedChat}
-			{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== 'adm-svicom-01') ?? '')}
+			{@const otherUser = getUserById(selectedChat.participantIds.find((id) => id !== adminId) ?? '')}
 			<div class="border-b border-border px-4 py-3">
 				<p class="text-sm font-medium text-foreground">{otherUser?.name ?? 'Utente'}</p>
 			</div>
 			<div class="flex-1 space-y-3 overflow-y-auto p-4">
 				{#each selectedChat.messages as msg}
-					{@const isAdmin = msg.senderId === 'adm-svicom-01'}
+					{@const isAdmin = msg.senderId === adminId}
 					<div class="flex {isAdmin ? 'justify-end' : 'justify-start'}">
 						<div class="max-w-md rounded-lg px-3 py-2 text-sm {isAdmin ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}">
 							{msg.text}

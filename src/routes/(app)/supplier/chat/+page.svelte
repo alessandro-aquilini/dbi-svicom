@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
 
-	const supplierId = 'frn-idroclima-nord';
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	const chats = getChatsByUserId(supplierId);
 	let selectedChatId = $state(chats[0]?.id ?? '');
 	const selectedChat = $derived(chats.find((c) => c.id === selectedChatId));

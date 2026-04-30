@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { tickets } from '$lib/data/tickets';
 	import { getPropertyById } from '$lib/data/properties';
+	import { getCurrentUser } from '$lib/auth';
 
-	const supplierId = 'frn-idroclima-nord';
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	const myJobs = tickets.filter((t) => t.assignedToId === supplierId);
 </script>
 

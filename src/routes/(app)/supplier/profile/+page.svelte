@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { getCurrentUser } from '$lib/auth';
 	import { getUserById } from '$lib/data/users';
 	import { getSupplierById } from '$lib/data/suppliers';
 
-	const supplierId = 'frn-idroclima-nord';
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	const user = getUserById(supplierId);
 	const supplier = getSupplierById(supplierId);
 </script>
