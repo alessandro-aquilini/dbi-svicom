@@ -5,7 +5,7 @@
 	import { getTicketsByPropertyId } from '$lib/data/tickets';
 	import { getUserById } from '$lib/data/users';
 
-	const property = $derived(getPropertyById(page.params.id));
+	const property = $derived(getPropertyById(page.params.id ?? ''));
 	const residents = $derived(property ? getResidentsByPropertyId(property.id) : []);
 	const tickets = $derived(property ? getTicketsByPropertyId(property.id) : []);
 

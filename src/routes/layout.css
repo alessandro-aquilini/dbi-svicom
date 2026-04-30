@@ -5,10 +5,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── Geist Variable Font ─── */
+/* ─── Montserrat Variable Font (matches svicom.com brand) ─── */
 @font-face {
-	font-family: "Geist Variable";
-	src: url("https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-wght-normal.woff2")
+	font-family: "Montserrat";
+	src: url("https://cdn.jsdelivr.net/fontsource/fonts/montserrat:vf@latest/latin-wght-normal.woff2")
 		format("woff2-variations");
 	font-weight: 100 900;
 	font-display: swap;
@@ -17,16 +17,17 @@
 /*
  * ─── Svicom Living Hub Design System ───
  *
- * Primary: #5D7D94 (blue-gray)
+ * Primary: #5D7D94 (blue-gray, brand)
+ * Accent:  #65BC7B (green, brand)
  * Palette: neutral grayscale (oklch)
  * Radius: 0.625rem
- * Font: Geist Variable
+ * Font: Montserrat (brand)
  * Theme: Light only
  */
 
 :root {
 	--radius: 0.625rem;
-	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
 	/* ─ Primary (blue-gray #5D7D94) ─ */
 	--primary: oklch(0.556 0.04 233);
@@ -145,5 +146,68 @@
 	}
 	body {
 		@apply bg-background text-foreground font-sans;
+	}
+}
+
+@layer components {
+	/* Airbnb-style KPI cards: prominent isometric illustration on top */
+	.kpi-card {
+		@apply flex flex-col items-start rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md;
+	}
+	.kpi-illustration {
+		@apply mb-3 flex h-24 w-24 items-center justify-center;
+	}
+	.kpi-illustration:empty {
+		@apply rounded-lg border border-dashed border-border bg-accent/30;
+	}
+	.kpi-label {
+		@apply text-sm text-muted-foreground;
+	}
+	.kpi-value {
+		@apply mt-1 text-3xl font-semibold tracking-tight text-primary;
+	}
+
+	/* ─── Login page ─── */
+	.login-shell {
+		@apply grid min-h-screen grid-cols-1 lg:grid-cols-2;
+	}
+	.login-hero {
+		@apply relative flex flex-col justify-between gap-8 bg-primary p-8 text-primary-foreground lg:p-14;
+	}
+	.login-hero__brand {
+		@apply flex items-center gap-3;
+	}
+	.login-hero__product {
+		@apply text-sm font-medium opacity-90;
+	}
+	.login-hero__headline {
+		@apply max-w-md text-3xl font-semibold leading-tight tracking-tight lg:text-4xl;
+	}
+	.login-hero__copy {
+		@apply text-xs opacity-70;
+	}
+	.login-form {
+		@apply flex items-center justify-center bg-card p-6 lg:p-14;
+	}
+	.login-form__inner {
+		@apply w-full max-w-md;
+	}
+	.login-form__title {
+		@apply text-3xl font-semibold tracking-tight text-foreground;
+	}
+	.login-form__subtitle {
+		@apply mt-2 text-sm text-muted-foreground;
+	}
+	.role-grid {
+		@apply mt-8 grid grid-cols-2 gap-3;
+	}
+	.role-button {
+		@apply flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+	}
+	.role-button--active {
+		@apply border-primary bg-primary text-primary-foreground hover:bg-primary hover:border-primary;
+	}
+	.login-cta {
+		@apply mt-8 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
 	}
 }

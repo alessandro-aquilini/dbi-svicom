@@ -3,11 +3,33 @@
 	import { tickets } from '$lib/data/tickets';
 	import { suppliers } from '$lib/data/suppliers';
 
-	const stats = [
-		{ label: 'Condomìni gestiti', value: properties.length, icon: '🏢' },
-		{ label: 'Pratiche attive', value: tickets.filter((t) => t.status !== 'chiuso').length, icon: '📋' },
-		{ label: 'Fornitori attivi', value: suppliers.filter((s) => s.availability === 'disponibile').length, icon: '🔧' },
-		{ label: 'Unità totali', value: properties.reduce((sum, p) => sum + p.units, 0), icon: '🏠' }
+	type Stat = {
+		label: string;
+		value: number;
+		image?: string;
+	};
+
+	const stats: Stat[] = [
+		{
+			label: 'Condomìni gestiti',
+			value: properties.length,
+			image: '/icons/condominium.png'
+		},
+		{
+			label: 'Pratiche attive',
+			value: tickets.filter((t) => t.status !== 'chiuso').length,
+			image: '/icons/tickets.png'
+		},
+		{
+			label: 'Fornitori attivi',
+			value: suppliers.filter((s) => s.availability === 'disponibile').length,
+			image: '/icons/suppliers.png'
+		},
+		{
+			label: 'Unità totali',
+			value: properties.reduce((sum, p) => sum + p.units, 0),
+			image: '/icons/units.png'
+		}
 	];
 </script>
 
@@ -24,12 +46,14 @@
 	<!-- Stats grid -->
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 		{#each stats as stat}
-			<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
-				<div class="flex items-center justify-between">
-					<span class="text-sm text-muted-foreground">{stat.label}</span>
-					<span class="text-xl">{stat.icon}</span>
+			<div class="kpi-card">
+				<div class="kpi-illustration">
+					{#if stat.image}
+						<img src={stat.image} alt="" class="h-full w-full object-contain" />
+					{/if}
 				</div>
-				<p class="mt-2 text-2xl font-semibold text-foreground">{stat.value}</p>
+				<p class="kpi-label">{stat.label}</p>
+				<p class="kpi-value">{stat.value}</p>
 			</div>
 		{/each}
 	</div>

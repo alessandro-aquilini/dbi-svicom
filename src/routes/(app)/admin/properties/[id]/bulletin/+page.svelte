@@ -4,7 +4,7 @@
 	import { getAnnouncementsByPropertyId } from '$lib/data/announcements';
 	import { getUserById } from '$lib/data/users';
 
-	const property = $derived(getPropertyById(page.params.id));
+	const property = $derived(getPropertyById(page.params.id ?? ''));
 	const announcements = $derived(property ? getAnnouncementsByPropertyId(property.id) : []);
 </script>
 

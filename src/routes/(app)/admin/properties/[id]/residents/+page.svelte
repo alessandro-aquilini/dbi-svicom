@@ -4,7 +4,7 @@
 	import { getResidentsByPropertyId } from '$lib/data/residents';
 	import { getUserById } from '$lib/data/users';
 
-	const property = $derived(getPropertyById(page.params.id));
+	const property = $derived(getPropertyById(page.params.id ?? ''));
 	const residents = $derived(property ? getResidentsByPropertyId(property.id) : []);
 </script>
 

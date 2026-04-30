@@ -3,7 +3,7 @@
 	import { getPropertyById } from '$lib/data/properties';
 	import { getDocumentsByPropertyId } from '$lib/data/documents';
 
-	const property = $derived(getPropertyById(page.params.id));
+	const property = $derived(getPropertyById(page.params.id ?? ''));
 	const documents = $derived(property ? getDocumentsByPropertyId(property.id) : []);
 </script>
 
