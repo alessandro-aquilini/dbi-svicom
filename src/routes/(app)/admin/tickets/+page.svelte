@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { tickets } from '$lib/data/tickets';
 	import { getPropertyById } from '$lib/data/properties';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { Add01Icon } from '@hugeicons/core-free-icons';
 
 	const priorityColors: Record<string, string> = {
 		critica: 'bg-destructive/15 text-destructive',
@@ -15,9 +17,18 @@
 </svelte:head>
 
 <div class="p-6 lg:p-8">
-	<div class="mb-6">
-		<h1 class="text-2xl font-semibold tracking-tight">Pratiche</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tickets.length} pratiche totali</p>
+	<div class="mb-6 flex items-start justify-between gap-4">
+		<div>
+			<h1 class="text-2xl font-semibold tracking-tight">Pratiche</h1>
+			<p class="mt-1 text-sm text-muted-foreground">{tickets.length} pratiche totali</p>
+		</div>
+		<a
+			href="/admin/tickets/new"
+			class="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
+		>
+			<HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={2} />
+			Nuova pratica
+		</a>
 	</div>
 
 	<div class="rounded-lg border border-border bg-card shadow-sm">
