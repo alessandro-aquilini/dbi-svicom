@@ -1,13 +1,30 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import {
+		UserSettings01Icon,
+		UserMultipleIcon,
+		Wrench01Icon,
+		ArrowRight01Icon
+	} from '@hugeicons/core-free-icons';
 	import { demoCredentials, loginUser, logoutUser } from '$lib/auth';
+
+	const roleIcons: Record<string, typeof UserSettings01Icon> = {
+		admin: UserSettings01Icon,
+		resident: UserMultipleIcon,
+		supplier: Wrench01Icon
+	};
+
+	let selectedId = $state(demoCredentials[0].id);
 
 	onMount(() => {
 		logoutUser();
 	});
 
-	function loginAs(profile: typeof demoCredentials[number]) {
+	function submit() {
+		const profile = demoCredentials.find((c) => c.id === selectedId);
+		if (!profile) return;
 		loginUser(profile.id);
 		goto(`/${profile.role}`);
 	}
@@ -17,32 +34,49 @@
 	<title>Accedi — Svicom Living Hub</title>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col items-center justify-center px-4">
-	<!-- Logo & Title -->
-	<div class="mb-10 text-center">
-		<img src="/svicom-logo.png" alt="Svicom" class="mx-auto mb-4 h-12 w-auto" />
-		<h1 class="text-2xl font-semibold tracking-tight text-foreground">Svicom Living Hub</h1>
-		<p class="mt-1 text-sm text-muted-foreground">Seleziona un profilo demo per accedere</p>
-	</div>
+<div class="login-shell">
+	<!-- Hero (left on desktop, top on mobile) -->
+	<aside class="login-hero">
+		<div class="login-hero__brand">
+			<img src="/svicom-logo-dark.png" alt="Svicom" class="h-9 w-auto" />
+			<span class="login-hero__product">Living Hub</span>
+		</div>
 
-	<!-- Role Cards -->
-	<div class="grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
-		{#each demoCredentials as profile}
-			<button
-				onclick={() => loginAs(profile)}
-				class="group flex flex-col items-start justify-between gap-3 rounded-lg border border-border bg-card p-6 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
-			>
-				<div>
-					<p class="text-sm font-semibold text-foreground">{profile.label}</p>
-					<p class="mt-1 text-xs text-muted-foreground">{profile.description}</p>
-				</div>
-				<div class="space-y-1 text-left text-xs text-muted-foreground">
-					<p>{profile.email}</p>
-					<p>Password: {profile.password}</p>
-				</div>
+		<h2 class="login-hero__headline">
+			La regia del condominio,<br />in un'unica piattaforma.
+		</h2>
+
+		<p class="login-hero__copy">© {new Date().getFullYear()} Svicom</p>
+	</aside>
+
+	<!-- Form (right on desktop, bottom on mobile) -->
+	<main class="login-form">
+		<div class="login-form__inner">
+			<h1 class="login-form__title">Accedi</h1>
+			<p class="login-form__subtitle">
+				Scegli un profilo demo. Nessuna autenticazione reale richiesta.
+			</p>
+
+			<div class="role-grid" role="radiogroup" aria-label="Profilo demo">
+				{#each demoCredentials as profile}
+					<button
+						type="button"
+						role="radio"
+						aria-checked={selectedId === profile.id}
+						class="role-button"
+						class:role-button--active={selectedId === profile.id}
+						onclick={() => (selectedId = profile.id)}
+					>
+						<HugeiconsIcon icon={roleIcons[profile.role]} size={18} strokeWidth={1.5} />
+						<span>{profile.label}</span>
+					</button>
+				{/each}
+			</div>
+
+			<button type="button" class="login-cta" onclick={submit}>
+				<span>Accedi</span>
+				<HugeiconsIcon icon={ArrowRight01Icon} size={18} strokeWidth={2} />
 			</button>
-		{/each}
-	</div>
-
-	<p class="mt-8 text-xs text-muted-foreground">Demo mode — nessuna autenticazione reale richiesta</p>
+		</div>
+	</main>
 </div>
