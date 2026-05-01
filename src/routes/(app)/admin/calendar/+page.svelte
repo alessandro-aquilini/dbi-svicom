@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { events, type EventTone } from '$lib/data/events';
+	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		ArrowLeft01Icon,
@@ -7,9 +8,9 @@
 		Add01Icon,
 		Calendar03Icon
 	} from '@hugeicons/core-free-icons';
-	import { DemoDialog } from '$lib/components/shared';
+	import { DemoDialog, PropertyScopeChip } from '$lib/components/shared';
 
-	const today = new Date(2026, 3, 30); // 2026-04-30 (matches demo "current" date)
+	const today = new Date();
 
 	function pad2(n: number) {
 		return n.toString().padStart(2, '0');
@@ -30,7 +31,28 @@
 
 	const monthLabel = $derived(monthFmt.format(new Date(viewMonth.year, viewMonth.month, 1)));
 
-	const eventDates = new Set(events.map((e) => e.date));
+	// Events scoped to the active property selection (sidebar). When "Tutti" is
+	// selected, show every event. When a specific condominium is active, only
+	// events tied to that property are visible — events without a propertyId
+	// (e.g. internal team meetings) are excluded.
+	const scopedEvents = $derived.by(() => {
+		const id = propertySelection.selectedId;
+		return id === null ? events : events.filter((e) => e.propertyId === id);
+	});
+
+	// Build a map of date → unique tones present that day (insertion order, capped at 3).
+	const tonesByDate = $derived.by(() => {
+		const map = new Map<string, EventTone[]>();
+		for (const e of scopedEvents) {
+			const list = map.get(e.date);
+			if (!list) {
+				map.set(e.date, [e.tone]);
+			} else if (!list.includes(e.tone) && list.length < 3) {
+				list.push(e.tone);
+			}
+		}
+		return map;
+	});
 
 	const monthGrid = $derived.by(() => {
 		const first = new Date(viewMonth.year, viewMonth.month, 1);
@@ -42,7 +64,7 @@
 			key: string;
 			day: number;
 			inMonth: boolean;
-			hasEvents: boolean;
+			tones: EventTone[];
 			isToday: boolean;
 		}[] = [];
 		for (let i = 0; i < 42; i++) {
@@ -54,7 +76,7 @@
 				key,
 				day: d.getDate(),
 				inMonth: d.getMonth() === viewMonth.month,
-				hasEvents: eventDates.has(key),
+				tones: tonesByDate.get(key) ?? [],
 				isToday: key === todayKey
 			});
 		}
@@ -62,7 +84,7 @@
 	});
 
 	const groupedEvents = $derived.by(() => {
-		const inMonth = events
+		const inMonth = scopedEvents
 			.filter((e) => {
 				const [y, m] = e.date.split('-').map(Number);
 				return y === viewMonth.year && m - 1 === viewMonth.month;
@@ -140,7 +162,13 @@
 	<div class="mb-6 flex items-start justify-between gap-4">
 		<div>
 			<h1 class="text-2xl font-semibold tracking-tight">Calendario</h1>
-			<p class="mt-1 text-sm text-muted-foreground">Agenda di eventi e appuntamenti</p>
+			<p class="mt-1 text-sm text-muted-foreground">
+				{#if !propertySelection.isAll && propertySelection.selected}
+					Eventi di {propertySelection.selected.name}
+				{:else}
+					Agenda di eventi e appuntamenti
+				{/if}
+			</p>
 		</div>
 		<button
 			type="button"
@@ -151,6 +179,8 @@
 			Nuovo evento
 		</button>
 	</div>
+
+	<PropertyScopeChip gap="1.5rem" />
 
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
 		<!-- Sidebar -->
@@ -191,8 +221,16 @@
 							aria-label={cell.date.toLocaleDateString('it-IT')}
 						>
 							<span>{cell.day}</span>
-							{#if cell.hasEvents}
-								<span class="mini-cal__dot" aria-hidden="true"></span>
+							{#if cell.tones.length > 0}
+								<span
+									class="mini-cal__dots"
+									class:is-multi={cell.tones.length > 1}
+									aria-hidden="true"
+								>
+									{#each cell.tones as tone (tone)}
+										<span class="mini-cal__dot {toneClass[tone]}"></span>
+									{/each}
+								</span>
 							{/if}
 						</button>
 					{/each}
@@ -257,7 +295,11 @@
 					</div>
 					<p class="mt-3 text-sm font-medium text-foreground">Nessun evento questo mese</p>
 					<p class="mt-1 text-xs text-muted-foreground">
-						Sfoglia gli altri mesi o crea un nuovo evento.
+						{#if !propertySelection.isAll && propertySelection.selected}
+							Su <strong>{propertySelection.selected.name}</strong> non ci sono eventi in {monthLabel}.
+						{:else}
+							Sfoglia gli altri mesi o crea un nuovo evento.
+						{/if}
 					</p>
 				</div>
 			{:else}
@@ -394,18 +436,44 @@
 		color: var(--primary-foreground);
 	}
 
-	.mini-cal__dot {
+	.mini-cal__dots {
 		position: absolute;
 		bottom: 3px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 3px;
-		height: 3px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		pointer-events: none;
+	}
+
+	.mini-cal__dot {
+		width: 4px;
+		height: 4px;
 		border-radius: 9999px;
 		background: var(--primary);
 	}
 
-	.mini-cal__day.is-selected .mini-cal__dot {
+	/* When more than one tone is present, dots get a white ring and overlap slightly. */
+	.mini-cal__dots.is-multi .mini-cal__dot {
+		width: 6px;
+		height: 6px;
+		box-shadow: 0 0 0 1.5px var(--card);
+	}
+
+	.mini-cal__dots.is-multi .mini-cal__dot + .mini-cal__dot {
+		margin-left: -3px;
+	}
+
+	/* Inside the selected/today cell the ring color becomes the cell's background
+	   to keep the contrast (cell is filled with --primary). */
+	.mini-cal__day.is-selected .mini-cal__dots.is-multi .mini-cal__dot,
+	.mini-cal__day.is-today:not(.is-selected) .mini-cal__dots.is-multi .mini-cal__dot {
+		box-shadow: 0 0 0 1.5px var(--primary);
+	}
+
+	.mini-cal__day.is-selected .mini-cal__dots:not(.is-multi) .mini-cal__dot {
 		background: var(--primary-foreground);
 	}
 
