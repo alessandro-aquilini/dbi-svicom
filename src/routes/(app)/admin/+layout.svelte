@@ -11,6 +11,7 @@
 		CreditCardIcon,
 		Settings02Icon
 	} from '@hugeicons/core-free-icons';
+	import { PropertySelector } from '$lib/components/shared';
 
 	let { children } = $props();
 
@@ -43,6 +44,11 @@
 		<div class="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
 			<img src="/svicom-logo.png" alt="Svicom" class="h-7 w-auto" />
 			<span class="text-sm font-semibold text-sidebar-foreground">Living Hub</span>
+		</div>
+
+		<!-- Active property selector -->
+		<div class="border-b border-sidebar-border px-3 py-3">
+			<PropertySelector />
 		</div>
 
 		<!-- Nav -->

@@ -5,3 +5,4 @@ export { default as StatCard } from './StatCard.svelte';
 export { default as InfoTip } from './InfoTip.svelte';
 export { default as Dialog } from './Dialog.svelte';
 export { default as DemoDialog } from './DemoDialog.svelte';
+export { default as PropertySelector } from './PropertySelector.svelte';
