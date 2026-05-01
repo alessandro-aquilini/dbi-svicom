@@ -1,11 +1,11 @@
 export interface Message {
 	id: string;
 	senderId: string; // References User.id
-	text: string;
+	text?: string;
 	timestamp: string;
 	action?: {
 		label: string;
-		type: 'ticket' | 'quote' | 'payment' | 'event';
+		type: 'ticket' | 'quote' | 'payment' | 'event' | 'invoice';
 		referenceId: string;
 	};
 }
@@ -33,7 +33,12 @@ export const chats: Chat[] = [
 				id: 'msg-002',
 				senderId: 'adm-svicom-01',
 				text: 'Sì, abbiamo incaricato Idroclima Nord. L\'intervento è previsto per oggi pomeriggio.',
-				timestamp: '2024-04-29T10:50:00Z',
+				timestamp: '2024-04-29T10:50:00Z'
+			},
+			{
+				id: 'msg-002-action',
+				senderId: 'adm-svicom-01',
+				timestamp: '2024-04-29T10:50:05Z',
 				action: {
 					label: 'Vedi ticket',
 					type: 'ticket',
@@ -57,7 +62,12 @@ export const chats: Chat[] = [
 				id: 'msg-102',
 				senderId: 'frn-idroclima-nord',
 				text: 'Ricevuto. Sto aprendo ticket interno e le invio il preventivo.',
-				timestamp: '2024-04-29T09:20:00Z',
+				timestamp: '2024-04-29T09:20:00Z'
+			},
+			{
+				id: 'msg-102-action',
+				senderId: 'frn-idroclima-nord',
+				timestamp: '2024-04-29T09:20:10Z',
 				action: {
 					label: 'Vedi ticket',
 					type: 'ticket',
@@ -74,7 +84,12 @@ export const chats: Chat[] = [
 				id: 'msg-104',
 				senderId: 'frn-idroclima-nord',
 				text: 'Preventivo caricato e inviato sulla piattaforma.',
-				timestamp: '2024-04-29T12:10:00Z',
+				timestamp: '2024-04-29T12:10:00Z'
+			},
+			{
+				id: 'msg-104-action',
+				senderId: 'frn-idroclima-nord',
+				timestamp: '2024-04-29T12:10:05Z',
 				action: {
 					label: 'Vedi preventivo',
 					type: 'quote',
@@ -91,7 +106,12 @@ export const chats: Chat[] = [
 				id: 'msg-106',
 				senderId: 'frn-idroclima-nord',
 				text: 'Intervento completato, ticket chiuso e fattura inviata. Attendo conferma pagamento.',
-				timestamp: '2024-04-30T14:25:00Z',
+				timestamp: '2024-04-30T14:25:00Z'
+			},
+			{
+				id: 'msg-106-action',
+				senderId: 'frn-idroclima-nord',
+				timestamp: '2024-04-30T14:25:05Z',
 				action: {
 					label: 'Ticket chiuso',
 					type: 'ticket',
@@ -99,10 +119,25 @@ export const chats: Chat[] = [
 				}
 			},
 			{
+				id: 'msg-106-invoice',
+				senderId: 'frn-idroclima-nord',
+				timestamp: '2024-04-30T14:26:00Z',
+				action: {
+					label: 'Scarica fattura',
+					type: 'invoice',
+					referenceId: 'inv-001'
+				}
+			},
+			{
 				id: 'msg-107',
 				senderId: 'adm-svicom-01',
 				text: 'Pagamento autorizzato e inviato.',
-				timestamp: '2024-04-30T14:30:00Z',
+				timestamp: '2024-04-30T14:30:00Z'
+			},
+			{
+				id: 'msg-107-action',
+				senderId: 'adm-svicom-01',
+				timestamp: '2024-04-30T14:30:05Z',
 				action: {
 					label: 'Vedi pagamento',
 					type: 'payment',
@@ -126,7 +161,12 @@ export const chats: Chat[] = [
 				id: 'msg-202',
 				senderId: 'frn-idroclima-nord',
 				text: 'Confermiamo. Sto preparando il preventivo tecnico e lo invio entro mezzogiorno.',
-				timestamp: '2024-05-01T08:40:00Z',
+				timestamp: '2024-05-01T08:40:00Z'
+			},
+			{
+				id: 'msg-202-action',
+				senderId: 'frn-idroclima-nord',
+				timestamp: '2024-05-01T08:40:05Z',
 				action: {
 					label: 'Apri ticket',
 					type: 'ticket',
@@ -150,7 +190,12 @@ export const chats: Chat[] = [
 				id: 'msg-301',
 				senderId: 'adm-svicom-03',
 				text: 'Hai ricevuto il pagamento relativo all’intervento di Marconi 14? Controlla il pay-003 e fammi sapere.',
-				timestamp: '2024-05-02T09:50:00Z',
+				timestamp: '2024-05-02T09:50:00Z'
+			},
+			{
+				id: 'msg-301-action',
+				senderId: 'adm-svicom-03',
+				timestamp: '2024-05-02T09:50:05Z',
 				action: {
 					label: 'Vedi pagamento',
 					type: 'payment',
@@ -161,7 +206,12 @@ export const chats: Chat[] = [
 				id: 'msg-302',
 				senderId: 'frn-idroclima-nord',
 				text: 'Confermo, il bonifico è stato accreditato e il ticket è chiuso.',
-				timestamp: '2024-05-02T10:05:00Z',
+				timestamp: '2024-05-02T10:05:00Z'
+			},
+			{
+				id: 'msg-302-action',
+				senderId: 'frn-idroclima-nord',
+				timestamp: '2024-05-02T10:05:05Z',
 				action: {
 					label: 'Vedi ticket',
 					type: 'ticket',
