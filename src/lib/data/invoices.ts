@@ -1,5 +1,3 @@
-export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
-
 export interface Invoice {
 	id: string;
 	number: string;
@@ -8,7 +6,6 @@ export interface Invoice {
 	ticketId?: string;
 	amount: number;
 	currency: string;
-	status: InvoiceStatus;
 	issueDate: string;
 	dueDate: string;
 	paidAt?: string;
@@ -25,7 +22,6 @@ export const invoices: Invoice[] = [
 		ticketId: 'TCK-482',
 		amount: 1250.0,
 		currency: 'EUR',
-		status: 'sent',
 		issueDate: '2024-04-30',
 		dueDate: '2024-05-30',
 		description: 'Intervento urgente riparazione colonna montante',

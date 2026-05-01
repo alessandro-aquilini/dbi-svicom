@@ -1,12 +1,9 @@
-export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
-
 export interface Payment {
 	id: string;
 	fromId: string; // References User.id
 	toId: string; // References User.id
 	amount: number;
 	currency: string;
-	status: PaymentStatus;
 	dueDate: string;
 	paidAt?: string;
 	description: string;
@@ -21,7 +18,6 @@ export const payments: Payment[] = [
 		toId: 'adm-svicom-01',
 		amount: 450.0,
 		currency: 'EUR',
-		status: 'paid',
 		dueDate: '2024-04-10',
 		paidAt: '2024-04-08',
 		description: 'Quota condominiale Q2 2024',
@@ -33,7 +29,6 @@ export const payments: Payment[] = [
 		toId: 'adm-svicom-01',
 		amount: 120.0,
 		currency: 'EUR',
-		status: 'pending',
 		dueDate: '2024-05-10',
 		description: 'Fondo straordinario lavori scale',
 		propertyId: 'cnd-marconi-14'
@@ -44,7 +39,6 @@ export const payments: Payment[] = [
 		toId: 'frn-idroclima-nord',
 		amount: 850.0,
 		currency: 'EUR',
-		status: 'paid',
 		dueDate: '2024-04-15',
 		paidAt: '2024-04-14',
 		description: 'Intervento riparazione perdita locale contatori',
@@ -57,7 +51,6 @@ export const payments: Payment[] = [
 		toId: 'frn-secure-entry',
 		amount: 850.0,
 		currency: 'EUR',
-		status: 'paid',
 		dueDate: '2024-04-15',
 		paidAt: '2024-04-14',
 		description: 'Intervento riparazione perdita locale contatori',

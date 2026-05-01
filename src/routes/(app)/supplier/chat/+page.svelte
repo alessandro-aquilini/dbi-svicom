@@ -69,12 +69,12 @@
 						
 						{#if msg.action}
 							<div class="{msg.text ? 'mt-2' : ''} max-w-[85%] overflow-hidden rounded-xl border border-border bg-background p-3 pb-2 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
-								{#if msg.action.type === 'ticket'}
+								{#if msg.action.type === 'ticket_status'}
 									{@const ticket = getTicketById(msg.action.referenceId)}
 									{#if ticket}
 										<div class="flex items-center justify-between gap-3 mb-2">
-											<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Ticket</span>
-											<span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{ticket.status}</span>
+											<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Status Ticket</span>
+											<span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{msg.action.status}</span>
 										</div>
 										<p class="font-medium pb-1">{ticket.title}</p>
 									{/if}
@@ -83,7 +83,7 @@
 									{#if payment}
 										<div class="flex items-center justify-between gap-3 mb-2">
 											<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Pagamento</span>
-											<span class="text-xs px-2 py-0.5 rounded-full {payment.status === 'paid' ? 'bg-green-500/20 text-green-700' : 'bg-orange-500/20 text-orange-700'}">{payment.status === 'paid' ? 'Saldato' : 'In attesa'}</span>
+											<span class="text-xs px-2 py-0.5 rounded-full {payment.paidAt ? 'bg-green-500/20 text-green-700' : 'bg-orange-500/20 text-orange-700'}">{payment.paidAt ? 'Saldato' : 'In attesa'}</span>
 										</div>
 										<p class="font-bold text-lg">{formatMoney(payment.amount, payment.currency)}</p>
 										<p class="text-xs opacity-90 truncate">{payment.description}</p>
@@ -102,7 +102,7 @@
 									{#if invoice}
 										<div class="flex items-center justify-between gap-3 mb-2">
 											<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Fattura</span>
-											<span class="text-xs px-2 py-0.5 rounded-full {invoice.status === 'paid' ? 'bg-green-500/20 text-green-700' : 'bg-primary/10 text-primary'}">{invoice.number}</span>
+											<span class="text-xs px-2 py-0.5 rounded-full {invoice.paidAt ? 'bg-green-500/20 text-green-700' : 'bg-primary/10 text-primary'}">{invoice.number}</span>
 										</div>
 										<p class="font-bold text-lg">{formatMoney(invoice.amount, invoice.currency)}</p>
 										<p class="text-xs opacity-90 truncate">{invoice.description}</p>
@@ -110,8 +110,7 @@
 								{/if}
 								
 								<div class="mt-2 flex items-center justify-end text-xs font-semibold text-primary">
-									{msg.action.label} 
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+									Vedi <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
 								</div>
 							</div>
 						{/if}

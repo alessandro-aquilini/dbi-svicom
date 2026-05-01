@@ -4,9 +4,9 @@ export interface Message {
 	text?: string;
 	timestamp: string;
 	action?: {
-		label: string;
-		type: 'ticket' | 'quote' | 'payment' | 'event' | 'invoice';
+		type: 'ticket_status' | 'quote' | 'payment' | 'event' | 'invoice' | 'report';
 		referenceId: string;
+		status?: string;
 	};
 }
 
@@ -40,9 +40,8 @@ export const chats: Chat[] = [
 				senderId: 'adm-svicom-01',
 				timestamp: '2024-04-29T10:50:05Z',
 				action: {
-					label: 'Vedi ticket',
-					type: 'ticket',
-					referenceId: 'TCK-482'
+					type: 'report',
+					referenceId: '1047'
 				}
 			}
 		]
@@ -69,9 +68,9 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				timestamp: '2024-04-29T09:20:10Z',
 				action: {
-					label: 'Vedi ticket',
-					type: 'ticket',
-					referenceId: 'TCK-482'
+					type: 'ticket_status',
+					referenceId: 'TCK-482',
+                    status: 'estimating'
 				}
 			},
 			{
@@ -91,7 +90,6 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				timestamp: '2024-04-29T12:10:05Z',
 				action: {
-					label: 'Vedi preventivo',
 					type: 'quote',
 					referenceId: 'prv-riparazione-colonna'
 				}
@@ -113,9 +111,9 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				timestamp: '2024-04-30T14:25:05Z',
 				action: {
-					label: 'Ticket chiuso',
-					type: 'ticket',
-					referenceId: 'TCK-482'
+					type: 'ticket_status',
+					referenceId: 'TCK-482',
+                    status: 'completed'
 				}
 			},
 			{
@@ -123,7 +121,6 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				timestamp: '2024-04-30T14:26:00Z',
 				action: {
-					label: 'Scarica fattura',
 					type: 'invoice',
 					referenceId: 'inv-001'
 				}
@@ -139,7 +136,6 @@ export const chats: Chat[] = [
 				senderId: 'adm-svicom-01',
 				timestamp: '2024-04-30T14:30:05Z',
 				action: {
-					label: 'Vedi pagamento',
 					type: 'payment',
 					referenceId: 'pay-003'
 				}
@@ -168,9 +164,9 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				timestamp: '2024-05-01T08:40:05Z',
 				action: {
-					label: 'Apri ticket',
-					type: 'ticket',
-					referenceId: 'TCK-482'
+					type: 'ticket_status',
+					referenceId: 'TCK-482',
+                    status: 'estimating'
 				}
 			},
 			{
@@ -197,7 +193,6 @@ export const chats: Chat[] = [
 				senderId: 'adm-svicom-03',
 				timestamp: '2024-05-02T09:50:05Z',
 				action: {
-					label: 'Vedi pagamento',
 					type: 'payment',
 					referenceId: 'pay-003'
 				}
@@ -213,9 +208,9 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				timestamp: '2024-05-02T10:05:05Z',
 				action: {
-					label: 'Vedi ticket',
-					type: 'ticket',
-					referenceId: 'TCK-482'
+					type: 'ticket_status',
+					referenceId: 'TCK-482',
+                    status: 'paid'
 				}
 			}
 		]
