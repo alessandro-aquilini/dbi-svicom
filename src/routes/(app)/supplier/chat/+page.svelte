@@ -2,12 +2,23 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
+	import { getTicketById } from '$lib/data/tickets';
+	import { getPaymentById } from '$lib/data/payments';
+	import { getQuoteById } from '$lib/data/quotes';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	const chats = getChatsByUserId(supplierId);
 	let selectedChatId = $state(chats[0]?.id ?? '');
 	const selectedChat = $derived(chats.find((c) => c.id === selectedChatId));
+
+	function formatTime(isoString: string) {
+		return new Date(isoString).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+	}
+
+	function formatMoney(amount: number, currency: string = 'EUR') {
+		return new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount);
+	}
 </script>
 
 <svelte:head>
@@ -43,13 +54,53 @@
 			<div class="border-b border-border px-4 py-3">
 				<p class="text-sm font-medium text-foreground">{otherUser?.name ?? 'Utente'}</p>
 			</div>
-			<div class="flex-1 space-y-3 overflow-y-auto p-4">
+			<div class="flex-1 space-y-4 overflow-y-auto p-4">
 				{#each selectedChat.messages as msg}
 					{@const isMine = msg.senderId === supplierId}
-					<div class="flex {isMine ? 'justify-end' : 'justify-start'}">
-						<div class="max-w-md rounded-lg px-3 py-2 text-sm {isMine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}">
+					<div class="flex flex-col {isMine ? 'items-end' : 'items-start'}">
+						<div class="max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm {isMine ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted text-foreground rounded-bl-sm'}">
 							{msg.text}
+							
+							{#if msg.action}
+								<div class="mt-3 overflow-hidden rounded-xl border {isMine ? 'border-primary-foreground/20 bg-primary-foreground/10' : 'border-border bg-background'} p-3 pb-2 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer">
+									{#if msg.action.type === 'ticket'}
+										{@const ticket = getTicketById(msg.action.referenceId)}
+										{#if ticket}
+											<div class="flex items-center justify-between gap-3 mb-2">
+												<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Pratica</span>
+												<span class="text-xs px-2 py-0.5 rounded-full {isMine ? 'bg-primary-foreground text-primary' : 'bg-primary/10 text-primary'}">{ticket.status}</span>
+											</div>
+											<p class="font-medium pb-1">{ticket.title}</p>
+										{/if}
+									{:else if msg.action.type === 'payment'}
+										{@const payment = getPaymentById(msg.action.referenceId)}
+										{#if payment}
+											<div class="flex items-center justify-between gap-3 mb-2">
+												<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Pagamento</span>
+												<span class="text-xs px-2 py-0.5 rounded-full {payment.status === 'paid' ? 'bg-green-500/20 text-green-700' : isMine ? 'bg-primary-foreground text-primary' : 'bg-orange-500/20 text-orange-700'}">{payment.status === 'paid' ? 'Saldato' : 'In attesa'}</span>
+											</div>
+											<p class="font-bold text-lg">{formatMoney(payment.amount, payment.currency)}</p>
+											<p class="text-xs opacity-90 truncate">{payment.description}</p>
+										{/if}
+									{:else if msg.action.type === 'quote'}
+										{@const quote = getQuoteById(msg.action.referenceId)}
+										{#if quote}
+											<div class="flex items-center justify-between gap-3 mb-2">
+												<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Preventivo</span>
+												<span class="text-xs px-2 py-0.5 rounded-full {isMine ? 'bg-primary-foreground text-primary' : 'bg-primary/10 text-primary'}">{formatMoney(quote.amount, quote.currency)}</span>
+											</div>
+											<p class="font-medium pb-1">{quote.title}</p>
+										{/if}
+									{/if}
+									
+									<div class="mt-2 flex items-center justify-end text-xs font-semibold opacity-70">
+										{msg.action.label} 
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+									</div>
+								</div>
+							{/if}
 						</div>
+						<span class="mt-1 text-[11px] text-muted-foreground mx-1">{formatTime(msg.timestamp)}</span>
 					</div>
 				{/each}
 			</div>

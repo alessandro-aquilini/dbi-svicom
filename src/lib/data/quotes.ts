@@ -43,6 +43,20 @@ export const quotes: Quote[] = [
 		sentAt: '2024-04-29T10:00:00Z',
 		expiresAt: '2024-05-15T10:00:00Z',
 		description: 'Intervento urgente per ripristino schede elettroniche.'
+	},
+	{
+		id: 'prv-riparazione-colonna',
+		ticketId: 'TCK-482',
+		supplierId: 'frn-idroclima-nord',
+		propertyId: 'cnd-marconi-14',
+		title: 'Riparazione colonna montante',
+		amount: 1250.0,
+		currency: 'EUR',
+		status: 'sent',
+		sentAt: '2024-04-29T12:05:00Z',
+		expiresAt: '2024-05-09T12:05:00Z',
+		description: 'Preventivo per la riparazione urgente della colonna montante e verifica tubazioni di risalita.',
+		attachments: ['preventivo-riparazione-colonna.pdf']
 	}
 ];
 

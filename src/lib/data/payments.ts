@@ -67,6 +67,10 @@ export const payments: Payment[] = [
 
 ];
 
+export function getPaymentById(id: string): Payment | undefined {
+	return payments.find((p) => p.id === id);
+}
+
 export function getPaymentsByUserId(userId: string): Payment[] {
 	return payments.filter((p) => p.fromId === userId || p.toId === userId);
 }

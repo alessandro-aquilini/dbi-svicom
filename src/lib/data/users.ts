@@ -25,6 +25,20 @@ export const users: User[] = [
 		phone: '+39 02 4567 8900'
 	},
 	{
+		id: 'adm-svicom-02',
+		role: 'admin',
+		name: 'Studio Svicom Roma',
+		email: 'studio.roma@svicom.it',
+		phone: '+39 06 1234 5678'
+	},
+	{
+		id: 'adm-svicom-03',
+		role: 'admin',
+		name: 'Studio Svicom Torino',
+		email: 'studio.torino@svicom.it',
+		phone: '+39 011 3344 556'
+	},
+	{
 		id: 'res-bianchi-01',
 		role: 'resident',
 		name: 'Marco Bianchi',
