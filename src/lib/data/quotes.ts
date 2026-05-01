@@ -67,3 +67,7 @@ export function getQuotesByTicketId(ticketId: string): Quote[] {
 export function getQuoteById(id: string): Quote | undefined {
 	return quotes.find((q) => q.id === id);
 }
+
+export function getQuotesBySupplierId(supplierId: string): Quote[] {
+	return quotes.filter((q) => q.supplierId === supplierId);
+}

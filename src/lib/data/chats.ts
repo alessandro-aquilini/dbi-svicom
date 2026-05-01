@@ -1,13 +1,8 @@
 export interface Message {
 	id: string;
 	senderId: string; // References User.id
-	text?: string;
+	text: string;
 	timestamp: string;
-	action?: {
-		type: 'ticket_status' | 'quote' | 'payment' | 'event' | 'invoice' | 'report';
-		referenceId: string;
-		status?: string;
-	};
 }
 
 export interface Chat {
@@ -34,15 +29,6 @@ export const chats: Chat[] = [
 				senderId: 'adm-svicom-01',
 				text: 'Sì, abbiamo incaricato Idroclima Nord. L\'intervento è previsto per oggi pomeriggio.',
 				timestamp: '2024-04-29T10:50:00Z'
-			},
-			{
-				id: 'msg-002-action',
-				senderId: 'adm-svicom-01',
-				timestamp: '2024-04-29T10:50:05Z',
-				action: {
-					type: 'report',
-					referenceId: '1047'
-				}
 			}
 		]
 	},
@@ -64,16 +50,6 @@ export const chats: Chat[] = [
 				timestamp: '2024-04-29T09:20:00Z'
 			},
 			{
-				id: 'msg-102-action',
-				senderId: 'frn-idroclima-nord',
-				timestamp: '2024-04-29T09:20:10Z',
-				action: {
-					type: 'ticket_status',
-					referenceId: 'TCK-482',
-                    status: 'estimating'
-				}
-			},
-			{
 				id: 'msg-103',
 				senderId: 'adm-svicom-01',
 				text: 'Perfetto, grazie. Mandate documento e preventivo appena pronti.',
@@ -84,15 +60,6 @@ export const chats: Chat[] = [
 				senderId: 'frn-idroclima-nord',
 				text: 'Preventivo caricato e inviato sulla piattaforma.',
 				timestamp: '2024-04-29T12:10:00Z'
-			},
-			{
-				id: 'msg-104-action',
-				senderId: 'frn-idroclima-nord',
-				timestamp: '2024-04-29T12:10:05Z',
-				action: {
-					type: 'quote',
-					referenceId: 'prv-riparazione-colonna'
-				}
 			},
 			{
 				id: 'msg-105',
@@ -107,38 +74,10 @@ export const chats: Chat[] = [
 				timestamp: '2024-04-30T14:25:00Z'
 			},
 			{
-				id: 'msg-106-action',
-				senderId: 'frn-idroclima-nord',
-				timestamp: '2024-04-30T14:25:05Z',
-				action: {
-					type: 'ticket_status',
-					referenceId: 'TCK-482',
-                    status: 'completed'
-				}
-			},
-			{
-				id: 'msg-106-invoice',
-				senderId: 'frn-idroclima-nord',
-				timestamp: '2024-04-30T14:26:00Z',
-				action: {
-					type: 'invoice',
-					referenceId: 'inv-001'
-				}
-			},
-			{
 				id: 'msg-107',
 				senderId: 'adm-svicom-01',
 				text: 'Pagamento autorizzato e inviato.',
 				timestamp: '2024-04-30T14:30:00Z'
-			},
-			{
-				id: 'msg-107-action',
-				senderId: 'adm-svicom-01',
-				timestamp: '2024-04-30T14:30:05Z',
-				action: {
-					type: 'payment',
-					referenceId: 'pay-003'
-				}
 			}
 		]
 	},
@@ -160,16 +99,6 @@ export const chats: Chat[] = [
 				timestamp: '2024-05-01T08:40:00Z'
 			},
 			{
-				id: 'msg-202-action',
-				senderId: 'frn-idroclima-nord',
-				timestamp: '2024-05-01T08:40:05Z',
-				action: {
-					type: 'ticket_status',
-					referenceId: 'TCK-482',
-                    status: 'estimating'
-				}
-			},
-			{
 				id: 'msg-203',
 				senderId: 'adm-svicom-02',
 				text: 'Perfetto, grazie. Appena pronto, caricalo come preventivo sulla pratica.',
@@ -189,29 +118,10 @@ export const chats: Chat[] = [
 				timestamp: '2024-05-02T09:50:00Z'
 			},
 			{
-				id: 'msg-301-action',
-				senderId: 'adm-svicom-03',
-				timestamp: '2024-05-02T09:50:05Z',
-				action: {
-					type: 'payment',
-					referenceId: 'pay-003'
-				}
-			},
-			{
 				id: 'msg-302',
 				senderId: 'frn-idroclima-nord',
 				text: 'Confermo, il bonifico è stato accreditato e il ticket è chiuso.',
 				timestamp: '2024-05-02T10:05:00Z'
-			},
-			{
-				id: 'msg-302-action',
-				senderId: 'frn-idroclima-nord',
-				timestamp: '2024-05-02T10:05:05Z',
-				action: {
-					type: 'ticket_status',
-					referenceId: 'TCK-482',
-                    status: 'paid'
-				}
 			}
 		]
 	}

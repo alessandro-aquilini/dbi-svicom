@@ -22,8 +22,8 @@ export const invoices: Invoice[] = [
 		ticketId: 'TCK-482',
 		amount: 1250.0,
 		currency: 'EUR',
-		issueDate: '2024-04-30',
-		dueDate: '2024-05-30',
+		issueDate: '2024-04-30T08:00:00Z',
+		dueDate: '2024-05-30T23:59:59Z',
 		description: 'Intervento urgente riparazione colonna montante',
 		attachments: ['fattura-idroclima-001.pdf']
 	}
