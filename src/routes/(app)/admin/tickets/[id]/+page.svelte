@@ -5,7 +5,9 @@
 		ArrowLeft01Icon,
 		SparklesIcon,
 		Wrench01Icon,
-		UserAdd01Icon
+		UserAdd01Icon,
+		File01Icon,
+		Exchange01Icon
 	} from '@hugeicons/core-free-icons';
 	import { StatusBadge } from '$lib/components/shared';
 	import type { StatusVariant } from '$lib/types';
@@ -13,6 +15,8 @@
 		getTicketById,
 		getTicketAiSummary,
 		getTicketNextStep,
+		getTicketTimeline,
+		type TicketEvent,
 		type TicketStatus
 	} from '$lib/data/tickets';
 	import { getPropertyById } from '$lib/data/properties';
@@ -26,6 +30,33 @@
 	const supplier = $derived(assigned?.role === 'supplier' ? assigned : undefined);
 	const aiSummary = $derived(ticket ? getTicketAiSummary(ticket.id) : undefined);
 	const aiNextStep = $derived(ticket ? getTicketNextStep(ticket.id) : undefined);
+	const seedEvents = $derived<TicketEvent[]>(ticket ? getTicketTimeline(ticket.id) : []);
+
+	let addedNotes = $state<TicketEvent[]>([]);
+	let newNote = $state('');
+
+	const timeline = $derived<TicketEvent[]>(
+		[...seedEvents, ...addedNotes].sort(
+			(a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()
+		)
+	);
+
+	function submitNote(e: SubmitEvent) {
+		e.preventDefault();
+		const body = newNote.trim();
+		if (!body || !ticket) return;
+		addedNotes = [
+			...addedNotes,
+			{
+				id: `${ticket.id}-note-${Date.now()}`,
+				kind: 'note',
+				at: new Date().toISOString(),
+				actorId: internalOwner?.id,
+				body
+			}
+		];
+		newNote = '';
+	}
 
 	const priorityColors: Record<string, string> = {
 		critica: 'bg-destructive/15 text-destructive',
@@ -68,6 +99,16 @@
 		if (days < 30) return `${days} giorni fa`;
 		const months = Math.floor(days / 30);
 		return months === 1 ? '1 mese fa' : `${months} mesi fa`;
+	}
+
+	function relativeTime(iso: string): string {
+		const ms = Date.now() - new Date(iso).getTime();
+		if (ms < 60_000) return 'ora';
+		const mins = Math.floor(ms / 60_000);
+		if (mins < 60) return `${mins} min fa`;
+		const hrs = Math.floor(mins / 60);
+		if (hrs < 24) return `${hrs} h fa`;
+		return relativeDays(iso);
 	}
 
 	function initials(name: string): string {
@@ -165,6 +206,111 @@
 							</p>
 						{/if}
 					</section>
+
+					<!-- Cronologia -->
+					<section class="block">
+						<h2 class="block__title">Cronologia</h2>
+						<ol class="timeline mt-5">
+							{#each timeline as ev (ev.id)}
+								{@const actor = ev.actorId ? getUserById(ev.actorId) : undefined}
+								{#if ev.kind === 'note'}
+									<li class="tl-item tl-item--comment">
+										<span class="tl-node">
+											{#if actor}
+												<span
+													class="avatar avatar--sm"
+													style:background-color={avatarColor(actor)}
+													aria-hidden="true"
+												>
+													{initials(actor.name)}
+												</span>
+											{:else}
+												<span class="tl-dot"></span>
+											{/if}
+										</span>
+										<div class="tl-card">
+											<header class="tl-card__head">
+												<span class="tl-card__author">{actor?.name ?? 'Utente'}</span>
+												<span class="tl-card__time">{relativeTime(ev.at)}</span>
+											</header>
+											<p class="tl-card__body">{ev.body}</p>
+										</div>
+									</li>
+								{:else}
+									<li class="tl-item tl-item--inline">
+										<span class="tl-node">
+											<span class="tl-dot tl-dot--{ev.kind}" aria-hidden="true">
+												{#if ev.kind === 'created'}
+													<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
+												{:else if ev.kind === 'assigned'}
+													<HugeiconsIcon icon={UserAdd01Icon} size={11} strokeWidth={2} />
+												{:else if ev.kind === 'status'}
+													<HugeiconsIcon icon={Exchange01Icon} size={11} strokeWidth={2} />
+												{:else if ev.kind === 'ai'}
+													<HugeiconsIcon icon={SparklesIcon} size={11} strokeWidth={2} />
+												{/if}
+											</span>
+										</span>
+										<p class="tl-inline">
+											{#if ev.kind === 'created'}
+												<strong>{actor?.name ?? 'Segnalante'}</strong>
+												<span class="tl-inline__verb">ha aperto la pratica</span>
+											{:else if ev.kind === 'assigned'}
+												{@const target = ev.targetUserId
+													? getUserById(ev.targetUserId)
+													: undefined}
+												<span class="tl-inline__verb">Pratica assegnata a</span>
+												<strong>{target?.name ?? '—'}</strong>
+											{:else if ev.kind === 'status'}
+												<span class="tl-inline__verb">Stato cambiato in</span>
+												<strong>{ev.toStatus ? statusLabel[ev.toStatus] : '—'}</strong>
+											{:else if ev.kind === 'ai'}
+												<strong>Assistente</strong>
+												<span class="tl-inline__verb">{ev.body}</span>
+											{/if}
+											<span class="tl-inline__time">· {relativeTime(ev.at)}</span>
+										</p>
+									</li>
+								{/if}
+							{/each}
+
+							<!-- Add-note form integrata nella timeline -->
+							<li class="tl-item tl-item--form">
+								<span class="tl-node">
+									{#if internalOwner}
+										<span
+											class="avatar avatar--sm"
+											style:background-color={avatarColor(internalOwner)}
+											aria-hidden="true"
+										>
+											{initials(internalOwner.name)}
+										</span>
+									{:else}
+										<span class="tl-dot"></span>
+									{/if}
+								</span>
+								<form class="tl-card tl-form" onsubmit={submitNote}>
+									<textarea
+										bind:value={newNote}
+										rows="2"
+										placeholder="Aggiungi una nota interna…"
+										class="tl-form__input"
+										aria-label="Aggiungi nota"
+									></textarea>
+									<div class="tl-form__footer">
+										<span class="tl-form__hint">Le note sono visibili solo al team.</span>
+										<button
+											type="submit"
+											disabled={!newNote.trim()}
+											class="tl-form__submit"
+										>
+											Aggiungi nota
+										</button>
+									</div>
+								</form>
+							</li>
+						</ol>
+					</section>
 				</div>
 
 				<!-- Sidebar -->
@@ -206,14 +352,11 @@
 									</div>
 								</div>
 							{:else}
-								<button type="button" class="assign-btn">
-									<HugeiconsIcon icon={UserAdd01Icon} size={14} strokeWidth={2} />
-									<span>
-										<span class="block text-sm font-medium text-foreground">Assegna fornitore</span>
-										<span class="block text-xs text-muted-foreground">
-											Nessun fornitore assegnato
-										</span>
+								<button type="button" class="party-row party-row--empty">
+									<span class="avatar avatar--placeholder" aria-hidden="true">
+										<HugeiconsIcon icon={UserAdd01Icon} size={14} strokeWidth={1.75} />
 									</span>
+									<span class="party-row__empty-label">Assegna fornitore</span>
 								</button>
 							{/if}
 						</div>
@@ -468,34 +611,225 @@
 		word-break: break-word;
 	}
 
-	/* ─── Assign CTA ──────────────────────────────────────────── */
-	.assign-btn {
-		width: 100%;
+	/* ─── Timeline ────────────────────────────────────────────── */
+	.timeline {
+		position: relative;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.timeline::before {
+		content: '';
+		position: absolute;
+		left: 0.875rem; /* center of 1.75rem node column */
+		top: 0.5rem;
+		bottom: 0.5rem;
+		width: 1px;
+		background: var(--border);
+	}
+
+	.tl-item {
+		position: relative;
+		display: grid;
+		grid-template-columns: 1.75rem 1fr;
+		gap: 0.875rem;
+		align-items: start;
+	}
+
+	.tl-item + .tl-item {
+		margin-top: 1rem;
+	}
+
+	.tl-item--comment + .tl-item,
+	.tl-item--form {
+		margin-top: 1.25rem;
+	}
+
+	.tl-node {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 0.625rem 0.75rem;
+		justify-content: center;
+		padding-top: 0.125rem;
+	}
+
+	.tl-dot {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 9999px;
+		background: var(--card);
+		border: 1px solid var(--border);
+		color: var(--muted-foreground);
+	}
+
+	.tl-dot--ai {
+		background: color-mix(in oklch, var(--primary) 12%, var(--card));
+		border-color: color-mix(in oklch, var(--primary) 30%, var(--border));
+		color: var(--primary);
+	}
+
+	.avatar--sm {
+		width: 1.75rem;
+		height: 1.75rem;
+		font-size: 0.625rem;
+		border: 2px solid var(--card);
+	}
+
+	/* Inline events */
+	.tl-inline {
+		font-size: 0.8125rem;
+		line-height: 1.5;
+		color: var(--foreground);
+		padding-top: 0.25rem;
+	}
+
+	.tl-inline strong {
+		font-weight: 600;
+		color: var(--foreground);
+	}
+
+	.tl-inline__verb {
+		color: var(--muted-foreground);
+		font-weight: 400;
+	}
+
+	.tl-inline__time {
+		color: var(--muted-foreground);
+		font-weight: 400;
+		margin-left: 0.125rem;
+	}
+
+	/* Comment cards */
+	.tl-card {
+		border: 1px solid var(--border);
 		border-radius: 0.5rem;
-		border: 1px dashed var(--input);
+		background: var(--card);
+		overflow: hidden;
+	}
+
+	.tl-card__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.5rem 0.875rem;
+		background: color-mix(in oklch, var(--muted) 35%, var(--card));
+		border-bottom: 1px solid var(--border);
+	}
+
+	.tl-card__author {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--foreground);
+	}
+
+	.tl-card__time {
+		font-size: 0.75rem;
+		color: var(--muted-foreground);
+	}
+
+	.tl-card__body {
+		padding: 0.75rem 0.875rem;
+		font-size: 0.8125rem;
+		line-height: 1.55;
+		color: var(--foreground);
+		white-space: pre-wrap;
+	}
+
+	/* Add-note form */
+	.tl-form__input {
+		width: 100%;
+		display: block;
+		border: 0;
+		background: transparent;
+		padding: 0.625rem 0.875rem;
+		font-size: 0.8125rem;
+		line-height: 1.55;
+		color: var(--foreground);
+		resize: vertical;
+		min-height: 2.75rem;
+		outline: none;
+		font-family: inherit;
+	}
+
+	.tl-form__input::placeholder {
+		color: var(--muted-foreground);
+	}
+
+	.tl-form__footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.5rem 0.875rem;
+		background: color-mix(in oklch, var(--muted) 35%, var(--card));
+		border-top: 1px solid var(--border);
+	}
+
+	.tl-form__hint {
+		font-size: 0.6875rem;
+		color: var(--muted-foreground);
+	}
+
+	.tl-form__submit {
+		height: 1.875rem;
+		padding: 0 0.75rem;
+		border-radius: 0.375rem;
+		border: 0;
+		background: var(--primary);
+		color: var(--primary-foreground);
+		font-size: 0.75rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: opacity 150ms ease;
+	}
+
+	.tl-form__submit:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.tl-form__submit:not(:disabled):hover {
+		opacity: 0.92;
+	}
+
+	/* ─── Assign CTA (empty supplier slot) ────────────────────── */
+	.party-row--empty {
+		width: 100%;
+		padding: 0;
+		border: 0;
 		background: transparent;
 		text-align: left;
 		cursor: pointer;
+	}
+
+	.party-row__empty-label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--muted-foreground);
+		transition: color 150ms ease;
+	}
+
+	.avatar--placeholder {
+		background: transparent;
+		border: 1px dashed var(--input);
+		color: var(--muted-foreground);
 		transition:
 			border-color 150ms ease,
-			background 150ms ease;
+			color 150ms ease;
 	}
 
-	.assign-btn :global(svg) {
-		color: var(--muted-foreground);
-		flex-shrink: 0;
+	.party-row--empty:hover .party-row__empty-label {
+		color: var(--foreground);
 	}
 
-	.assign-btn:hover {
+	.party-row--empty:hover .avatar--placeholder {
 		border-color: var(--primary);
-		background: color-mix(in oklch, var(--primary) 4%, transparent);
-	}
-
-	.assign-btn:hover :global(svg) {
 		color: var(--primary);
 	}
 </style>

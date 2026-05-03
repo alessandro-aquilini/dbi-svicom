@@ -153,6 +153,86 @@ export function getTicketAiSummary(ticketId: string): string | undefined {
 	return `Pratica ${ticket.type} di priorità ${ticket.priority} su ${propName}, aperta ${opened} da ${reporterName}${channel}. ${STATUS_PHRASE[ticket.status]}`;
 }
 
+// ─── Timeline ──────────────────────────────────────────────────────────
+// Per-ticket activity stream. Seed events are derived deterministically
+// from ticket fields; user-added notes are owned by the UI layer (the
+// data simulation is read-only).
+
+export type TicketEventKind = 'created' | 'status' | 'assigned' | 'note' | 'ai';
+
+export interface TicketEvent {
+	id: string;
+	kind: TicketEventKind;
+	at: string; // ISO date
+	actorId?: string; // References User.id (author / system trigger)
+	body?: string; // For note / ai events
+	fromStatus?: TicketStatus; // status events
+	toStatus?: TicketStatus; // status events
+	targetUserId?: string; // assigned events
+}
+
+function demoNoteFor(ticket: Ticket): string {
+	if (ticket.priority === 'critica')
+		return 'Allerta squadra di pronto intervento, monitoro evoluzione nel pomeriggio.';
+	if (ticket.status === 'in-corso')
+		return "Squadra sul posto, mi aggiorno entro fine giornata sull'esito.";
+	if (ticket.status === 'assegnato')
+		return 'Confermato preventivo telefonicamente, attendo finestra di intervento.';
+	return 'Ho contattato il segnalante per maggiori dettagli prima di assegnare il fornitore.';
+}
+
+export function getTicketTimeline(ticketId: string): TicketEvent[] {
+	const ticket = getTicketById(ticketId);
+	if (!ticket) return [];
+
+	const events: TicketEvent[] = [];
+	const created = new Date(ticket.createdAt).getTime();
+	const updated = new Date(ticket.updatedAt).getTime();
+
+	events.push({
+		id: `${ticket.id}-created`,
+		kind: 'created',
+		at: ticket.createdAt,
+		actorId: ticket.reportedById
+	});
+
+	events.push({
+		id: `${ticket.id}-ai-init`,
+		kind: 'ai',
+		at: new Date(created + 60_000).toISOString(),
+		body: 'Sintesi e prossimo passo generati automaticamente.'
+	});
+
+	if (ticket.assignedToId) {
+		events.push({
+			id: `${ticket.id}-assigned`,
+			kind: 'assigned',
+			at: new Date(Math.max(updated - 60_000, created + 120_000)).toISOString(),
+			targetUserId: ticket.assignedToId
+		});
+	}
+
+	if (ticket.status !== 'nuovo') {
+		events.push({
+			id: `${ticket.id}-status`,
+			kind: 'status',
+			at: ticket.updatedAt,
+			fromStatus: 'nuovo',
+			toStatus: ticket.status
+		});
+	}
+
+	events.push({
+		id: `${ticket.id}-note-seed`,
+		kind: 'note',
+		at: new Date(updated + 30_000).toISOString(),
+		actorId: 'adm-svicom-01',
+		body: demoNoteFor(ticket)
+	});
+
+	return events.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+}
+
 export function getTicketNextStep(ticketId: string): TicketNextStep | undefined {
 	const ticket = getTicketById(ticketId);
 	if (!ticket) return undefined;
