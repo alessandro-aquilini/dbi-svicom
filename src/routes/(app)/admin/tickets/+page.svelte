@@ -1,10 +1,15 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { tickets, type TicketPriority, type TicketStatus, type TicketType } from '$lib/data/tickets';
 	import { getPropertyById } from '$lib/data/properties';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip } from '$lib/components/shared';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Add01Icon, Search01Icon } from '@hugeicons/core-free-icons';
+
+	function openTicket(id: string) {
+		goto(`/admin/tickets/${id}`);
+	}
 
 	const priorityColors: Record<string, string> = {
 		critica: 'bg-destructive/15 text-destructive',
@@ -180,7 +185,18 @@
 					<tbody class="divide-y divide-border">
 						{#each filtered as ticket (ticket.id)}
 							{@const property = getPropertyById(ticket.propertyId)}
-							<tr class="hover:bg-muted/50">
+							<tr
+								class="cursor-pointer hover:bg-muted/50"
+								role="link"
+								tabindex="0"
+								onclick={() => openTicket(ticket.id)}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										openTicket(ticket.id);
+									}
+								}}
+							>
 								<td class="px-4 py-3 font-mono text-xs text-muted-foreground">{ticket.id}</td>
 								<td class="px-4 py-3 font-medium text-foreground">{ticket.title}</td>
 								{#if propertySelection.isAll}
