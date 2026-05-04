@@ -124,6 +124,68 @@ export const chats: Chat[] = [
 				timestamp: '2024-05-02T10:05:00Z'
 			}
 		]
+	},
+	{
+		id: 'chat-005',
+		participantIds: ['res-conti-02', 'frn-idroclima-nord'],
+		lastMessageAt: '2024-05-03T14:15:00Z',
+		messages: [
+			{
+				id: 'msg-401',
+				senderId: 'res-conti-02',
+				text: 'Buongiorno, le ho aperto un ticket per il mio condizionatore che perde in sala. Può verificare?',
+				timestamp: '2024-05-02T10:20:00Z'
+			},
+			{
+				id: 'msg-402',
+				senderId: 'frn-idroclima-nord',
+				text: 'Buongiorno Elena. Sì, ho visto la segnalazione. Le invio subito il preventivo di massima per l\'uscita e la sostituzione della pompa di scarico.',
+				timestamp: '2024-05-02T10:50:00Z'
+			},
+			{
+				id: 'msg-403',
+				senderId: 'res-conti-02',
+				text: 'Preventivo accettato. Quando potete passare?',
+				timestamp: '2024-05-02T11:40:00Z'
+			},
+			{
+				id: 'msg-404',
+				senderId: 'frn-idroclima-nord',
+				text: 'Veniamo domani mattina verso le 9:00.',
+				timestamp: '2024-05-02T14:00:00Z'
+			},
+			{
+				id: 'msg-405',
+				senderId: 'frn-idroclima-nord',
+				text: 'Lavoro terminato. Le ho caricato la fattura, grazie mille.',
+				timestamp: '2024-05-03T14:15:00Z'
+			}
+		]
+	},
+	{
+		id: 'chat-006',
+		participantIds: ['res-rossi-03', 'frn-idroclima-nord'],
+		lastMessageAt: '2024-05-04T09:05:00Z',
+		messages: [
+			{
+				id: 'msg-501',
+				senderId: 'res-rossi-03',
+				text: 'Buongiorno Idroclima, vorrei cambiare il rubinetto del bagno patronale. Ha aperto un ticket.',
+				timestamp: '2024-05-04T08:15:00Z'
+			},
+			{
+				id: 'msg-502',
+				senderId: 'frn-idroclima-nord',
+				text: 'Ricevuto signor Rossi. Preparo un preventivo e lo carico a sistema.',
+				timestamp: '2024-05-04T08:50:00Z'
+			},
+			{
+				id: 'msg-503',
+				senderId: 'frn-idroclima-nord',
+				text: 'Le ho inviato il preventivo per la fornitura e posa del nuovo rubinetto.',
+				timestamp: '2024-05-04T09:05:00Z'
+			}
+		]
 	}
 ];
 

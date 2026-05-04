@@ -60,15 +60,19 @@
 
 		// Add quotes
 		for (const quote of relatedQuotes) {
-			if (quote.sentAt) {
-				events.push({ type: 'quote', date: new Date(quote.sentAt).getTime(), data: quote });
+			if (quote.customerId === otherUserId) {
+				if (quote.sentAt) {
+					events.push({ type: 'quote', date: new Date(quote.sentAt).getTime(), data: quote });
+				}
 			}
 		}
 
 		// Add invoices
 		for (const invoice of relatedInvoices) {
-			if (invoice.issueDate) {
-				events.push({ type: 'invoice', date: new Date(invoice.issueDate).getTime(), data: invoice });
+			if (invoice.customerId === otherUserId) {
+				if (invoice.issueDate) {
+					events.push({ type: 'invoice', date: new Date(invoice.issueDate).getTime(), data: invoice });
+				}
 			}
 		}
 
@@ -82,6 +86,9 @@
 	function formatMoney(amount: number, currency: string = 'EUR') {
 		return new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount);
 	}
+
+	let showInvoiceModal = $state(false);
+	let showQuoteModal = $state(false);
 </script>
 
 <svelte:head>
@@ -118,11 +125,11 @@
 			<div class="border-b border-border px-4 py-3">
 				<p class="text-sm font-medium text-foreground">{otherUser?.name ?? 'Utente'}</p>
 			</div>
-			<div class="flex-1 space-y-4 overflow-y-auto p-4">
+			<div class="flex-1 space-y-4 overflow-y-auto p-4 flex flex-col">
 				{#each timeline() as event}
 					{#if event.type === 'message'}
 						{@const isMine = event.data.senderId === supplierId}
-						<div class="flex flex-col {isMine ? 'items-end' : 'items-start'}">
+						<div class="flex flex-col {isMine ? 'self-end items-end' : 'self-start items-start'}">
 							{#if event.data.text}
 								<div class="max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm {isMine ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted text-foreground rounded-bl-sm'}">
 									{event.data.text}
@@ -131,14 +138,25 @@
 							{/if}
 						</div>
 					{:else if event.type === 'ticket_status'}
-						<div class="flex justify-center my-4">
-							<span class="text-xs border border-border bg-card px-3 py-1.5 rounded-full text-muted-foreground shadow-sm">
-								Il ticket <strong>{event.data.ticket.id}</strong> è stato spostato in <strong class="text-primary">{event.data.history.status}</strong>
-							</span>
+						{@const isMine = event.data.history.authorId === supplierId}
+						{@const author = getUserById(event.data.history.authorId ?? '')}
+						<div class="flex flex-col items-center my-3 w-full">
+							<div class="max-w-[85%] rounded-xl px-4 py-2 text-[13px] text-muted-foreground bg-muted/30 border border-border/50 text-center flex flex-col sm:flex-row items-center gap-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0 mb-1 sm:mb-0"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+								<span>
+									{#if event.data.history.status === 'opened'}
+										<span class="font-medium text-foreground">{author?.name ?? 'Utente'}</span> ha aperto un nuovo ticket (<span class="font-mono text-xs font-semibold text-foreground">{event.data.ticket.id}</span>).
+									{:else}
+										<span class="font-medium text-foreground">{author?.name ?? 'Utente'}</span> ha aggiornato lo stato del ticket in: <span class="uppercase tracking-wider font-semibold text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-md ml-1">{event.data.history.status}</span>
+									{/if}
+								</span>
+							</div>
+							<span class="mt-1 text-[10px] text-muted-foreground/70">{formatTime(event.date)}</span>
 						</div>
 					{:else if event.type === 'payment'}
-						<div class="flex flex-col items-center my-4">
-							<div class="w-full max-w-[280px] overflow-hidden rounded-xl border border-border bg-background p-4 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
+						{@const isMine = event.data.fromId === supplierId}
+						<div class="flex flex-col {isMine ? 'self-end items-end' : 'self-start items-start'} my-2">
+							<div class="w-full min-w-60 max-w-70 overflow-hidden rounded-xl border border-border bg-background p-4 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
 								<div class="flex items-center justify-between gap-3 mb-2">
 									<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Pagamento</span>
 									<span class="text-xs px-2 py-0.5 rounded-full {event.data.paidAt ? 'bg-green-500/20 text-green-700' : 'bg-orange-500/20 text-orange-700'}">
@@ -154,8 +172,8 @@
 							<span class="mt-1 text-[11px] text-muted-foreground mx-1">{formatTime(event.date)}</span>
 						</div>
 					{:else if event.type === 'quote'}
-						<div class="flex flex-col items-end my-4">
-							<div class="w-full max-w-[280px] overflow-hidden rounded-xl border border-border bg-background p-4 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
+						<div class="flex flex-col self-end items-end my-2">
+							<div class="w-full min-w-60 max-w-70 overflow-hidden rounded-xl border border-border bg-background p-4 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
 								<div class="flex items-center justify-between gap-3 mb-2">
 									<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Preventivo Inviato</span>
 									<span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{formatMoney(event.data.amount, event.data.currency)}</span>
@@ -168,8 +186,8 @@
 							<span class="mt-1 text-[11px] text-muted-foreground mx-1">{formatTime(event.date)}</span>
 						</div>
 					{:else if event.type === 'invoice'}
-						<div class="flex flex-col items-end my-4">
-							<div class="w-full max-w-[280px] overflow-hidden rounded-xl border border-border bg-background p-4 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
+						<div class="flex flex-col self-end items-end my-2">
+							<div class="w-full min-w-60 max-w-70 overflow-hidden rounded-xl border border-border bg-background p-4 text-sm shadow-sm transition-opacity hover:opacity-90 cursor-pointer text-foreground">
 								<div class="flex items-center justify-between gap-3 mb-2">
 									<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Fattura Emessa</span>
 									<span class="text-xs px-2 py-0.5 rounded-full {event.data.paidAt ? 'bg-green-500/20 text-green-700' : 'bg-primary/10 text-primary'}">{event.data.number}</span>
@@ -185,11 +203,49 @@
 					{/if}
 				{/each}
 			</div>
-			<div class="border-t border-border p-3">
-				<div class="rounded-lg border border-input bg-background px-3 py-2 text-sm text-muted-foreground">Scrivi un messaggio...</div>
+			<div class="border-t border-border bg-card p-3 flex flex-col gap-3 shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.05)]">
+				<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar shrink-0">
+					<button onclick={() => (showInvoiceModal = true)} class="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+						Nuova Fattura
+					</button>
+					<button onclick={() => (showQuoteModal = true)} class="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+						Nuovo Preventivo
+					</button>
+				</div>
+				<div class="rounded-2xl border border-input bg-background px-4 py-2.5 text-sm text-muted-foreground">Scrivi un messaggio...</div>
 			</div>
 		{:else}
 			<div class="flex flex-1 items-center justify-center text-sm text-muted-foreground">Seleziona una conversazione</div>
 		{/if}
 	</div>
 </div>
+
+{#if showInvoiceModal}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+		<div class="w-full max-w-md rounded-2xl bg-background p-6 shadow-lg">
+			<h2 class="mb-4 text-xl font-bold text-foreground">Nuova Fattura</h2>
+			<p class="mb-6 text-sm text-muted-foreground">Carica un file PDF o compila i dati manualmente per emettere una nuova fattura.</p>
+			<div class="flex flex-col gap-3">
+				<button class="w-full rounded-xl bg-primary/10 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20">Carica PDF</button>
+				<button class="w-full rounded-xl border border-input py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent/50">Compila Manualmente</button>
+				<button class="w-full py-2 text-sm text-muted-foreground hover:text-foreground" onclick={() => (showInvoiceModal = false)}>Annulla</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if showQuoteModal}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+		<div class="w-full max-w-md rounded-2xl bg-background p-6 shadow-lg">
+			<h2 class="mb-4 text-xl font-bold text-foreground">Nuovo Preventivo</h2>
+			<p class="mb-6 text-sm text-muted-foreground">Carica un file PDF o inserisci le voci di costo per creare un nuovo preventivo.</p>
+			<div class="flex flex-col gap-3">
+				<button class="w-full rounded-xl bg-primary/10 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20">Carica PDF</button>
+				<button class="w-full rounded-xl border border-input py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent/50">Compila Manualmente</button>
+				<button class="w-full py-2 text-sm text-muted-foreground hover:text-foreground" onclick={() => (showQuoteModal = false)}>Annulla</button>
+			</div>
+		</div>
+	</div>
+{/if}

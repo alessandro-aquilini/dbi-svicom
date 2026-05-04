@@ -4,10 +4,11 @@
 	let { children } = $props();
 
 	const navItems = [
-		{ label: 'Dashboard', href: '/supplier', icon: '📊' },
-		{ label: 'Interventi', href: '/supplier/jobs', icon: '🔧' },
+		{ label: 'Home', href: '/supplier', icon: '📊' },
 		{ label: 'Chat', href: '/supplier/chat', icon: '💬' },
+		{ label: 'Interventi', href: '/supplier/jobs', icon: '🔧' },
 		{ label: 'Pagamenti', href: '/supplier/payments', icon: '💳' },
+		{ label: 'Documenti', href: '/supplier/documents', icon: '🗎' },
 		{ label: 'Profilo', href: '/supplier/profile', icon: '👤' }
 	];
 

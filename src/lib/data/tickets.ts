@@ -51,6 +51,37 @@ export const tickets: Ticket[] = [
 			{ status: 'opened', at: '2024-04-29T08:40:00Z', authorId: 'res-bianchi-01' },
 			{ status: 'estimating', at: '2024-04-29T08:40:00Z', authorId: 'frn-secure-entry' }
 		]
+	},
+	{
+		id: 'TCK-501',
+		title: 'Perdita dal condizionatore in sala',
+		description: 'Il condizionatore in sala perde acqua copiosamente dallo split interno. Urge intervento tecnico in appartamento privato.',
+		priority: 'alta',
+		creatorId: 'res-conti-02',
+		supplierId: 'frn-idroclima-nord',
+		propertyId: 'cnd-marconi-14',
+		category: 'impianti privati',
+		statusHistory: [
+			{ status: 'opened', at: '2024-05-02T10:15:00Z', authorId: 'res-conti-02' },
+			{ status: 'estimating', at: '2024-05-02T11:00:00Z', authorId: 'frn-idroclima-nord' },
+			{ status: 'approved', at: '2024-05-02T11:30:00Z', authorId: 'res-conti-02' },
+			{ status: 'in_progress', at: '2024-05-03T09:00:00Z', authorId: 'frn-idroclima-nord' },
+			{ status: 'completed', at: '2024-05-03T12:00:00Z', authorId: 'frn-idroclima-nord' }
+		]
+	},
+	{
+		id: 'TCK-510',
+		title: 'Sostituzione rubinetto bagno',
+		description: 'Richiesta uscita per preventivo e sostituzione del rubinetto del lavabo bagno patronale.',
+		priority: 'bassa',
+		creatorId: 'res-rossi-03',
+		supplierId: 'frn-idroclima-nord',
+		propertyId: 'cnd-marconi-14',
+		category: 'impianti privati',
+		statusHistory: [
+			{ status: 'opened', at: '2024-05-04T08:00:00Z', authorId: 'res-rossi-03' },
+			{ status: 'estimating', at: '2024-05-04T09:00:00Z', authorId: 'frn-idroclima-nord' }
+		]
 	}
 ];
 
