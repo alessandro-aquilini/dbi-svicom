@@ -116,9 +116,7 @@
 
 		for (const event of relatedEvents) {
 			if (!event.participantIds.includes(supplierId)) continue;
-			if (otherUserId && !event.participantIds.includes(otherUserId) && !event.audiences.includes('supplier')) {
-				continue;
-			}
+			if (otherUserId && !event.participantIds.includes(otherUserId)) continue;
 			events.push({ type: 'event', date: parseDateTime(event.date, event.startTime), data: event });
 		}
 
@@ -148,6 +146,15 @@
 		if (event.type === 'invoice') return `Fattura • ${event.data.number}`;
 		if (event.type === 'event') return `Intervento • ${event.data.title}`;
 		return 'Aggiornamento ticket';
+	}
+
+	function getPreviewBadge(event: TimelineEvent | undefined) {
+		if (!event || event.type === 'message') return null;
+		if (event.type === 'payment') return { label: '€', tone: 'bg-emerald-50 text-emerald-700' };
+		if (event.type === 'quote') return { label: '📄', tone: 'bg-blue-50 text-blue-700' };
+		if (event.type === 'invoice') return { label: '🧾', tone: 'bg-amber-50 text-amber-700' };
+		if (event.type === 'event') return { label: '📅', tone: 'bg-indigo-50 text-indigo-700' };
+		return { label: '↗', tone: 'bg-muted text-muted-foreground' };
 	}
 
 	function getInitials(name?: string) {
@@ -187,12 +194,13 @@
 				<span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Support</span>
 			</div>
 		</header>
-		<div class="px-4 pt-4">
-			<div class="space-y-3">
+		<div class="px-3 pt-3">
+			<div class="space-y-1.5">
 				{#each chatPreviews as preview}
+					{@const badge = getPreviewBadge(preview.lastEvent)}
 					<button
 						onclick={() => openChat(preview.chat.id)}
-						class="flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+						class="flex w-full items-center gap-3 rounded-2xl bg-background px-4 py-3 text-left transition hover:bg-muted/40"
 					>
 						<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
 							{getInitials(preview.otherUser?.name ?? 'Utente')}
@@ -201,9 +209,16 @@
 							<p class="text-sm font-semibold text-foreground">
 								{preview.otherUser?.name ?? 'Utente'}
 							</p>
-							<p class="mt-1 truncate text-sm text-muted-foreground">
-								{getPreviewText(preview.lastEvent)}
-							</p>
+							<div class="mt-1 flex items-center gap-2">
+								{#if badge}
+									<span class="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold {badge.tone}">
+										{badge.label}
+									</span>
+								{/if}
+								<p class="truncate text-sm text-muted-foreground">
+									{getPreviewText(preview.lastEvent)}
+								</p>
+							</div>
 						</div>
 						<div class="flex flex-col items-end gap-2">
 							<p class="text-xs text-muted-foreground">
@@ -355,7 +370,7 @@
 				<p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Azioni rapide</p>
 				<button
 					onclick={() => (actionsOpen = !actionsOpen)}
-					class="rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground"
+					class="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-semibold text-foreground"
 				>
 					{actionsOpen ? 'Chiudi' : 'Apri'}
 				</button>
@@ -364,33 +379,37 @@
 				<div class="mt-3 flex gap-2 overflow-x-auto pb-1">
 					<button
 						onclick={() => (showEventModal = true)}
-						class="flex h-11 items-center gap-2 rounded-full border border-border bg-muted/40 px-4 text-sm font-medium text-foreground"
+						class="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm"
 					>
-						<span class="text-base">+</span> Intervento
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600">+</span>
+						Intervento
 					</button>
 					<button
 						onclick={() => (showTicketSheet = true)}
-						class="flex h-11 items-center gap-2 rounded-full border border-border bg-muted/40 px-4 text-sm font-medium text-foreground"
+						class="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm"
 					>
-						<span class="text-base">↑</span> Ticket
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">↑</span>
+						Ticket
 					</button>
 					<button
 						onclick={() => {
 							view = 'draft-invoice';
 							invoiceDraftMode = 'upload';
 						}}
-						class="flex h-11 items-center gap-2 rounded-full border border-border bg-muted/40 px-4 text-sm font-medium text-foreground"
+						class="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm"
 					>
-						<span class="text-base">€</span> Fattura
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">€</span>
+						Fattura
 					</button>
 					<button
 						onclick={() => {
 							view = 'draft-quote';
 							quoteDraftMode = 'upload';
 						}}
-						class="flex h-11 items-center gap-2 rounded-full border border-border bg-muted/40 px-4 text-sm font-medium text-foreground"
+						class="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm"
 					>
-						<span class="text-base">📄</span> Preventivo
+						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">📄</span>
+						Preventivo
 					</button>
 				</div>
 			{/if}

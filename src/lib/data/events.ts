@@ -70,14 +70,14 @@ export const events: SvicomEvent[] = [
 		propertyId: 'cnd-leopardi-8'
 	},
 	{
-		id: 'evt-visita-caldaia',
-		title: 'Visita ispettiva caldaia',
-		date: '2026-04-10',
-		startTime: '08:30',
-		endTime: '12:00',
+		id: 'evt-visita-condizionatore',
+		title: 'Visita ispettiva condizionatore',
+		date: '2024-05-02',
+		startTime: '14:30',
+		endTime: '16:00',
 		location: 'Via Roma 1 - Centrale Termica',
 		group: 'Manutenzione Passata',
-		participantIds: ['frn-idroclima-nord', 'adm-svicom-01'],
+		participantIds: ['frn-idroclima-nord', 'res-conti-02'],
 		tone: 'emerald',
 		audiences: ['supplier', 'admin'],
 		propertyId: 'cnd-roma-1'
