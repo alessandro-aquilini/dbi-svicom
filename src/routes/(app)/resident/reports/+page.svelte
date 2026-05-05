@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { tickets } from '$lib/data/tickets';
+	import { reports } from '$lib/data/reports';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();
-	const myReports = currentUser ? tickets.filter((t) => t.reportedById === currentUser.id) : [];
+	const myReports = currentUser ? reports.filter((report) => report.reportedById === currentUser.id) : [];
 </script>
 
 <svelte:head>

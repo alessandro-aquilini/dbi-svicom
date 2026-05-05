@@ -19,6 +19,12 @@
 		overdue: 'bg-destructive/15 text-destructive',
 		cancelled: 'bg-muted text-muted-foreground'
 	};
+
+	function getPaymentStatus(payment: (typeof myPayments)[number]) {
+		if (payment.paidAt) return 'paid';
+		if (new Date(payment.dueDate).getTime() < Date.now()) return 'overdue';
+		return 'pending';
+	}
 </script>
 
 <svelte:head>
@@ -31,14 +37,15 @@
 
 	<div class="space-y-3">
 		{#each myPayments as payment}
+			{@const paymentStatus = getPaymentStatus(payment)}
 			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
 				<div class="flex items-start justify-between">
 					<div>
 						<h3 class="text-sm font-medium text-foreground">{payment.description}</h3>
 						<p class="text-xs text-muted-foreground">Scadenza: {payment.dueDate}</p>
 					</div>
-					<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[payment.status] ?? ''}">
-						{statusLabels[payment.status] ?? payment.status}
+					<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[paymentStatus] ?? ''}">
+						{statusLabels[paymentStatus] ?? paymentStatus}
 					</span>
 				</div>
 				<p class="mt-2 text-lg font-semibold text-foreground">€{payment.amount.toFixed(2)}</p>

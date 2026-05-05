@@ -9,6 +9,9 @@
 	const residents = $derived(property ? getResidentsByPropertyId(property.id) : []);
 	const tickets = $derived(property ? getTicketsByPropertyId(property.id) : []);
 
+	const getTicketStatus = (ticket: (typeof tickets)[number]) =>
+		ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
+
 	const tabs = [
 		{ label: 'Panoramica', active: true },
 		{ label: 'Residenti', href: `/admin/properties/${page.params.id}/residents` },
@@ -70,7 +73,9 @@
 						<li class="flex items-center justify-between py-3">
 							<div>
 								<p class="text-sm font-medium text-foreground">{ticket.title}</p>
-								<p class="text-xs text-muted-foreground">{ticket.category} · {ticket.status}</p>
+								<p class="text-xs text-muted-foreground">
+									{ticket.category} · {getTicketStatus(ticket)}
+								</p>
 							</div>
 							<span class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
 								{ticket.priority}

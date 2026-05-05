@@ -21,6 +21,9 @@
 	function formatMoney(amount: number, currency: string = 'EUR') {
 		return new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount);
 	}
+
+	const getTicketStatus = (ticket: ReturnType<typeof getTicketById>) =>
+		ticket?.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
 </script>
 
 <svelte:head>
@@ -54,7 +57,7 @@
 								{#if ticket}
 									<div class="flex items-center justify-between gap-3 mb-2">
 										<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Ticket</span>
-										<span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{ticket.status}</span>
+										<span class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{getTicketStatus(ticket)}</span>
 									</div>
 									<p class="font-medium pb-1">{ticket.title}</p>
 								{/if}
@@ -63,7 +66,7 @@
 								{#if payment}
 									<div class="flex items-center justify-between gap-3 mb-2">
 										<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Pagamento</span>
-										<span class="text-xs px-2 py-0.5 rounded-full {payment.status === 'paid' ? 'bg-green-500/20 text-green-700' : 'bg-orange-500/20 text-orange-700'}">{payment.status === 'paid' ? 'Saldato' : 'In attesa'}</span>
+										<span class="text-xs px-2 py-0.5 rounded-full {payment.paidAt ? 'bg-green-500/20 text-green-700' : 'bg-orange-500/20 text-orange-700'}">{payment.paidAt ? 'Saldato' : 'In attesa'}</span>
 									</div>
 									<p class="font-bold text-lg">{formatMoney(payment.amount, payment.currency)}</p>
 									<p class="text-xs opacity-90 truncate">{payment.description}</p>
@@ -82,7 +85,7 @@
 								{#if invoice}
 									<div class="flex items-center justify-between gap-3 mb-2">
 										<span class="font-semibold text-xs tracking-wider uppercase opacity-80">Fattura</span>
-										<span class="text-xs px-2 py-0.5 rounded-full {invoice.status === 'paid' ? 'bg-green-500/20 text-green-700' : 'bg-primary/10 text-primary'}">{invoice.number}</span>
+										<span class="text-xs px-2 py-0.5 rounded-full {invoice.paidAt ? 'bg-green-500/20 text-green-700' : 'bg-primary/10 text-primary'}">{invoice.number}</span>
 									</div>
 									<p class="font-bold text-lg">{formatMoney(invoice.amount, invoice.currency)}</p>
 									<p class="text-xs opacity-90 truncate">{invoice.description}</p>

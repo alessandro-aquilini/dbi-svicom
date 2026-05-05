@@ -1,7 +1,5 @@
 // Preventivi 
 
-export type QuoteStatus = 'pending' | 'sent' | 'approved' | 'rejected' | 'expired';
-
 export interface Quote {
 	id: string;
 	ticketId?: string; // References Ticket.id
@@ -11,7 +9,6 @@ export interface Quote {
 	title: string;
 	amount: number;
 	currency: string;
-	status: QuoteStatus;
 	sentAt: string;
 	expiresAt: string;
 	description: string;
@@ -28,7 +25,6 @@ export const quotes: Quote[] = [
 		title: 'Tinteggiatura vano scale',
 		amount: 2500.0,
 		currency: 'EUR',
-		status: 'pending',
 		sentAt: '2024-04-25T10:00:00Z',
 		expiresAt: '2024-05-25T10:00:00Z',
 		description: 'Tinteggiatura completa scale A e B con vernice lavabile.'
@@ -42,7 +38,6 @@ export const quotes: Quote[] = [
 		title: 'Revisione straordinaria ascensore',
 		amount: 450.0,
 		currency: 'EUR',
-		status: 'sent',
 		sentAt: '2024-04-29T10:00:00Z',
 		expiresAt: '2024-05-15T10:00:00Z',
 		description: 'Intervento urgente per ripristino schede elettroniche.'
@@ -56,7 +51,6 @@ export const quotes: Quote[] = [
 		title: 'Riparazione colonna montante',
 		amount: 1250.0,
 		currency: 'EUR',
-		status: 'sent',
 		sentAt: '2024-04-29T12:05:00Z',
 		expiresAt: '2024-05-09T12:05:00Z',
 		description: 'Preventivo per la riparazione urgente della colonna montante e verifica tubazioni di risalita.',
@@ -71,7 +65,6 @@ export const quotes: Quote[] = [
 		title: 'Sostituzione pompa di scarico condizionatore',
 		amount: 180.0,
 		currency: 'EUR',
-		status: 'approved',
 		sentAt: '2024-05-02T11:00:00Z',
 		expiresAt: '2024-06-02T11:00:00Z',
 		description: 'Intervento per la sostituzione della pompa di disostruzione condensa condizionatore (unità interna).',
@@ -86,7 +79,6 @@ export const quotes: Quote[] = [
 		title: 'Sostituzione miscelatore bagno',
 		amount: 220.0,
 		currency: 'EUR',
-		status: 'sent',
 		sentAt: '2024-05-04T09:00:00Z',
 		expiresAt: '2024-06-04T09:00:00Z',
 		description: 'Fornitura e posa miscelatore monocomando lavabo bagno incluse guarnizioni e flessibili.',

@@ -8,6 +8,9 @@
 		media: 'bg-primary/10 text-primary',
 		bassa: 'bg-secondary text-secondary-foreground'
 	};
+
+	const getTicketStatus = (ticket: (typeof tickets)[number]) =>
+		ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
 </script>
 
 <svelte:head>
@@ -40,7 +43,9 @@
 							<td class="px-4 py-3 font-medium text-foreground">{ticket.title}</td>
 							<td class="px-4 py-3 text-muted-foreground">{property?.name ?? '-'}</td>
 							<td class="px-4 py-3">
-								<span class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">{ticket.status}</span>
+								<span class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+									{getTicketStatus(ticket)}
+								</span>
 							</td>
 							<td class="px-4 py-3">
 								<span class="rounded-md px-2 py-0.5 text-xs font-medium {priorityColors[ticket.priority] ?? ''}">{ticket.priority}</span>

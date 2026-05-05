@@ -9,6 +9,16 @@
 		image?: string;
 	};
 
+	function getLatestTicketStatus() {
+		return (ticket: (typeof tickets)[number]) =>
+			ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
+	}
+
+	const isActiveTicket = (ticket: (typeof tickets)[number]) => {
+		const status = getLatestTicketStatus()(ticket);
+		return status !== 'paid' && status !== 'completed';
+	};
+
 	const stats: Stat[] = [
 		{
 			label: 'Condomìni gestiti',
@@ -17,7 +27,7 @@
 		},
 		{
 			label: 'Pratiche attive',
-			value: tickets.filter((t) => t.status !== 'chiuso').length,
+			value: tickets.filter(isActiveTicket).length,
 			image: '/icons/tickets.png'
 		},
 		{

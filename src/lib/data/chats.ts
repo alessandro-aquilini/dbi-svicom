@@ -1,8 +1,15 @@
+export interface MessageAction {
+	type: 'ticket' | 'payment' | 'quote' | 'invoice';
+	referenceId: string;
+	label: string;
+}
+
 export interface Message {
 	id: string;
 	senderId: string; // References User.id
 	text: string;
 	timestamp: string;
+	action?: MessageAction;
 }
 
 export interface Chat {
