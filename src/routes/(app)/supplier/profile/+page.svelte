@@ -64,8 +64,4 @@
 	{:else}
 		<p class="text-muted-foreground">Profilo non trovato.</p>
 	{/if}
-
-	<div class="mt-6">
-		<a href="/login" class="text-sm text-primary hover:underline">Cambia profilo</a>
-	</div>
 </div>

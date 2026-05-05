@@ -1,15 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { getCurrentUser } from '$lib/auth';
+	import { getUserById } from '$lib/data/users';
 
 	let { children } = $props();
+
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
+	const user = getUserById(supplierId);
 
 	const navItems = [
 		{ label: 'Home', href: '/supplier', icon: '📊' },
 		{ label: 'Chat', href: '/supplier/chat', icon: '💬' },
 		{ label: 'Interventi', href: '/supplier/jobs', icon: '🔧' },
 		{ label: 'Pagamenti', href: '/supplier/payments', icon: '💳' },
-		{ label: 'Documenti', href: '/supplier/documents', icon: '🗎' },
-		{ label: 'Profilo', href: '/supplier/profile', icon: '👤' }
+		{ label: 'Documenti', href: '/supplier/documents', icon: '🗎' }
 	];
 
 	function isActive(href: string): boolean {
@@ -43,7 +48,42 @@
 				</a>
 			{/each}
 		</nav>
-		<a href="/login" class="ml-auto text-xs text-muted-foreground hover:text-foreground">Esci</a>
+		
+		<div class="ml-auto relative">
+			<button 
+				class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none"
+				onclick={() => {
+					const menu = document.getElementById('profile-menu');
+					if (menu) menu.classList.toggle('hidden');
+				}}
+				aria-label="Profile menu"
+			>
+				👤
+			</button>
+
+			<div id="profile-menu" class="hidden absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50">
+				<div class="border-b border-border p-4">
+					<p class="font-medium text-foreground">{user?.name ?? 'Il tuo Profilo'}</p>
+					<p class="text-xs text-muted-foreground truncate">{user?.email ?? 'fornitore@example.com'}</p>
+				</div>
+				<div class="p-2">
+					<a href="/supplier/profile" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+						Edit Profile
+					</a>
+					<a href="/support" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+						Help / Support
+					</a>
+					<a href="/about" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+						About us
+					</a>
+				</div>
+				<div class="border-t border-border p-2">
+					<a href="/login" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+						Log Out
+					</a>
+				</div>
+			</div>
+		</div>
 	</header>
 
 	<!-- Content -->
