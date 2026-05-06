@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { events, type EventTone } from '$lib/data/events';
+	import { maintenanceWorks } from '$lib/data/maintenance-work';
+	import { meetings } from '$lib/data/meetings';
+	import { assemblies } from '$lib/data/assemblies';
+	import { users } from '$lib/data/users';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
@@ -9,6 +12,21 @@
 		Calendar03Icon
 	} from '@hugeicons/core-free-icons';
 	import { DemoDialog, PropertyScopeChip } from '$lib/components/shared';
+
+	type EventTone = 'blue' | 'amber' | 'emerald';
+
+	interface CalendarEvent {
+		id: string;
+		title: string;
+		date: string;
+		startTime: string;
+		endTime: string;
+		location: string;
+		group: string;
+		propertyId?: string;
+		ticketId?: string;
+		tone: EventTone;
+	}
 
 	const today = new Date();
 
@@ -31,13 +49,72 @@
 
 	const monthLabel = $derived(monthFmt.format(new Date(viewMonth.year, viewMonth.month, 1)));
 
+	function getUserNames(ids: string[]) {
+		return ids
+			.map((id) => users.find((u) => u.id === id)?.name)
+			.filter(Boolean)
+			.join(', ');
+	}
+
+	const allEvents = $derived.by(() => {
+		const evs: CalendarEvent[] = [];
+
+		// Maintenance Works -> Tone Amber
+		for (const m of maintenanceWorks) {
+			evs.push({
+				id: m.id,
+				title: m.title,
+				date: m.date,
+				startTime: m.startTime,
+				endTime: m.endTime,
+				location: m.location,
+				group: getUserNames(m.participantIds),
+				propertyId: m.propertyId,
+				ticketId: m.ticketId,
+				tone: 'amber'
+			});
+		}
+
+		// Meetings -> Tone Blue
+		for (const m of meetings) {
+			evs.push({
+				id: m.id,
+				title: m.title,
+				date: m.date,
+				startTime: m.startTime,
+				endTime: m.endTime,
+				location: m.location,
+				group: m.group || getUserNames(m.participantIds),
+				propertyId: m.propertyId,
+				tone: 'blue'
+			});
+		}
+
+		// Assemblies -> Tone Blue
+		for (const a of assemblies) {
+			evs.push({
+				id: a.id,
+				title: `Assemblea ${a.type}`,
+				date: a.scheduledAt.split('T')[0],
+				startTime: a.scheduledAt.split('T')[1] ?? '',
+				endTime: a.endTime || '',
+				location: a.location,
+				group: 'Condomini',
+				propertyId: a.propertyId,
+				tone: 'blue'
+			});
+		}
+
+		return evs;
+	});
+
 	// Events scoped to the active property selection (sidebar). When "Tutti" is
 	// selected, show every event. When a specific condominium is active, only
 	// events tied to that property are visible — events without a propertyId
 	// (e.g. internal team meetings) are excluded.
 	const scopedEvents = $derived.by(() => {
 		const id = propertySelection.selectedId;
-		return id === null ? events : events.filter((e) => e.propertyId === id);
+		return id === null ? allEvents : allEvents.filter((e) => e.propertyId === id);
 	});
 
 	// Build a map of date → unique tones present that day (insertion order, capped at 3).
@@ -93,7 +170,7 @@
 				(a, b) =>
 					a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)
 			);
-		const groups = new Map<string, typeof events>();
+		const groups = new Map<string, CalendarEvent[]>();
 		for (const e of inMonth) {
 			if (!groups.has(e.date)) groups.set(e.date, []);
 			groups.get(e.date)!.push(e);
