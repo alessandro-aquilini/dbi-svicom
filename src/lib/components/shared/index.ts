@@ -2,3 +2,8 @@ export { default as PageHeader } from './PageHeader.svelte';
 export { default as StatusBadge } from './StatusBadge.svelte';
 export { default as EmptyState } from './EmptyState.svelte';
 export { default as StatCard } from './StatCard.svelte';
+export { default as InfoTip } from './InfoTip.svelte';
+export { default as Dialog } from './Dialog.svelte';
+export { default as DemoDialog } from './DemoDialog.svelte';
+export { default as PropertySelector } from './PropertySelector.svelte';
+export { default as PropertyScopeChip } from './PropertyScopeChip.svelte';
