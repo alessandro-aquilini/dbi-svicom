@@ -217,7 +217,19 @@ export function createResidentLocalTicket(input: ResidentTicketDraftInput): Tick
 		creatorId: input.creatorId,
 		propertyId: input.propertyId,
 		category: input.category,
-		statusHistory: [{ status: 'opened', at: now, authorId: input.creatorId }]
+		eventTimeline: [
+			{
+				id: `ev-${now}-${input.creatorId}`,
+				kind: 'created',
+				at: now,
+				actorId: input.creatorId,
+				toStatus: 'opened'
+			}
+		],
+		cc: [],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: []
 	};
 
 	setResidentLocalTicketStorage([ticket, ...localTickets]);
@@ -234,7 +246,7 @@ export function createResidentLocalTicketWithPresentation(
 		const metaItems = getResidentLocalTicketMetaStorage().filter((item) => item.ticketId !== ticket.id);
 		const meta: ResidentTicketPresentationMeta = {
 			ticketId: ticket.id,
-			submittedAt: ticket.statusHistory[0]?.at ?? new Date().toISOString(),
+			submittedAt: ticket.eventTimeline[0]?.at ?? new Date().toISOString(),
 			attachments: presentation.attachments ?? [],
 			fieldAnswers: presentation.fieldAnswers ?? []
 		};

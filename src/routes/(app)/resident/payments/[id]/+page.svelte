@@ -1,31 +1,23 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import {
-		PaymentStatusBadge,
-		formatMoney,
-		formatPaymentDate,
-		formatPaymentDateTime,
-		getPaymentFootnote,
-		getResidentLatestReceipt,
-		getResidentPaymentReminder,
-		getResidentPaymentStatus,
-		getResidentPaymentsContext,
-		getResidentVisiblePaymentById,
-		isResidentPersonalPayment
-	} from '$lib/components/payments';
-	import { ResidentEmptyCard } from '$lib/components/resident';
-	import { Button } from '$lib/components/ui/button';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card';
 	import { getCurrentUser } from '$lib/auth';
-	import { getLatestTicketStatus, ticketStatusLabels } from '$lib/components/tickets';
+	import { page } from '$app/state';
 	import { getTicketById } from '$lib/data/tickets-admin';
 	import { getUserById } from '$lib/data/users';
+	import {
+		getResidentPaymentStatus,
+		getResidentPaymentReminder,
+		getResidentLatestReceipt,
+		getPaymentFootnote,
+		isResidentPersonalPayment,
+		getResidentPaymentsContext,
+		getResidentVisiblePaymentById,
+		PaymentStatusBadge
+	} from '$lib/components/payments';
+	import { getCurrentStatus, ticketStatusLabels } from '$lib/components/tickets';
+	import { ResidentEmptyCard } from '$lib/components/resident';
+	import { Button } from '$lib/components/ui/button';
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { formatMoney, formatPaymentDate, formatPaymentDateTime } from '$lib/components/payments/presentation';
 
 	const currentUser = getCurrentUser();
 	const paymentId = $derived(page.params.id ?? '');
@@ -37,9 +29,7 @@
 	const payer = $derived(payment ? getUserById(payment.fromId) : undefined);
 	const beneficiary = $derived(payment ? getUserById(payment.toId) : undefined);
 	const relatedTicket = $derived(payment?.ticketId ? getTicketById(payment.ticketId) : undefined);
-	const relatedTicketStatus = $derived(
-		relatedTicket ? getLatestTicketStatus(relatedTicket.statusHistory) : undefined
-	);
+	const relatedTicketStatus = $derived(relatedTicket ? getCurrentStatus(relatedTicket) : undefined);
 	const paymentReminder = $derived(getResidentPaymentReminder(context));
 	const latestReceipt = $derived(getResidentLatestReceipt(currentUser?.id));
 	const accountingDocument = $derived(context.accountingDocuments.find((document) => document.category === 'bilancio'));

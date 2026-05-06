@@ -12,7 +12,7 @@
 		formatTicketDate,
 		getResidentTicketPresentationMetaById,
 		getResidentVisibleTicketById,
-		getLatestTicketStatus,
+		getCurrentStatus,
 		ticketProgressValues
 	} from '$lib/components/tickets';
 	import { getPropertyById } from '$lib/data/properties';
@@ -26,8 +26,8 @@
 	const ticket = $derived(getResidentVisibleTicketById(ticketId));
 	const presentationMeta = $derived(ticket ? getResidentTicketPresentationMetaById(ticket.id) : undefined);
 	const isOwnedTicket = $derived(Boolean(ticket && currentUser && ticket.creatorId === currentUser.id));
-	const latestStatus = $derived(ticket ? getLatestTicketStatus(ticket.statusHistory) : undefined);
-	const latestUpdateAt = $derived(ticket?.statusHistory.at(-1)?.at);
+	const latestStatus = $derived(ticket ? getCurrentStatus(ticket) : undefined);
+	const latestUpdateAt = $derived(ticket?.eventTimeline.at(-1)?.at);
 	const progressValue = $derived(latestStatus ? ticketProgressValues[latestStatus] : 0);
 	const isJustCreated = $derived(page.url.searchParams.get('created') === '1');
 
@@ -153,7 +153,7 @@
 						</div>
 						<div class="report-fact-card">
 							<p class="report-fact-card__label">Step registrati</p>
-							<p class="report-fact-card__value">{ticket.statusHistory.length}</p>
+							<p class="report-fact-card__value">{ticket.eventTimeline.length}</p>
 						</div>
 					</div>
 				</CardContent>
@@ -203,7 +203,7 @@
 				</CardHeader>
 
 				<CardContent class="report-section-card__content">
-					<TicketTimeline history={ticket.statusHistory} {getAuthorLabel} formatDate={formatTicketDate} />
+					<TicketTimeline events={ticket.eventTimeline} {getAuthorLabel} formatDate={formatTicketDate} />
 				</CardContent>
 			</Card>
 

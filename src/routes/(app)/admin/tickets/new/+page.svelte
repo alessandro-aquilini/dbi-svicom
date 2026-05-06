@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { properties } from '$lib/data/properties';
-	import type { TicketPriority, TicketType } from '$lib/data/tickets-admin';
+	import type { TicketPriority } from '$lib/data/tickets-admin';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { File01Icon, Tag01Icon, Location01Icon } from '@hugeicons/core-free-icons';
 	import { InfoTip, DemoDialog } from '$lib/components/shared';
 
 	let title = $state('');
 	let description = $state('');
-	let type = $state<TicketType>('segnalazione');
+	let category = $state('impianti');
 	let priority = $state<TicketPriority>('media');
 	let propertyId = $state(properties[0]?.id ?? '');
 	let location = $state('');
@@ -76,21 +76,22 @@
 
 		<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 			<div class="space-y-1.5">
-				<label for="type" class="flex items-center gap-1.5 text-sm font-medium text-foreground">
-					Tipo
+				<label for="category" class="flex items-center gap-1.5 text-sm font-medium text-foreground">
+					Categoria
 					<InfoTip
-						text="Segnalazione: arriva da un residente. Intervento: lavoro su impianto. Amministrativo: pratica gestionale."
+						text="Impianti, Sicurezza, Amministrativo: determina la tipologia di ticket."
 					/>
 				</label>
 				<p class="text-xs text-muted-foreground">Determina il flusso di gestione.</p>
 				<select
-					id="type"
-					bind:value={type}
+					id="category"
+					bind:value={category}
 					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
 				>
-					<option value="segnalazione">Segnalazione</option>
-					<option value="intervento">Intervento</option>
+					<option value="impianti">Impianti</option>
+					<option value="sicurezza">Sicurezza</option>
 					<option value="amministrativo">Amministrativo</option>
+					<option value="pulizie">Pulizie</option>
 				</select>
 			</div>
 

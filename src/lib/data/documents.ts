@@ -1,6 +1,13 @@
 // TODO: Rimuovere status
 
-export type DocumentCategory = 'verbale' | 'contratto' | 'compliance' | 'regolamento' | 'bilancio';
+export type DocumentCategory =
+	| 'verbale'
+	| 'contratto'
+	| 'compliance'
+	| 'preventivo'
+	| 'regolamento'
+	| 'bilancio'
+	| 'lavori';
 
 export interface SvicomDocument {
 	id: string;

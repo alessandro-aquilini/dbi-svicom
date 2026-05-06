@@ -1,16 +1,29 @@
 <script lang="ts">
-	import { reports } from '$lib/data/reports';
+	import { Button } from '$lib/components/ui/button';
+	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { getCurrentUser } from '$lib/auth';
 	import {
 		ResidentReportCard,
 		formatTicketDate,
-		getResidentVisibleTicketsByCreatorId
+		getResidentVisibleTicketsByCreatorId,
+		getCurrentStatus
 	} from '$lib/components/tickets';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
 
 	const currentUser = getCurrentUser();
-	const myReports = currentUser ? reports.filter((report) => report.reportedById === currentUser.id) : [];
+	const resident = $derived(currentUser ? getResidentById(currentUser.id) : undefined);
+	const property = $derived(resident ? getPropertyById(resident.propertyId) : undefined);
+	const sortedReports = $derived(
+		currentUser
+			? getResidentVisibleTicketsByCreatorId(currentUser.id).sort(
+					(a, b) =>
+						new Date(b.eventTimeline.at(-1)?.at ?? 0).getTime() -
+						new Date(a.eventTimeline.at(-1)?.at ?? 0).getTime()
+				)
+			: []
+	);
+	const featuredReport = $derived(sortedReports[0]);
 </script>
 
 <svelte:head>
@@ -41,7 +54,7 @@
 					<div class="report-summary-card__stat">
 						<p class="report-summary-card__stat-label">Ultimo aggiornamento</p>
 						<p class="report-summary-card__stat-value">
-							{featuredReport ? formatTicketDate(featuredReport.statusHistory.at(-1)?.at) : 'Nessun ticket'}
+							{featuredReport ? formatTicketDate(featuredReport.eventTimeline.at(-1)?.at) : 'Nessun ticket'}
 						</p>
 					</div>
 				</div>
@@ -70,7 +83,7 @@
 					href={`/resident/reports/${report.id}`}
 					propertyName={property?.name}
 					apartment={resident?.apartment}
-					updatedAtLabel={formatTicketDate(report.statusHistory.at(-1)?.at)}
+					updatedAtLabel={formatTicketDate(report.eventTimeline.at(-1)?.at)}
 				/>
 			{/each}
 

@@ -3,7 +3,7 @@
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { DemoDialog } from '$lib/components/shared';
 	import { getPropertyById } from '$lib/data/properties';
-	import type { TicketPriority, TicketType } from '$lib/data/tickets-admin';
+	import type { TicketPriority } from '$lib/data/tickets-admin';
 	import {
 		SparklesIcon,
 		ArrowUp01Icon,
@@ -19,7 +19,7 @@
 	} from '@hugeicons/core-free-icons';
 
 	type Extract = {
-		type: TicketType;
+		category: string;
 		title: string;
 		description: string;
 		propertyId: string;
@@ -34,7 +34,7 @@
 			icon: DropletIcon,
 			text: "C'è una perdita d'acqua nel locale contatori di Via Marconi 14, segnalata da più residenti stamattina.",
 			extracted: {
-				type: 'segnalazione',
+				category: 'impianti',
 				title: "Perdita d'acqua nel locale contatori",
 				description:
 					"Segnalazione multipla da residenti, ricevuta stamattina. Da verificare l'entità del danno.",
@@ -47,7 +47,7 @@
 			icon: Wrench01Icon,
 			text: "L'ascensore della scala B è fermo a intermittenza dalle 8, serve un intervento urgente.",
 			extracted: {
-				type: 'intervento',
+				category: 'impianti',
 				title: 'Ascensore scala B fermo a intermittenza',
 				description: 'Guasto ricorrente dalle ore 8. Richiesto intervento urgente.',
 				propertyId: 'cnd-marconi-14',
@@ -59,7 +59,7 @@
 			icon: LightbulbOffIcon,
 			text: 'Le luci delle scale al secondo piano non funzionano, sembra un problema ricorrente.',
 			extracted: {
-				type: 'segnalazione',
+				category: 'impianti',
 				title: 'Luci scale non funzionanti al 2° piano',
 				description:
 					'Problema ricorrente in zona scale, possibile duplicato di richieste precedenti.',
@@ -72,7 +72,7 @@
 			icon: File01Icon,
 			text: 'Devo aprire una pratica amministrativa per il rinnovo del contratto di pulizie.',
 			extracted: {
-				type: 'amministrativo',
+				category: 'amministrativo',
 				title: 'Rinnovo contratto pulizie',
 				description:
 					'Pratica amministrativa per il rinnovo del contratto con il fornitore pulizie.',
@@ -114,7 +114,7 @@
 	function buildFacts(e: Extract) {
 		const property = getPropertyById(e.propertyId);
 		const list: { icon: typeof Tag01Icon; label: string; value: string }[] = [
-			{ icon: Tag01Icon, label: 'Tipo', value: capitalize(e.type) },
+			{ icon: Tag01Icon, label: 'Categoria', value: capitalize(e.category) },
 			{ icon: File01Icon, label: 'Titolo', value: e.title },
 			{ icon: Note01Icon, label: 'Descrizione', value: e.description },
 			{ icon: Building03Icon, label: 'Condominio', value: property?.name ?? '—' }

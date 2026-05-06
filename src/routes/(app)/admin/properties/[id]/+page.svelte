@@ -4,13 +4,14 @@
 	import { getResidentsByPropertyId } from '$lib/data/residents';
 	import { getTicketsByPropertyId } from '$lib/data/tickets-admin';
 	import { getUserById } from '$lib/data/users';
+	import { getCurrentStatus } from '$lib/components/tickets';
 
 	const property = $derived(getPropertyById(page.params.id ?? ''));
 	const residents = $derived(property ? getResidentsByPropertyId(property.id) : []);
 	const tickets = $derived(property ? getTicketsByPropertyId(property.id) : []);
 
 	const getTicketStatus = (ticket: (typeof tickets)[number]) =>
-		ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
+		getCurrentStatus(ticket) ?? 'opened';
 
 	const tabs = [
 		{ label: 'Panoramica', active: true },

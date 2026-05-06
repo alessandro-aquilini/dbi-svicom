@@ -20,7 +20,7 @@ export interface ResidentAssemblyContext {
 }
 
 function getLatestTicketTimestamp(ticket: Ticket): string {
-	return ticket.statusHistory.at(-1)?.at ?? '';
+	return ticket.eventTimeline.at(-1)?.at ?? '';
 }
 
 export function getResidentAssemblyContext(

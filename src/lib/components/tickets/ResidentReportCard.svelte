@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import type { Ticket } from '$lib/data/tickets-admin';
-	import { getLatestTicketStatus } from './presentation';
+	import { getCurrentStatus } from './presentation';
 	import TicketPriorityBadge from './TicketPriorityBadge.svelte';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 
@@ -20,7 +20,7 @@
 		updatedAtLabel: string;
 	} = $props();
 
-	const latestStatus = $derived(getLatestTicketStatus(ticket.statusHistory));
+	const latestStatus = $derived(getCurrentStatus(ticket));
 </script>
 
 <Card class="report-card-shell">
@@ -53,7 +53,7 @@
 		<div class="report-card-shell__meta">
 			<span class="report-chip">{ticket.category}</span>
 			<TicketPriorityBadge priority={ticket.priority} />
-			<span class="report-chip">{ticket.statusHistory.length} step</span>
+			<span class="report-chip">{ticket.eventTimeline.length} step</span>
 		</div>
 	</CardContent>
 

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { tickets, type TicketPriority, type TicketStatus, type TicketType } from '$lib/data/tickets-admin';
+	import { tickets, getCurrentStatus } from '$lib/data/tickets-admin';
 	import { getPropertyById } from '$lib/data/properties';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
-	import { PropertyScopeChip } from '$lib/components/shared';
+	import { PropertyScopeChip, EmptyState } from '$lib/components/shared';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Add01Icon, Search01Icon } from '@hugeicons/core-free-icons';
 
@@ -18,8 +18,44 @@
 		bassa: 'bg-secondary text-secondary-foreground'
 	};
 
-	const getTicketStatus = (ticket: (typeof tickets)[number]) =>
-		ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
+	let query = $state('');
+	let filterStatus = $state('');
+	let filterPriority = $state('');
+	let filterCategory = $state('');
+
+	const scopedTickets = $derived(
+		propertySelection.isAll
+			? tickets
+			: tickets.filter((t) => t.propertyId === propertySelection.selectedId)
+	);
+
+	const filtered = $derived(
+		scopedTickets.filter((t) => {
+			const matchesSearch =
+				query === '' ||
+				t.title.toLowerCase().includes(query.toLowerCase()) ||
+				t.description.toLowerCase().includes(query.toLowerCase()) ||
+				t.id.toLowerCase().includes(query.toLowerCase());
+			const matchesStatus = filterStatus === '' || getCurrentStatus(t) === filterStatus;
+			const matchesPriority = filterPriority === '' || t.priority === filterPriority;
+			const matchesCategory = filterCategory === '' || t.category === filterCategory;
+
+			return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
+		})
+	);
+
+	const hasLocalFilters = $derived(
+		query !== '' || filterStatus !== '' || filterPriority !== '' || filterCategory !== ''
+	);
+
+	function clearFilters() {
+		query = '';
+		filterStatus = '';
+		filterPriority = '';
+		filterCategory = '';
+	}
+
+	const uniqueCategories = Array.from(new Set(tickets.map((t) => t.category)));
 </script>
 
 <svelte:head>
@@ -76,11 +112,13 @@
 			class:is-active={filterStatus !== ''}
 		>
 			<option value="">Tutti gli stati</option>
-			<option value="nuovo">Nuovo</option>
-			<option value="assegnato">Assegnato</option>
-			<option value="in-corso">In corso</option>
-			<option value="risolto">Risolto</option>
-			<option value="chiuso">Chiuso</option>
+			<option value="opened">Aperto</option>
+			<option value="estimating">In preventivazione</option>
+			<option value="approved">Approvato</option>
+			<option value="in_progress">In corso</option>
+			<option value="completed">Completato</option>
+			<option value="paid">Pagato</option>
+			<option value="closed">Chiuso</option>
 		</select>
 
 		<select
@@ -97,15 +135,15 @@
 		</select>
 
 		<select
-			bind:value={filterType}
+			bind:value={filterCategory}
 			class="filter-select"
-			aria-label="Filtra per tipo"
-			class:is-active={filterType !== ''}
+			aria-label="Filtra per categoria"
+			class:is-active={filterCategory !== ''}
 		>
-			<option value="">Tutti i tipi</option>
-			<option value="segnalazione">Segnalazione</option>
-			<option value="intervento">Intervento</option>
-			<option value="amministrativo">Amministrativo</option>
+			<option value="">Tutte le categorie</option>
+			{#each uniqueCategories as category}
+				<option value={category}>{category}</option>
+			{/each}
 		</select>
 
 		{#if hasLocalFilters}
@@ -116,37 +154,31 @@
 	</div>
 
 	<div class="rounded-lg border border-border bg-card shadow-sm">
-		<div class="overflow-x-auto">
-			<table class="w-full text-sm">
-				<thead>
-					<tr class="border-b border-border text-left">
-						<th class="px-4 py-3 font-medium text-muted-foreground">ID</th>
-						<th class="px-4 py-3 font-medium text-muted-foreground">Titolo</th>
-						<th class="px-4 py-3 font-medium text-muted-foreground">Condominio</th>
-						<th class="px-4 py-3 font-medium text-muted-foreground">Stato</th>
-						<th class="px-4 py-3 font-medium text-muted-foreground">Priorità</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-border">
-					{#each tickets as ticket}
-						{@const property = getPropertyById(ticket.propertyId)}
-						<tr class="hover:bg-muted/50">
-							<td class="px-4 py-3 font-mono text-xs text-muted-foreground">{ticket.id}</td>
-							<td class="px-4 py-3 font-medium text-foreground">{ticket.title}</td>
-							<td class="px-4 py-3 text-muted-foreground">{property?.name ?? '-'}</td>
-							<td class="px-4 py-3">
-								<span class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
-									{getTicketStatus(ticket)}
-								</span>
-							</td>
-							<td class="px-4 py-3">
-								<span class="rounded-md px-2 py-0.5 text-xs font-medium {priorityColors[ticket.priority] ?? ''}">{ticket.priority}</span>
-							</td>
+		{#if filtered.length === 0}
+			<div class="p-8">
+				<EmptyState
+					message="Nessuna pratica trovata modificando i filtri di ricerca o per il condominio selezionato."
+					icon="🔍"
+				/>
+			</div>
+		{:else}
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="border-b border-border text-left">
+							<th class="px-4 py-3 font-medium text-muted-foreground">ID</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Titolo</th>
+							{#if propertySelection.isAll}
+								<th class="px-4 py-3 font-medium text-muted-foreground">Condominio</th>
+							{/if}
+							<th class="px-4 py-3 font-medium text-muted-foreground">Stato</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Priorità</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-border">
 						{#each filtered as ticket (ticket.id)}
 							{@const property = getPropertyById(ticket.propertyId)}
+							{@const currentStatus = getCurrentStatus(ticket)}
 							<tr
 								class="cursor-pointer hover:bg-muted/50"
 								role="link"
@@ -165,18 +197,12 @@
 									<td class="px-4 py-3 text-muted-foreground">{property?.name ?? '-'}</td>
 								{/if}
 								<td class="px-4 py-3">
-									<span
-										class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
-									>
-										{ticket.status}
+									<span class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+										{currentStatus}
 									</span>
 								</td>
 								<td class="px-4 py-3">
-									<span
-										class="rounded-md px-2 py-0.5 text-xs font-medium {priorityColors[
-											ticket.priority
-										] ?? ''}"
-									>
+									<span class="rounded-md px-2 py-0.5 text-xs font-medium {priorityColors[ticket.priority] ?? ''}">
 										{ticket.priority}
 									</span>
 								</td>

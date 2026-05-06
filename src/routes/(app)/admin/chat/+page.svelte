@@ -182,6 +182,7 @@
 		ticket: Note01Icon,
 		quote: InvoiceIcon,
 		payment: CreditCardIcon,
+		invoice: InvoiceIcon,
 		event: Calendar03Icon
 	} as const;
 

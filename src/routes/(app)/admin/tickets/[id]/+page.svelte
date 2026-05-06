@@ -13,9 +13,8 @@
 	import type { StatusVariant } from '$lib/types';
 	import {
 		getTicketById,
-		getTicketAiSummary,
 		getTicketNextStep,
-		getTicketTimeline,
+		getCurrentStatus,
 		type TicketEvent,
 		type TicketStatus
 	} from '$lib/data/tickets-admin';
@@ -24,37 +23,22 @@
 
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);
-	const reporter = $derived(ticket ? getUserById(ticket.reportedById) : undefined);
+	const reporter = $derived(ticket ? getUserById(ticket.creatorId) : undefined); // creatorId is always Admin
 	const internalOwner = $derived(property ? getUserById(property.adminId) : undefined);
-	const assigned = $derived(ticket?.assignedToId ? getUserById(ticket.assignedToId) : undefined);
-	const supplier = $derived(assigned?.role === 'supplier' ? assigned : undefined);
-	const aiSummary = $derived(ticket ? getTicketAiSummary(ticket.id) : undefined);
+	const supplier = $derived(ticket?.supplierId ? getUserById(ticket.supplierId) : undefined);
+	const aiSummary = $derived(ticket?.eventTimeline.find(ev => ev.kind === 'ai')?.body);
 	const aiNextStep = $derived(ticket ? getTicketNextStep(ticket.id) : undefined);
-	const seedEvents = $derived<TicketEvent[]>(ticket ? getTicketTimeline(ticket.id) : []);
+	const timeline = $derived<TicketEvent[]>(ticket ? ticket.eventTimeline : []);
+	const currentStatus = $derived(ticket ? getCurrentStatus(ticket) : 'opened');
+	const firstEvent = $derived(ticket?.eventTimeline[0]);
+	const lastEvent = $derived(ticket?.eventTimeline[ticket.eventTimeline.length - 1]);
 
-	let addedNotes = $state<TicketEvent[]>([]);
 	let newNote = $state('');
-
-	const timeline = $derived<TicketEvent[]>(
-		[...seedEvents, ...addedNotes].sort(
-			(a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()
-		)
-	);
 
 	function submitNote(e: SubmitEvent) {
 		e.preventDefault();
 		const body = newNote.trim();
 		if (!body || !ticket) return;
-		addedNotes = [
-			...addedNotes,
-			{
-				id: `${ticket.id}-note-${Date.now()}`,
-				kind: 'note',
-				at: new Date().toISOString(),
-				actorId: internalOwner?.id,
-				body
-			}
-		];
 		newNote = '';
 	}
 
@@ -66,19 +50,23 @@
 	};
 
 	const statusVariant: Record<TicketStatus, StatusVariant> = {
-		nuovo: 'default',
-		assegnato: 'default',
-		'in-corso': 'warning',
-		risolto: 'success',
-		chiuso: 'muted'
+		opened: 'default',
+		estimating: 'default',
+		approved: 'default',
+		in_progress: 'warning',
+		completed: 'success',
+		paid: 'success',
+		closed: 'muted'
 	};
 
 	const statusLabel: Record<TicketStatus, string> = {
-		nuovo: 'Nuovo',
-		assegnato: 'Assegnato',
-		'in-corso': 'In corso',
-		risolto: 'Risolto',
-		chiuso: 'Chiuso'
+		opened: 'Aperto',
+		estimating: 'In preventivazione',
+		approved: 'Approvato',
+		in_progress: 'In corso',
+		completed: 'Completato',
+		paid: 'Pagato',
+		closed: 'Chiuso'
 	};
 
 	const dateFmt = new Intl.DateTimeFormat('it-IT', {
@@ -150,11 +138,11 @@
 		<article class="scheda mt-4">
 			<!-- Header zone -->
 			<header class="scheda__header">
-				<p class="scheda__eyebrow">{ticket.id} · {ticket.type}</p>
+				<p class="scheda__eyebrow">{ticket.id} · {ticket.category}</p>
 				<h1 class="scheda__title">{ticket.title}</h1>
 				<p class="scheda__lead">{ticket.description}</p>
 				<div class="scheda__meta">
-					<StatusBadge label={statusLabel[ticket.status]} variant={statusVariant[ticket.status]} />
+					<StatusBadge label={statusLabel[currentStatus]} variant={statusVariant[currentStatus]} />
 					<span
 						class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium capitalize {priorityColors[
 							ticket.priority
@@ -163,9 +151,12 @@
 						Priorità {ticket.priority}
 					</span>
 					<span class="text-xs text-muted-foreground">
-						Aperta {relativeDays(ticket.createdAt)} · ultima modifica {relativeDays(
-							ticket.updatedAt
-						)}
+						{#if firstEvent}
+							Aperta {relativeDays(firstEvent.at)}
+						{/if}
+						{#if lastEvent}
+							· ultima modifica {relativeDays(lastEvent.at)}
+						{/if}
 					</span>
 				</div>
 			</header>
@@ -255,13 +246,13 @@
 											{#if ev.kind === 'created'}
 												<strong>{actor?.name ?? 'Segnalante'}</strong>
 												<span class="tl-inline__verb">ha aperto la pratica</span>
-											{:else if ev.kind === 'assigned'}
-												{@const target = ev.targetUserId
-													? getUserById(ev.targetUserId)
-													: undefined}
-												<span class="tl-inline__verb">Pratica assegnata a</span>
+											{:else if ev.kind === 'assigned' || ev.kind === 'reassigned'}
+												{@const target = ev.supplierId ? getUserById(ev.supplierId) : undefined}
+												<span class="tl-inline__verb"
+													>{ev.kind === 'assigned' ? 'Pratica assegnata a' : 'Pratica riassegnata a'}</span
+												>
 												<strong>{target?.name ?? '—'}</strong>
-											{:else if ev.kind === 'status'}
+											{:else if ev.kind === 'status' || ev.kind === 'closed'}
 												<span class="tl-inline__verb">Stato cambiato in</span>
 												<strong>{ev.toStatus ? statusLabel[ev.toStatus] : '—'}</strong>
 											{:else if ev.kind === 'ai'}
@@ -382,35 +373,17 @@
 								<dt>Categoria</dt>
 								<dd class="capitalize">{ticket.category}</dd>
 							</div>
-							{#if ticket.location}
-								<div class="detail-row">
-									<dt>Posizione</dt>
-									<dd>{ticket.location}</dd>
-								</div>
-							{/if}
-							{#if ticket.metadata?.channel}
-								<div class="detail-row">
-									<dt>Canale</dt>
-									<dd class="capitalize">{ticket.metadata.channel}</dd>
-								</div>
-							{/if}
-							{#if ticket.metadata?.sla}
-								<div class="detail-row">
-									<dt>SLA</dt>
-									<dd>{ticket.metadata.sla}</dd>
-								</div>
-							{/if}
 							<div class="detail-row">
 								<dt>Segnalata da</dt>
 								<dd>{reporter?.name ?? '—'}</dd>
 							</div>
 							<div class="detail-row">
 								<dt>Creata</dt>
-								<dd>{formatDate(ticket.createdAt)}</dd>
+								<dd>{firstEvent ? formatDate(firstEvent.at) : '—'}</dd>
 							</div>
 							<div class="detail-row">
 								<dt>Aggiornata</dt>
-								<dd>{formatDate(ticket.updatedAt)}</dd>
+								<dd>{lastEvent ? formatDate(lastEvent.at) : '—'}</dd>
 							</div>
 						</dl>
 					</section>
