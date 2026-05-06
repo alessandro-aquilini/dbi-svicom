@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { maintenanceWorks } from '$lib/data/maintenance-work';
+	import { maintenanceWorks } from '$lib/data/events/maintenance-work';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();

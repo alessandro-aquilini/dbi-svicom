@@ -20,7 +20,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { getCurrentUser } from '$lib/auth';
-	import { getAssembliesByPropertyId } from '$lib/data/assemblies';
+	import { getAssembliesByPropertyId } from '$lib/data/events/assemblies';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
 

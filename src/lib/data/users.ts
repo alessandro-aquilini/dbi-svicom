@@ -18,24 +18,24 @@ export const users: User[] = [
 		phone: '+39 02 0000 0001'
 	},
 	{
-		id: 'adm-svicom-01',
+		id: 'adm-svicom-01', // TODO: Change the ID. 
 		role: 'admin',
-		name: 'Studio Svicom Milano',
-		email: 'studio.milano@svicom.it',
+		name: 'Giorgio Amministratore',
+		email: 'giorgio@gmail.it',
 		phone: '+39 02 4567 8900'
 	},
 	{
 		id: 'adm-svicom-02',
 		role: 'admin',
-		name: 'Studio Svicom Roma',
-		email: 'studio.roma@svicom.it',
+		name: 'Matteo Amministratore',
+		email: 'matteo@gmail.it',
 		phone: '+39 06 1234 5678'
 	},
 	{
 		id: 'adm-svicom-03',
 		role: 'admin',
-		name: 'Studio Svicom Torino',
-		email: 'studio.torino@svicom.it',
+		name: 'Ludovica Amministratore',
+		email: 'ludovica@gmail.it',
 		phone: '+39 011 3344 556'
 	},
 	{

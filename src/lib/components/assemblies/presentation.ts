@@ -1,4 +1,4 @@
-import type { Assembly, AssemblyStatus, AssemblyType, Resolution, VoteOutcome } from '$lib/data/assemblies';
+import type { Assembly, AssemblyStatus, AssemblyType, Resolution, VoteOutcome } from '$lib/data/events/assemblies';
 
 export const assemblyStatusLabels: Record<AssemblyStatus, string> = {
 	pianificata: 'Pianificata',

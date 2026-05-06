@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentsByPropertyId } from '$lib/data/residents';
-	import { getTicketsByPropertyId } from '$lib/data/tickets-admin';
+	import { getTicketsByPropertyId } from '$lib/data/ticket/tickets-admin';
 	import { getUserById } from '$lib/data/users';
 	import { getCurrentStatus } from '$lib/components/tickets';
 

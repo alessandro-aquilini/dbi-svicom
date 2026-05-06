@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { Payment } from '$lib/data/payments';
+import type { Payment } from '$lib/data/ticket-embeds/payments';
 import type { ResidentPaymentsContext } from './context';
 import { formatMoney } from './presentation';
 

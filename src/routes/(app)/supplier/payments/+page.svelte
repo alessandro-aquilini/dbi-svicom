@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getPaymentsByUserId, type Payment } from '$lib/data/payments';
+	import { getPaymentsByUserId, type Payment } from '$lib/data/ticket-embeds/payments';
 	import { getUserById } from '$lib/data/users';
 	import { getCurrentUser } from '$lib/auth';
 

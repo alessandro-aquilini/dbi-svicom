@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Assembly } from '$lib/data/assemblies';
+	import type { Assembly } from '$lib/data/events/assemblies';
 	import { getAssemblyTranscriptPoints } from './presentation';
 
 	let {

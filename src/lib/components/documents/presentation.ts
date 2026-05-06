@@ -1,5 +1,5 @@
 import type { Announcement } from '$lib/data/announcements';
-import type { Assembly } from '$lib/data/assemblies';
+import type { Assembly } from '$lib/data/events/assemblies';
 import type { DocumentCategory, SvicomDocument } from '$lib/data/documents';
 import type { Property } from '$lib/data/properties';
 import type { User } from '$lib/data/users';

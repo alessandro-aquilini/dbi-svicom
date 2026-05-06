@@ -10,7 +10,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
-	import type { Assembly } from '$lib/data/assemblies';
+	import type { Assembly } from '$lib/data/events/assemblies';
 	import { formatAssemblyDate, formatAssemblySchedule, normalizeAssemblyText } from './presentation';
 	import AssemblyStatusBadge from './AssemblyStatusBadge.svelte';
 	import AssemblyTypeBadge from './AssemblyTypeBadge.svelte';

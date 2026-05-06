@@ -12,16 +12,16 @@ export * as residents from './residents';
 export * as suppliers from './suppliers';
 export * as services from './services';
 
-export * as tickets from './tickets-admin';
+export * as tickets from './ticket/tickets-admin';
 
 export * as announcements from './announcements';
 export * as documents from './documents';
 export * as chats from './chats';
 
-export * as payments from './payments';
-export * as invoices from './invoices';
-export * as quotes from './quotes';
+export * as payments from './ticket-embeds/payments';
+export * as invoices from './ticket-embeds/invoices';
+export * as quotes from './ticket-embeds/quotes';
 
-export * as maintenanceWorks from './maintenance-work';
-export * as meetings from './meetings';
-export * as assemblies from './assemblies';
+export * as maintenanceWorks from './events/maintenance-work';
+export * as meetings from './events/meetings';
+export * as assemblies from './events/assemblies';

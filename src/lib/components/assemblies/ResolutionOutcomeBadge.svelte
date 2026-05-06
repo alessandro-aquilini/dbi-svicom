@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { VoteOutcome } from '$lib/data/assemblies';
+	import type { VoteOutcome } from '$lib/data/events/assemblies';
 	import { resolutionOutcomeLabels } from './presentation';
 
 	let {

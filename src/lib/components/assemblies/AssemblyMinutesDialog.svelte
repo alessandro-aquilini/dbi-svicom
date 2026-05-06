@@ -15,7 +15,7 @@
 		DialogHeader,
 		DialogTitle
 	} from '$lib/components/ui/dialog';
-	import type { Assembly } from '$lib/data/assemblies';
+	import type { Assembly } from '$lib/data/events/assemblies';
 	import AssemblyMinutesHighlights from './AssemblyMinutesHighlights.svelte';
 	import AssemblyTranscriptList from './AssemblyTranscriptList.svelte';
 	import AssemblyTypeBadge from './AssemblyTypeBadge.svelte';

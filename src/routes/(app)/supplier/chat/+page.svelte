@@ -2,10 +2,10 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId, type Chat, type Message } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
-	import { getPaymentsByUserId, type Payment } from '$lib/data/payments';
-	import { getQuotesBySupplierId, type Quote } from '$lib/data/quotes';
-	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/invoices';
-	import { getMaintenanceWorkById, type MaintenanceWork, maintenanceWorks } from '$lib/data/maintenance-work';
+	import { getPaymentsByUserId, type Payment } from '$lib/data/ticket-embeds/payments';
+	import { getQuotesBySupplierId, type Quote } from '$lib/data/ticket-embeds/quotes';
+	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/ticket-embeds/invoices';
+	import { getMaintenanceWorkById, type MaintenanceWork, maintenanceWorks } from '$lib/data/events/maintenance-work';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';

@@ -1,8 +1,8 @@
-import { getAssemblyById, getAssembliesByPropertyId, type Assembly } from '$lib/data/assemblies';
+import { getAssemblyById, getAssembliesByPropertyId, type Assembly } from '$lib/data/events/assemblies';
 import { getDocumentsByPropertyId, type SvicomDocument } from '$lib/data/documents';
 import { getPropertyById, type Property } from '$lib/data/properties';
 import { getResidentById, type Resident } from '$lib/data/residents';
-import { getTicketsByPropertyId, type Ticket } from '$lib/data/tickets-admin';
+import { getTicketsByPropertyId, type Ticket } from '$lib/data/ticket/tickets-admin';
 import { getUserById, type User } from '$lib/data/users';
 
 export interface ResidentAssemblyContext {

@@ -17,7 +17,7 @@
 		getCurrentStatus,
 		type TicketEvent,
 		type TicketStatus
-	} from '$lib/data/tickets-admin';
+	} from '$lib/data/ticket/tickets-admin';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getUserById, type User } from '$lib/data/users';
 

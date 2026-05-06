@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { tickets } from '$lib/data/tickets-admin';
-	import { quotes } from '$lib/data/quotes';
+	import { tickets } from '$lib/data/ticket/tickets-admin';
+	import { quotes } from '$lib/data/ticket-embeds/quotes';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();

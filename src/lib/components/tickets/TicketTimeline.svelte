@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TicketEvent } from '$lib/data/tickets-admin';
+	import type { TicketEvent } from '$lib/data/ticket/tickets-admin';
 	import { ticketStatusLabels } from './presentation';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 

@@ -15,8 +15,8 @@ export const demoCredentials: DemoCredential[] = [
 		id: 'adm-svicom-01',
 		role: 'admin',
 		label: 'Amministratore',
-		description: 'Studio Svicom Milano',
-		email: 'studio.milano@svicom.it',
+		description: 'Giorgo Svicom',
+		email: 'giorgio.svicom@svicom.it',
 		password: 'svicom-demo'
 	},
 	{

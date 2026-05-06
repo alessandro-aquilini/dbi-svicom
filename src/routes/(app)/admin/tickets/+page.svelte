@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { tickets, getCurrentStatus } from '$lib/data/tickets-admin';
+	import { tickets, getCurrentStatus } from '$lib/data/ticket/tickets-admin';
 	import { getPropertyById } from '$lib/data/properties';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip, EmptyState } from '$lib/components/shared';

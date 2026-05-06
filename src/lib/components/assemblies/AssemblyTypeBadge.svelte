@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { AssemblyType } from '$lib/data/assemblies';
+	import type { AssemblyType } from '$lib/data/events/assemblies';
 	import { assemblyTypeLabels } from './presentation';
 
 	let {

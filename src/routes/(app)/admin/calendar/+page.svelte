@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { maintenanceWorks } from '$lib/data/maintenance-work';
-	import { meetings } from '$lib/data/meetings';
-	import { assemblies } from '$lib/data/assemblies';
+	import { maintenanceWorks } from '$lib/data/events/maintenance-work';
+	import { meetings } from '$lib/data/events/meetings';
+	import { assemblies } from '$lib/data/events/assemblies';
 	import { users } from '$lib/data/users';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { payments } from '$lib/data/payments';
+	import { payments } from '$lib/data/ticket-embeds/payments';
 	import { getUserById } from '$lib/data/users';
 
 	const statusColors: Record<string, string> = {

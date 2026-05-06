@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getCurrentUser } from '$lib/auth';
 	import { page } from '$app/state';
-	import { getTicketById } from '$lib/data/tickets-admin';
+	import { getTicketById } from '$lib/data/ticket/tickets-admin';
 	import { getUserById } from '$lib/data/users';
 	import {
 		getResidentPaymentStatus,

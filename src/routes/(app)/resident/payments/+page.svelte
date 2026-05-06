@@ -21,8 +21,8 @@ import {
 } from '$lib/components/ui/card';
 import { getCurrentUser } from '$lib/auth';
 import type { SvicomDocument } from '$lib/data/documents';
-import type { Payment } from '$lib/data/payments';
-import { getTicketById } from '$lib/data/tickets-admin';
+import type { Payment } from '$lib/data/ticket-embeds/payments';
+import { getTicketById } from '$lib/data/ticket/tickets-admin';
 import { getUserById } from '$lib/data/users';
 
 type PaymentCardModel = {

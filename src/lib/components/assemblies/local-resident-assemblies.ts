@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { Assembly } from '$lib/data/assemblies';
+import type { Assembly } from '$lib/data/events/assemblies';
 import { normalizeAssemblyText } from './presentation';
 
 const RESIDENT_ASSEMBLY_VOTES_STORAGE_KEY = 'svicom_resident_assembly_votes';
