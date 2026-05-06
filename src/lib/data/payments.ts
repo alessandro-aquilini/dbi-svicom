@@ -11,8 +11,6 @@ export interface Payment {
 	ticketId?: string;
 }
 
-// TODO: Maybe add status to the payemnts. For now sorting based on due date.
-
 export const payments: Payment[] = [
 	{
 		id: 'pay-001',

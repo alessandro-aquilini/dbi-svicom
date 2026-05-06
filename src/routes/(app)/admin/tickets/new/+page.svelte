@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { properties } from '$lib/data/properties';
-	import type { TicketPriority, TicketType } from '$lib/data/tickets';
+	import type { TicketPriority, TicketType } from '$lib/data/tickets-admin';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { File01Icon, Tag01Icon, Location01Icon } from '@hugeicons/core-free-icons';
 	import { InfoTip, DemoDialog } from '$lib/components/shared';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { properties } from '$lib/data/properties';
-	import { tickets, type TicketPriority } from '$lib/data/tickets';
+	import { tickets, type TicketPriority } from '$lib/data/tickets-admin';
 	import { suppliers } from '$lib/data/suppliers';
 	import { getPropertyById } from '$lib/data/properties';
 

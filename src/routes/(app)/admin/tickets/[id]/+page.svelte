@@ -18,7 +18,7 @@
 		getTicketTimeline,
 		type TicketEvent,
 		type TicketStatus
-	} from '$lib/data/tickets';
+	} from '$lib/data/tickets-admin';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getUserById, type User } from '$lib/data/users';
 

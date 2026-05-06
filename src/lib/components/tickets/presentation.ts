@@ -1,4 +1,4 @@
-import type { StatusHistoryEntry, TicketPriority, TicketStatus } from '$lib/data/tickets';
+import type { StatusHistoryEntry, TicketPriority, TicketStatus } from '$lib/data/tickets-admin';
 
 export const ticketStatusLabels: Record<TicketStatus, string> = {
 	opened: 'Segnalazione inviata',

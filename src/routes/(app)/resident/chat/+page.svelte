@@ -2,7 +2,7 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
-	import { getTicketById } from '$lib/data/tickets';
+	import { getTicketById } from '$lib/data/tickets-admin';
 	import { getPaymentById } from '$lib/data/payments';
 	import { getQuoteById } from '$lib/data/quotes';
 	import { getInvoiceById } from '$lib/data/invoices';

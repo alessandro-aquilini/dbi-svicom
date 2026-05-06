@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { TicketPriority } from '$lib/data/tickets';
+	import type { TicketPriority } from '$lib/data/tickets-admin';
 	import { ticketPriorityLabels } from './presentation';
 
 	let {

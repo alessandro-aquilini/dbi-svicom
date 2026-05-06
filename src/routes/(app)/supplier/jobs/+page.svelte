@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { events } from '$lib/data/events';
+	import { maintenanceWorks } from '$lib/data/maintenance-work';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	
-	// Filter for events matching the supplier ID
-	const myJobs = events.filter((e) => e.participantIds.includes(supplierId));
+	// Filter for maintenance works matching the supplier ID
+	const myJobs = maintenanceWorks.filter((e) => e.participantIds.includes(supplierId));
 
 	// Date context
 	const TODAY = '2026-05-05';
@@ -24,14 +24,7 @@
 		return `${start} - ${end}`;
 	}
 
-	function getToneStyles(tone: string) {
-		switch(tone) {
-			case 'emerald': return 'bg-emerald-500';
-			case 'amber': return 'bg-amber-500';
-			case 'blue': 
-			default: return 'bg-blue-500';
-		}
-	}
+	// tone removed — maintenance works don't have tone; use neutral primary token for dot
 </script>
 
 <svelte:head>
@@ -75,7 +68,7 @@
 					<!-- Separator & Dot -->
 					<div class="relative mr-4 flex flex-col items-center self-stretch">
 						<div class="absolute inset-y-0 w-px bg-slate-100"></div>
-						<div class="z-10 my-auto h-3 w-3 rounded-full border-2 border-white {getToneStyles(job.tone)}"></div>
+						<div class="z-10 my-auto h-3 w-3 rounded-full border-2 border-white bg-primary"></div>
 					</div>
 
 					<!-- Content block -->

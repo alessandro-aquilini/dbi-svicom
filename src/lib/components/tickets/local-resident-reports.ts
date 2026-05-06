@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { getTicketById, tickets, type Ticket, type TicketPriority } from '$lib/data/tickets';
+import { getTicketById, tickets, type Ticket, type TicketPriority } from '$lib/data/tickets-admin';
 
 const RESIDENT_LOCAL_TICKETS_STORAGE_KEY = 'svicom_resident_local_tickets';
 const RESIDENT_LOCAL_TICKET_META_STORAGE_KEY = 'svicom_resident_local_ticket_meta';

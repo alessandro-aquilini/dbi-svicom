@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { tickets, type TicketPriority, type TicketStatus, type TicketType } from '$lib/data/tickets';
+	import { tickets, type TicketPriority, type TicketStatus, type TicketType } from '$lib/data/tickets-admin';
 	import { getPropertyById } from '$lib/data/properties';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip } from '$lib/components/shared';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TicketStatus } from '$lib/data/tickets';
+	import type { TicketStatus } from '$lib/data/tickets-admin';
 	import { ticketStatusLabels } from './presentation';
 
 	const ticketFlow: TicketStatus[] = [

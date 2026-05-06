@@ -24,7 +24,7 @@
 	} from '$lib/components/ui/card';
 	import { getCurrentUser } from '$lib/auth';
 	import { getLatestTicketStatus, ticketStatusLabels } from '$lib/components/tickets';
-	import { getTicketById } from '$lib/data/tickets';
+	import { getTicketById } from '$lib/data/tickets-admin';
 	import { getUserById } from '$lib/data/users';
 
 	const currentUser = getCurrentUser();

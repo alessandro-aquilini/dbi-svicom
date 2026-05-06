@@ -2,11 +2,10 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId, type Chat, type Message } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
-	import { getTicketsBySupplierId, type Ticket, type StatusHistoryEntry } from '$lib/data/tickets';
 	import { getPaymentsByUserId, type Payment } from '$lib/data/payments';
 	import { getQuotesBySupplierId, type Quote } from '$lib/data/quotes';
 	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/invoices';
-	import { getEventsByAudience, type SvicomEvent } from '$lib/data/events';
+	import { getMaintenanceWorkById, type MaintenanceWork, maintenanceWorks } from '$lib/data/maintenance-work';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
@@ -21,14 +20,14 @@
 	let selectedChatId = $state(chats[0]?.id ?? '');
 	const selectedChat = $derived(sortedChats.find((c) => c.id === selectedChatId));
 
-	const relatedTickets = $derived(getTicketsBySupplierId(supplierId));
 	const relatedPayments = $derived(getPaymentsByUserId(supplierId));
 	const relatedQuotes = $derived(getQuotesBySupplierId(supplierId));
 	const relatedInvoices = $derived(getInvoicesBySupplierId(supplierId));
-	const relatedEvents = $derived(getEventsByAudience('supplier'));
+	const relatedMaintenanceWorks = $derived(
+		maintenanceWorks.filter((m) => m.participantIds.includes(supplierId))
+	);
 
 	let actionsOpen = $state(true);
-	let showTicketSheet = $state(false);
 	let showEventModal = $state(false);
 	let invoiceDraftMode = $state<'upload' | 'form'>('upload');
 	let quoteDraftMode = $state<'upload' | 'form'>('upload');
@@ -36,20 +35,10 @@
 
 	type TimelineEvent =
 		| { type: 'message'; date: number; data: Message }
-		| { type: 'ticket_status'; date: number; data: { ticket: Ticket; history: StatusHistoryEntry } }
 		| { type: 'payment'; date: number; data: Payment }
 		| { type: 'quote'; date: number; data: Quote }
 		| { type: 'invoice'; date: number; data: Invoice }
-		| { type: 'event'; date: number; data: SvicomEvent };
-
-	const ticketStatuses: Array<StatusHistoryEntry['status']> = [
-		'opened',
-		'estimating',
-		'approved',
-		'in_progress',
-		'completed',
-		'paid'
-	];
+		| { type: 'maintenance'; date: number; data: MaintenanceWork };
 
 	const timeline = $derived(selectedChat ? buildTimeline(selectedChat) : []);
 
@@ -84,17 +73,7 @@
 			events.push({ type: 'message', date: new Date(msg.timestamp).getTime(), data: msg });
 		}
 
-		for (const ticket of relatedTickets) {
-			if (ticket.creatorId === otherUserId) {
-				for (const history of ticket.statusHistory) {
-					events.push({
-						type: 'ticket_status',
-						date: new Date(history.at).getTime(),
-						data: { ticket, history }
-					});
-				}
-			}
-		}
+		// tickets removed from timeline: we don't show ticket history here anymore
 
 		for (const payment of relatedPayments) {
 			if (payment.fromId === otherUserId || payment.toId === otherUserId) {
@@ -114,10 +93,10 @@
 			}
 		}
 
-		for (const event of relatedEvents) {
-			if (!event.participantIds.includes(supplierId)) continue;
-			if (otherUserId && !event.participantIds.includes(otherUserId)) continue;
-			events.push({ type: 'event', date: parseDateTime(event.date, event.startTime), data: event });
+		for (const mw of relatedMaintenanceWorks) {
+			if (!mw.participantIds.includes(supplierId)) continue;
+			if (otherUserId && !mw.participantIds.includes(otherUserId)) continue;
+			events.push({ type: 'maintenance', date: parseDateTime(mw.date, mw.startTime), data: mw });
 		}
 
 		return events.sort((a, b) => a.date - b.date);
@@ -144,8 +123,8 @@
 		if (event.type === 'payment') return `Pagamento • ${formatMoney(event.data.amount, event.data.currency)}`;
 		if (event.type === 'quote') return `Preventivo • ${event.data.title}`;
 		if (event.type === 'invoice') return `Fattura • ${event.data.number}`;
-		if (event.type === 'event') return `Intervento • ${event.data.title}`;
-		return 'Aggiornamento ticket';
+		if (event.type === 'maintenance') return `Intervento • ${event.data.title}`;
+		return 'Aggiornamento';
 	}
 
 	function getPreviewBadge(event: TimelineEvent | undefined) {
@@ -153,7 +132,7 @@
 		if (event.type === 'payment') return { label: '€', tone: 'bg-emerald-50 text-emerald-700' };
 		if (event.type === 'quote') return { label: '📄', tone: 'bg-blue-50 text-blue-700' };
 		if (event.type === 'invoice') return { label: '🧾', tone: 'bg-amber-50 text-amber-700' };
-		if (event.type === 'event') return { label: '📅', tone: 'bg-indigo-50 text-indigo-700' };
+		if (event.type === 'maintenance') return { label: '📅', tone: 'bg-indigo-50 text-indigo-700' };
 		return { label: '↗', tone: 'bg-muted text-muted-foreground' };
 	}
 
@@ -267,22 +246,7 @@
 							</div>
 							<span class="mt-1 text-[11px] text-muted-foreground">{formatTime(event.date)}</span>
 						</div>
-					{:else if event.type === 'ticket_status'}
-						{@const author = getUserById(event.data.history.authorId ?? '')}
-						<div class="flex flex-col items-center">
-							<div class="max-w-[85%] rounded-2xl border border-border bg-muted/30 px-4 py-2 text-center text-[13px] text-muted-foreground">
-								{#if event.data.history.status === 'opened'}
-									<span class="font-semibold text-foreground">{author?.name ?? 'Utente'}</span> ha aperto un ticket
-									<span class="font-mono text-xs font-semibold text-foreground"> {event.data.ticket.id}</span>.
-								{:else}
-									Stato ticket aggiornato in
-									<span class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase text-primary">
-										{event.data.history.status}
-									</span>
-								{/if}
-							</div>
-							<span class="mt-1 text-[11px] text-muted-foreground">{formatTime(event.date)}</span>
-						</div>
+
 					{:else if event.type === 'payment'}
 						{@const isMine = event.data.fromId === supplierId}
 						<div class="flex flex-col {isMine ? 'items-end' : 'items-start'}">
@@ -342,7 +306,7 @@
 							</div>
 							<span class="mt-1 text-[11px] text-muted-foreground">{formatTime(event.date)}</span>
 						</div>
-					{:else if event.type === 'event'}
+					{:else if event.type === 'maintenance'}
 						<div class="flex flex-col items-start">
 							<div class="w-[85%] rounded-2xl border border-border bg-background p-4 shadow-sm">
 								<div class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
@@ -383,13 +347,6 @@
 					>
 						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600">+</span>
 						Intervento
-					</button>
-					<button
-						onclick={() => (showTicketSheet = true)}
-						class="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm"
-					>
-						<span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">↑</span>
-						Ticket
 					</button>
 					<button
 						onclick={() => {
@@ -497,10 +454,7 @@
 							Condominio
 							<input class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" placeholder="cnd-marconi-14" />
 						</label>
-						<label class="text-xs font-semibold uppercase text-muted-foreground">
-							Ticket collegato
-							<input class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" placeholder="TCK-482" />
-						</label>
+
 						<div class="grid grid-cols-2 gap-4">
 							<label class="text-xs font-semibold uppercase text-muted-foreground">
 								Data emissione
@@ -594,10 +548,7 @@
 							Condominio
 							<input class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" placeholder="cnd-marconi-14" />
 						</label>
-						<label class="text-xs font-semibold uppercase text-muted-foreground">
-							Ticket collegato
-							<input class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" placeholder="TCK-510" />
-						</label>
+
 						<div class="grid grid-cols-2 gap-4">
 							<label class="text-xs font-semibold uppercase text-muted-foreground">
 								Data invio
@@ -627,27 +578,7 @@
 	</div>
 {/if}
 
-{#if showTicketSheet}
-	<button
-		type="button"
-		class="fixed inset-0 z-40 bg-black/30"
-		aria-label="Chiudi aggiornamento ticket"
-		onclick={() => (showTicketSheet = false)}
-	></button>
-	<div class="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border border-border bg-background p-6 shadow-lg">
-		<div class="mx-auto mb-4 h-1 w-12 rounded-full bg-muted"></div>
-		<h3 class="text-lg font-semibold text-foreground">Aggiorna ticket</h3>
-		<p class="mt-1 text-sm text-muted-foreground">Seleziona il nuovo stato.</p>
-		<div class="mt-4 grid gap-2">
-			{#each ticketStatuses as status}
-				<button class="flex h-11 items-center justify-between rounded-xl border border-border bg-muted/40 px-4 text-sm font-medium text-foreground">
-					{status}
-					<span class="text-xs text-muted-foreground">Seleziona</span>
-				</button>
-			{/each}
-		</div>
-	</div>
-{/if}
+<!-- ticket modal removed -->
 
 {#if showEventModal}
 	<button
@@ -678,10 +609,7 @@
 					Data
 					<input type="date" class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" />
 				</label>
-				<label class="text-xs font-semibold uppercase text-muted-foreground">
-					Ticket collegato
-					<input class="mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" placeholder="TCK-476" />
-				</label>
+				
 			</div>
 			<div class="grid grid-cols-2 gap-4">
 				<label class="text-xs font-semibold uppercase text-muted-foreground">

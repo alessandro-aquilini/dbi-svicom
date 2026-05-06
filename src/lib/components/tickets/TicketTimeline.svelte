@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { StatusHistoryEntry } from '$lib/data/tickets';
+	import type { StatusHistoryEntry } from '$lib/data/tickets-admin';
 	import { getLatestTicketStatus, ticketStatusLabels } from './presentation';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 

@@ -1,4 +1,6 @@
-export type DocumentCategory = 'verbale' | 'contratto' | 'compliance' | 'preventivo' | 'regolamento' | 'bilancio' | 'lavori';
+// TODO: Rimuovere status
+
+export type DocumentCategory = 'verbale' | 'contratto' | 'compliance' | 'regolamento' | 'bilancio';
 
 export interface SvicomDocument {
 	id: string;
@@ -36,18 +38,6 @@ export const documents: SvicomDocument[] = [
 		updatedAt: '2024-04-28',
 		status: 'Aggiornato',
 		url: '/docs/bilancio-q1-marconi.pdf',
-		type: 'pdf'
-	},
-	{
-		id: 'doc-carducci-preventivo-scale',
-		title: 'Preventivo tinteggiatura scale',
-		category: 'preventivo',
-		propertyId: 'cnd-carducci-21',
-		summary: 'Tre offerte comparate con tempi, materiali e validità.',
-		uploadedBy: 'adm-svicom-01',
-		updatedAt: '2024-04-28',
-		status: 'In valutazione',
-		url: '/docs/preventivo-scale-carducci.pdf',
 		type: 'pdf'
 	}
 ];

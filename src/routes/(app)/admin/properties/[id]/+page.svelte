@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentsByPropertyId } from '$lib/data/residents';
-	import { getTicketsByPropertyId } from '$lib/data/tickets';
+	import { getTicketsByPropertyId } from '$lib/data/tickets-admin';
 	import { getUserById } from '$lib/data/users';
 
 	const property = $derived(getPropertyById(page.params.id ?? ''));
