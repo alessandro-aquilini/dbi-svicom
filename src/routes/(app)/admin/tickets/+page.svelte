@@ -18,41 +18,8 @@
 		bassa: 'bg-secondary text-secondary-foreground'
 	};
 
-	let query = $state('');
-	let filterStatus = $state<TicketStatus | ''>('');
-	let filterPriority = $state<TicketPriority | ''>('');
-	let filterType = $state<TicketType | ''>('');
-
-	const hasLocalFilters = $derived(
-		query.trim().length > 0 || filterStatus !== '' || filterPriority !== '' || filterType !== ''
-	);
-
-	// Tickets pre-filtered by the global "active property" selection from the sidebar.
-	const scopedTickets = $derived.by(() => {
-		const id = propertySelection.selectedId;
-		return id === null ? tickets : tickets.filter((t) => t.propertyId === id);
-	});
-
-	const filtered = $derived.by(() => {
-		const q = query.trim().toLowerCase();
-		return scopedTickets.filter((t) => {
-			if (filterStatus && t.status !== filterStatus) return false;
-			if (filterPriority && t.priority !== filterPriority) return false;
-			if (filterType && t.type !== filterType) return false;
-			if (q) {
-				const haystack = `${t.id} ${t.title} ${t.description}`.toLowerCase();
-				if (!haystack.includes(q)) return false;
-			}
-			return true;
-		});
-	});
-
-	function clearFilters() {
-		query = '';
-		filterStatus = '';
-		filterPriority = '';
-		filterType = '';
-	}
+	const getTicketStatus = (ticket: (typeof tickets)[number]) =>
+		ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
 </script>
 
 <svelte:head>
@@ -149,37 +116,32 @@
 	</div>
 
 	<div class="rounded-lg border border-border bg-card shadow-sm">
-		{#if filtered.length === 0}
-			<div class="flex flex-col items-center justify-center px-6 py-16 text-center">
-				<div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-					<HugeiconsIcon
-						icon={Search01Icon}
-						size={18}
-						strokeWidth={1.75}
-						class="text-muted-foreground"
-					/>
-				</div>
-				<p class="mt-3 text-sm font-medium text-foreground">Nessuna pratica trovata</p>
-				<p class="mt-1 text-xs text-muted-foreground">
-					{#if !propertySelection.isAll && scopedTickets.length === 0}
-						Su <strong>{propertySelection.selected?.name}</strong> non ci sono pratiche.
-					{:else}
-						Prova a cambiare i criteri di ricerca o cancella i filtri.
-					{/if}
-				</p>
-			</div>
-		{:else}
-			<div class="overflow-x-auto">
-				<table class="w-full text-sm">
-					<thead>
-						<tr class="border-b border-border text-left">
-							<th class="px-4 py-3 font-medium text-muted-foreground">ID</th>
-							<th class="px-4 py-3 font-medium text-muted-foreground">Titolo</th>
-							{#if propertySelection.isAll}
-								<th class="px-4 py-3 font-medium text-muted-foreground">Condominio</th>
-							{/if}
-							<th class="px-4 py-3 font-medium text-muted-foreground">Stato</th>
-							<th class="px-4 py-3 font-medium text-muted-foreground">Priorità</th>
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="border-b border-border text-left">
+						<th class="px-4 py-3 font-medium text-muted-foreground">ID</th>
+						<th class="px-4 py-3 font-medium text-muted-foreground">Titolo</th>
+						<th class="px-4 py-3 font-medium text-muted-foreground">Condominio</th>
+						<th class="px-4 py-3 font-medium text-muted-foreground">Stato</th>
+						<th class="px-4 py-3 font-medium text-muted-foreground">Priorità</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-border">
+					{#each tickets as ticket}
+						{@const property = getPropertyById(ticket.propertyId)}
+						<tr class="hover:bg-muted/50">
+							<td class="px-4 py-3 font-mono text-xs text-muted-foreground">{ticket.id}</td>
+							<td class="px-4 py-3 font-medium text-foreground">{ticket.title}</td>
+							<td class="px-4 py-3 text-muted-foreground">{property?.name ?? '-'}</td>
+							<td class="px-4 py-3">
+								<span class="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+									{getTicketStatus(ticket)}
+								</span>
+							</td>
+							<td class="px-4 py-3">
+								<span class="rounded-md px-2 py-0.5 text-xs font-medium {priorityColors[ticket.priority] ?? ''}">{ticket.priority}</span>
+							</td>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-border">

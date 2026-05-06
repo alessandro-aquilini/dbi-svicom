@@ -5,8 +5,9 @@
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
-	const myJobs = tickets.filter((t) => t.assignedToId === supplierId);
+	const myJobs = tickets.filter((t) => t.supplierId === supplierId);
 	const myQuotes = quotes.filter((q) => q.supplierId === supplierId);
+	const pendingQuotes = myQuotes.filter((quote) => new Date(quote.expiresAt).getTime() >= Date.now());
 </script>
 
 <svelte:head>
@@ -30,7 +31,7 @@
 		</div>
 		<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
 			<p class="text-sm text-muted-foreground">In attesa di risposta</p>
-			<p class="mt-2 text-2xl font-semibold text-foreground">{myQuotes.filter((q) => q.status === 'pending' || q.status === 'sent').length}</p>
+			<p class="mt-2 text-2xl font-semibold text-foreground">{pendingQuotes.length}</p>
 		</div>
 	</div>
 </div>

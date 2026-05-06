@@ -55,6 +55,32 @@ export const events: SvicomEvent[] = [
 		tone: 'blue',
 		audiences: ['resident', 'admin'],
 		propertyId: 'cnd-marconi-14'
+	},
+	{
+		id: 'evt-sopralluogo-impianto',
+		title: 'Sopralluogo impianto idraulico',
+		date: '2026-05-15',
+		startTime: '10:00',
+		endTime: '11:30',
+		location: 'Via Leopardi 8 - Cantine',
+		group: 'Interventi Programmati',
+		participantIds: ['frn-idroclima-nord', 'adm-svicom-01'],
+		tone: 'blue',
+		audiences: ['supplier', 'admin'],
+		propertyId: 'cnd-leopardi-8'
+	},
+	{
+		id: 'evt-visita-condizionatore',
+		title: 'Visita ispettiva condizionatore',
+		date: '2024-05-02',
+		startTime: '14:30',
+		endTime: '16:00',
+		location: 'Via Roma 1 - Centrale Termica',
+		group: 'Manutenzione Passata',
+		participantIds: ['frn-idroclima-nord', 'res-conti-02'],
+		tone: 'emerald',
+		audiences: ['supplier', 'admin'],
+		propertyId: 'cnd-roma-1'
 	}
 ];
 

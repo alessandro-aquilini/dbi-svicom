@@ -15,6 +15,12 @@
 		overdue: 'Scaduto',
 		cancelled: 'Annullato'
 	};
+
+	function getPaymentStatus(payment: (typeof payments)[number]) {
+		if (payment.paidAt) return 'paid';
+		if (new Date(payment.dueDate).getTime() < Date.now()) return 'overdue';
+		return 'pending';
+	}
 </script>
 
 <svelte:head>
@@ -41,14 +47,15 @@
 				</thead>
 				<tbody class="divide-y divide-border">
 					{#each payments as payment}
+						{@const paymentStatus = getPaymentStatus(payment)}
 						<tr class="hover:bg-muted/50">
 							<td class="px-4 py-3 font-medium text-foreground">{payment.description}</td>
 							<td class="px-4 py-3 text-muted-foreground">{getUserById(payment.fromId)?.name ?? '-'}</td>
 							<td class="px-4 py-3 text-muted-foreground">{getUserById(payment.toId)?.name ?? '-'}</td>
 							<td class="px-4 py-3 text-right font-medium text-foreground">€{payment.amount.toFixed(2)}</td>
 							<td class="px-4 py-3">
-								<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[payment.status] ?? ''}">
-									{statusLabels[payment.status] ?? payment.status}
+								<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[paymentStatus] ?? ''}">
+									{statusLabels[paymentStatus] ?? paymentStatus}
 								</span>
 							</td>
 						</tr>

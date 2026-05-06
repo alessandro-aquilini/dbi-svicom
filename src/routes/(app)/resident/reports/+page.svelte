@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { reports } from '$lib/data/reports';
 	import { getCurrentUser } from '$lib/auth';
 	import {
 		ResidentReportCard,
@@ -11,17 +10,7 @@
 	import { getResidentById } from '$lib/data/residents';
 
 	const currentUser = getCurrentUser();
-	const resident = $derived(currentUser ? getResidentById(currentUser.id) : undefined);
-	const property = $derived(resident ? getPropertyById(resident.propertyId) : undefined);
-	const myReports = $derived(getResidentVisibleTicketsByCreatorId(currentUser?.id));
-	const sortedReports = $derived(
-		[...myReports].sort((left, right) => {
-			const leftAt = left.statusHistory.at(-1)?.at ?? '';
-			const rightAt = right.statusHistory.at(-1)?.at ?? '';
-			return rightAt.localeCompare(leftAt);
-		})
-	);
-	const featuredReport = $derived(sortedReports[0]);
+	const myReports = currentUser ? reports.filter((report) => report.reportedById === currentUser.id) : [];
 </script>
 
 <svelte:head>

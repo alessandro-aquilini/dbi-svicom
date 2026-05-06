@@ -36,7 +36,51 @@ export const payments: Payment[] = [
 		description: 'Intervento riparazione perdita locale contatori',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'TCK-482'
-	}, 	
+	},
+	{
+		id: 'pay-004',
+		fromId: 'res-conti-02',
+		toId: 'frn-idroclima-nord',
+		amount: 180.0,
+		currency: 'EUR',
+		dueDate: '2024-05-18T10:00:00Z',
+		description: 'Saldo fattura FT-2024-002. Lavori climatizzazione privato.',
+		propertyId: 'cnd-marconi-14',
+		ticketId: 'TCK-501'
+	},
+	{
+		id: 'pay-005',
+		fromId: 'adm-svicom-02',
+		toId: 'frn-idroclima-nord',
+		amount: 850.0,
+		currency: 'EUR',
+		dueDate: '2024-03-15T10:00:00Z',
+		paidAt: '2024-03-10T10:00:00Z',
+		description: 'Sostituzione pompa sommersa',
+		propertyId: 'cnd-roma-12'
+	},
+	{
+		id: 'pay-006',
+		fromId: 'adm-svicom-01',
+		toId: 'frn-idroclima-nord',
+		amount: 320.0,
+		currency: 'EUR',
+		dueDate: '2024-02-28T10:00:00Z',
+		paidAt: '2024-02-26T10:00:00Z',
+		description: 'Manutenzione ordinaria caldaia',
+		propertyId: 'cnd-marconi-14'
+	},
+	{
+		id: 'pay-007',
+		fromId: 'res-rossi-03',
+		toId: 'frn-idroclima-nord',
+		amount: 220.0,
+		currency: 'EUR',
+		dueDate: '2024-05-30T10:00:00Z',
+		description: 'Sostituzione miscelatore lavabo (Acconto)',
+		propertyId: 'cnd-marconi-14',
+		ticketId: 'TCK-510'
+	}
 ];
 
 export function getPaymentById(id: string): Payment | undefined {

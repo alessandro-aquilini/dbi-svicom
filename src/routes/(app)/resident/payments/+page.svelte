@@ -51,87 +51,17 @@
 		.reduce((total, payment) => total + payment.amount, 0);
 	const lastVisibleMovement = context.allVisiblePayments[0];
 
-	const summaryCopy =
-		context.property && context.resident
-			? `${context.property.name}, ${context.resident.apartment}. Consulta la tua quota registrata, i movimenti economici gia presenti per il condominio e i riferimenti contabili disponibili.`
-			: 'Profilo residente non disponibile.';
+	const statusColors: Record<string, string> = {
+		paid: 'bg-success/15 text-success',
+		pending: 'bg-warning/15 text-warning',
+		overdue: 'bg-destructive/15 text-destructive',
+		cancelled: 'bg-muted text-muted-foreground'
+	};
 
-	const summaryStats = [
-		{ label: 'Saldo aperto', value: formatMoney(outstandingResidentTotal, 'EUR') },
-		{ label: 'Versato da te', value: formatMoney(totalPaidByResident, 'EUR') },
-		{ label: 'Movimenti nello stabile', value: context.allVisiblePayments.length }
-	];
-
-	const summaryChips = context.property
-		? compactValues([
-				context.property.address.street,
-				context.admin ? `Amministratore: ${context.admin.name}` : undefined,
-				lastVisibleMovement
-					? `Ultima registrazione ${formatPaymentDate(lastVisibleMovement.paidAt ?? lastVisibleMovement.dueDate)}`
-					: 'Nessun movimento registrato'
-			])
-		: [];
-
-	const personalPaymentCards = context.personalPayments.map(buildPersonalPaymentCard);
-	const propertyPaymentCards = context.propertyOperationalPayments.map(buildPropertyPaymentCard);
-
-	function compactValues(values: Array<string | undefined>): string[] {
-		return values.filter((value): value is string => Boolean(value));
-	}
-
-	function buildPersonalPaymentCard(payment: Payment): PaymentCardModel {
-		const beneficiary = getUserById(payment.toId);
-		const footnote = getPaymentFootnote(payment);
-		const chips = compactValues([
-			context.property?.name,
-			context.resident?.apartment,
-			paymentReminder?.sourcePaymentId === payment.id ? 'Quota di riferimento' : undefined
-		]);
-
-		return {
-			paymentId: payment.id,
-			eyebrow: 'Quota residente',
-			title: payment.description,
-			description: `Movimento registrato verso ${beneficiary?.name ?? 'amministrazione'} per ${context.property?.name ?? 'il tuo condominio'}.`,
-			amountLabel: formatMoney(payment.amount, payment.currency),
-			status: getResidentPaymentStatus(payment),
-			facts: [
-				{ label: 'Beneficiario', value: beneficiary?.name ?? 'Operatore Svicom' },
-				{ label: 'Scadenza', value: formatPaymentDate(payment.dueDate) }
-			],
-			chips,
-			footerLabel: footnote.label,
-			footerValue: footnote.value
-		};
-	}
-
-	function buildPropertyPaymentCard(payment: Payment): PaymentCardModel {
-		const supplier = getUserById(payment.toId);
-		const relatedTicket = payment.ticketId ? getTicketById(payment.ticketId) : undefined;
-		const footnote = getPaymentFootnote(payment);
-		const propertyLabel = context.property?.name;
-
-		return {
-			paymentId: payment.id,
-			eyebrow: 'Spesa operativa',
-			title: payment.description,
-			description: relatedTicket
-				? `Pagamento gestito dall'amministrazione e collegato alla pratica ${relatedTicket.id} nello stabile ${propertyLabel ?? ''}.`
-				: `Pagamento gestito dall'amministrazione per ${propertyLabel ?? 'il condominio'}.`,
-			amountLabel: formatMoney(payment.amount, payment.currency),
-			status: getResidentPaymentStatus(payment),
-			facts: [
-				{ label: 'Fornitore', value: supplier?.name ?? 'Operatore non disponibile' },
-				{ label: 'Ticket', value: relatedTicket ? relatedTicket.id : 'Nessun ticket collegato' }
-			],
-			chips: compactValues([propertyLabel, relatedTicket ? `Categoria ${relatedTicket.category}` : undefined]),
-			footerLabel: footnote.label,
-			footerValue: footnote.value
-		};
-	}
-
-	function getDocumentButtonLabel(document: SvicomDocument): string {
-		return document.category === 'bilancio' ? 'Apri ripartizione' : 'Apri riferimento';
+	function getPaymentStatus(payment: (typeof myPayments)[number]) {
+		if (payment.paidAt) return 'paid';
+		if (new Date(payment.dueDate).getTime() < Date.now()) return 'overdue';
+		return 'pending';
 	}
 </script>
 
@@ -139,131 +69,22 @@
 	<title>Pagamenti - Residente - Svicom Living Hub</title>
 </svelte:head>
 
-<div class="resident-module-page">
-	<div class="resident-module-stack">
-		<ResidentSummaryCard
-			eyebrow="Area residente"
-			title="Pagamenti"
-			copy={summaryCopy}
-			stats={summaryStats}
-			chips={summaryChips}
-		/>
+<div class="p-4">
+	<h1 class="mb-1 text-xl font-semibold text-foreground">Pagamenti</h1>
+	<p class="mb-4 text-sm text-muted-foreground">{myPayments.length} transazioni</p>
 
-		{#if !context.currentUser || !context.resident || !context.property}
-			<ResidentEmptyCard
-				title="Profilo residente non disponibile"
-				copy="Non e possibile recuperare i dati del residente per questa vista."
-			/>
-		{:else}
-			{#if paymentReminder}
-				<Card class="payment-reminder-card">
-					<CardHeader class="payment-reminder-card__header">
-						<div class="payment-reminder-card__heading">
-							<p class="payment-reminder-card__eyebrow">Promemoria residente</p>
-							<CardTitle class="payment-reminder-card__title">{paymentReminder.title}</CardTitle>
-							<CardDescription class="payment-reminder-card__copy">
-								{paymentReminder.description}
-							</CardDescription>
-						</div>
-					</CardHeader>
-
-					<CardContent class="payment-reminder-card__content">
-						<div class="payment-reminder-card__facts">
-							<div class="payment-reminder-card__fact">
-								<p class="payment-reminder-card__fact-label">Importo previsto</p>
-								<p class="payment-reminder-card__fact-value">{paymentReminder.amountLabel}</p>
-							</div>
-							<div class="payment-reminder-card__fact">
-								<p class="payment-reminder-card__fact-label">Scadenza in evidenza</p>
-								<p class="payment-reminder-card__fact-value">
-									{formatPaymentDate(paymentReminder.dueDate)}
-								</p>
-							</div>
-						</div>
-
-						<div class="payment-reminder-card__actions">
-							<Button href="/resident/payments/checkout" size="lg" class="payment-reminder-card__button">
-								Paga ora
-							</Button>
-							{#if latestReceipt}
-								<Button
-									href={`/resident/payments/receipt?reference=${latestReceipt.reference}`}
-									variant="outline"
-									size="lg"
-									class="payment-reminder-card__button"
-								>
-									Ultima ricevuta
-								</Button>
-							{/if}
-						</div>
-					</CardContent>
-				</Card>
-			{/if}
-
-			{#if personalPaymentCards.length > 0}
-				<section class="resident-module-section">
-					<div class="resident-module-section__header">
-						<h1 class="resident-module-section__title">La tua posizione</h1>
-						<p class="resident-module-section__copy">
-							Quote e movimenti registrati direttamente sul tuo profilo residente.
-						</p>
+	<div class="space-y-3">
+		{#each myPayments as payment}
+			{@const paymentStatus = getPaymentStatus(payment)}
+			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
+				<div class="flex items-start justify-between">
+					<div>
+						<h3 class="text-sm font-medium text-foreground">{payment.description}</h3>
+						<p class="text-xs text-muted-foreground">Scadenza: {payment.dueDate}</p>
 					</div>
-
-					<div class="payment-cards-stack">
-						{#each personalPaymentCards as paymentCard}
-							<ResidentPaymentCard
-								eyebrow={paymentCard.eyebrow}
-								title={paymentCard.title}
-								description={paymentCard.description}
-								amountLabel={paymentCard.amountLabel}
-								status={paymentCard.status}
-								facts={paymentCard.facts}
-								chips={paymentCard.chips}
-								footerLabel={paymentCard.footerLabel}
-								footerValue={paymentCard.footerValue}
-								href={`/resident/payments/${paymentCard.paymentId}`}
-								ctaLabel="Apri movimento"
-							/>
-						{/each}
-					</div>
-				</section>
-			{/if}
-
-			{#if propertyPaymentCards.length > 0}
-				<section class="resident-module-section">
-					<div class="resident-module-section__header">
-						<h2 class="resident-module-section__title">Spese operative nello stabile</h2>
-						<p class="resident-module-section__copy">
-							Movimenti gia registrati dall'amministrazione per interventi e attivita del tuo condominio.
-						</p>
-					</div>
-
-					<div class="payment-cards-stack">
-						{#each propertyPaymentCards as paymentCard}
-							<ResidentPaymentCard
-								eyebrow={paymentCard.eyebrow}
-								title={paymentCard.title}
-								description={paymentCard.description}
-								amountLabel={paymentCard.amountLabel}
-								status={paymentCard.status}
-								facts={paymentCard.facts}
-								chips={paymentCard.chips}
-								footerLabel={paymentCard.footerLabel}
-								footerValue={paymentCard.footerValue}
-								href={`/resident/payments/${paymentCard.paymentId}`}
-								ctaLabel="Apri dettaglio"
-							/>
-						{/each}
-					</div>
-				</section>
-			{/if}
-
-			<section class="resident-module-section">
-				<div class="resident-module-section__header">
-					<h2 class="resident-module-section__title">Riferimenti utili</h2>
-					<p class="resident-module-section__copy">
-						Documenti contabili disponibili e contatti amministrativi per la gestione dei pagamenti.
-					</p>
+					<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[paymentStatus] ?? ''}">
+						{statusLabels[paymentStatus] ?? paymentStatus}
+					</span>
 				</div>
 
 				<div class="payment-support-grid">
