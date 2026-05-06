@@ -1,68 +1,85 @@
 <script lang="ts">
-	import {
-		ResidentPaymentCard,
-		formatMoney,
-		formatPaymentDate,
-		getPaymentFootnote,
-		getResidentLatestReceipt,
-		getResidentPaymentReminder,
-		getResidentPaymentStatus,
-		getResidentPaymentsContext,
-		type ResidentPaymentStatus
-	} from '$lib/components/payments';
-	import { ResidentEmptyCard, ResidentSummaryCard } from '$lib/components/resident';
-	import { Button } from '$lib/components/ui/button';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card';
-	import { getCurrentUser } from '$lib/auth';
-	import type { SvicomDocument } from '$lib/data/documents';
-	import type { Payment } from '$lib/data/payments';
-	import { getTicketById } from '$lib/data/tickets-admin';
-	import { getUserById } from '$lib/data/users';
+import {
+	ResidentPaymentCard,
+	formatMoney,
+	formatPaymentDate,
+	getPaymentFootnote,
+	getResidentLatestReceipt,
+	getResidentPaymentReminder,
+	getResidentPaymentStatus,
+	getResidentPaymentsContext,
+	type ResidentPaymentStatus
+} from '$lib/components/payments';
+import { ResidentEmptyCard, ResidentSummaryCard } from '$lib/components/resident';
+import { Button } from '$lib/components/ui/button';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle
+} from '$lib/components/ui/card';
+import { getCurrentUser } from '$lib/auth';
+import type { SvicomDocument } from '$lib/data/documents';
+import type { Payment } from '$lib/data/payments';
+import { getTicketById } from '$lib/data/tickets-admin';
+import { getUserById } from '$lib/data/users';
 
-	type PaymentCardModel = {
-		paymentId: string;
-		eyebrow: string;
-		title: string;
-		description: string;
-		amountLabel: string;
-		status: ResidentPaymentStatus;
-		facts: Array<{ label: string; value: string }>;
-		chips: string[];
-		footerLabel: string;
-		footerValue: string;
-	};
+type PaymentCardModel = {
+	paymentId: string;
+	eyebrow: string;
+	title: string;
+	description: string;
+	amountLabel: string;
+	status: ResidentPaymentStatus;
+	facts: Array<{ label: string; value: string }>;
+	chips: string[];
+	footerLabel: string;
+	footerValue: string;
+};
 
-	const currentUser = getCurrentUser();
-	const context = getResidentPaymentsContext(currentUser?.id);
-	const paymentReminder = getResidentPaymentReminder(context);
-	const latestReceipt = getResidentLatestReceipt(currentUser?.id);
+const currentUser = getCurrentUser();
+const context = getResidentPaymentsContext(currentUser?.id);
+const paymentReminder = getResidentPaymentReminder(context);
+const latestReceipt = getResidentLatestReceipt(currentUser?.id);
 
-	const totalPaidByResident = context.personalPayments
-		.filter((payment) => Boolean(payment.paidAt))
-		.reduce((total, payment) => total + payment.amount, 0);
-	const outstandingResidentTotal = context.personalPayments
-		.filter((payment) => !payment.paidAt)
-		.reduce((total, payment) => total + payment.amount, 0);
-	const lastVisibleMovement = context.allVisiblePayments[0];
+const totalPaidByResident = context.personalPayments
+	.filter((payment) => Boolean(payment.paidAt))
+	.reduce((total, payment) => total + payment.amount, 0);
+const outstandingResidentTotal = context.personalPayments
+	.filter((payment) => !payment.paidAt)
+	.reduce((total, payment) => total + payment.amount, 0);
+const lastVisibleMovement = context.allVisiblePayments[0];
 
-	const statusColors: Record<string, string> = {
-		paid: 'bg-success/15 text-success',
-		pending: 'bg-warning/15 text-warning',
-		overdue: 'bg-destructive/15 text-destructive',
-		cancelled: 'bg-muted text-muted-foreground'
-	};
+// local alias used by the template
+const myPayments = context.personalPayments;
 
-	function getPaymentStatus(payment: (typeof myPayments)[number]) {
-		if (payment.paidAt) return 'paid';
-		if (new Date(payment.dueDate).getTime() < Date.now()) return 'overdue';
-		return 'pending';
-	}
+const statusColors: Record<string, string> = {
+	paid: 'bg-success/15 text-success',
+	pending: 'bg-warning/15 text-warning',
+	overdue: 'bg-destructive/15 text-destructive',
+	cancelled: 'bg-muted text-muted-foreground'
+};
+
+const statusLabels: Record<string, string> = {
+	paid: 'Pagato',
+	pending: 'In sospeso',
+	overdue: 'Scaduto',
+	cancelled: 'Annullato'
+};
+
+function getDocumentButtonLabel(document: SvicomDocument) {
+	// Simple helper to decide label for accounting documents
+	if (document.status === 'draft') return 'Modifica';
+	if (document.status === 'published') return 'Visualizza';
+	return 'Apri';
+}
+
+function getPaymentStatus(payment: Payment) {
+	if (payment.paidAt) return 'paid';
+	if (new Date(payment.dueDate).getTime() < Date.now()) return 'overdue';
+	return 'pending';
+}
 </script>
 
 <svelte:head>
@@ -153,7 +170,7 @@
 								</div>
 								<div class="payment-support-card__fact">
 									<p class="payment-support-card__fact-label">Condominio</p>
-									<p class="payment-support-card__fact-value">{context.property.name}</p>
+									<!-- <p class="payment-support-card__fact-value">{context.property.name}</p> -->
 								</div>
 							</div>
 
@@ -165,14 +182,14 @@
 						</CardContent>
 					</Card>
 				</div>
-			</section>
+			</div>
+		{/each}
 
-			{#if personalPaymentCards.length === 0 && propertyPaymentCards.length === 0}
-				<ResidentEmptyCard
-					title="Nessun pagamento registrato"
-					copy="Quando saranno disponibili nuovi movimenti per il tuo profilo o per il tuo stabile, li troverai qui."
-				/>
-			{/if}
+		{#if myPayments.length === 0}
+			<ResidentEmptyCard
+				title="Nessun pagamento registrato"
+				copy="Quando saranno disponibili nuovi movimenti per il tuo profilo o per il tuo stabile, li troverai qui."
+			/>
 		{/if}
 	</div>
 </div>

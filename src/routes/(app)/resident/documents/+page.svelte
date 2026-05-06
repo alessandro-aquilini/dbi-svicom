@@ -1,3 +1,5 @@
+<!-- TODO: Importare anche "invoices.ts" e "quotas.ts" dalla chat con il fornitore. Per ora solo i documenti in document.ts -->
+
 <script lang="ts">
 	import { ResidentDocumentCard, formatDocumentDate } from '$lib/components/documents';
 	import { ResidentEmptyCard, ResidentSummaryCard } from '$lib/components/resident';

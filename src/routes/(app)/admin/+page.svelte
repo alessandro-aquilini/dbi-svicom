@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { properties } from '$lib/data/properties';
-	import { tickets, type TicketPriority } from '$lib/data/tickets-admin';
+	import { tickets, type TicketPriority, getCurrentStatus, type Ticket } from '$lib/data/tickets-admin';
 	import { suppliers } from '$lib/data/suppliers';
 	import { getPropertyById } from '$lib/data/properties';
 
@@ -10,14 +10,9 @@
 		image?: string;
 	};
 
-	function getLatestTicketStatus() {
-		return (ticket: (typeof tickets)[number]) =>
-			ticket.statusHistory[ticket.statusHistory.length - 1]?.status ?? 'opened';
-	}
-
-	const isActiveTicket = (ticket: (typeof tickets)[number]) => {
-		const status = getLatestTicketStatus()(ticket);
-		return status !== 'paid' && status !== 'completed';
+	const isActiveTicket = (ticket: Ticket) => {
+		const status = getCurrentStatus(ticket);
+		return status !== 'paid' && status !== 'closed' && status !== 'completed';
 	};
 
 	const stats: Stat[] = [
@@ -50,9 +45,14 @@
 		bassa: 'bg-muted-foreground/40'
 	};
 
+	function getLatestActivityDate(ticket: Ticket): string {
+		if (ticket.eventTimeline.length === 0) return new Date().toISOString();
+		return ticket.eventTimeline[ticket.eventTimeline.length - 1].at;
+	}
+
 	const recentTickets = tickets
-		.filter((t) => t.status !== 'chiuso')
-		.toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+		.filter((t) => getCurrentStatus(t) !== 'closed')
+		.toSorted((a, b) => getLatestActivityDate(b).localeCompare(getLatestActivityDate(a)))
 		.slice(0, 5);
 
 	function formatRelative(iso: string): string {
@@ -123,11 +123,11 @@
 								<div class="min-w-0 flex-1">
 									<p class="truncate text-sm font-medium text-foreground">{ticket.title}</p>
 									<p class="truncate text-xs text-muted-foreground">
-										{property?.name ?? '—'} · {ticket.status}
+										{property?.name ?? '—'} · {getCurrentStatus(ticket)}
 									</p>
 								</div>
 								<span class="shrink-0 text-xs text-muted-foreground">
-									{formatRelative(ticket.updatedAt)}
+									{formatRelative(getLatestActivityDate(ticket))}
 								</span>
 							</a>
 						</li>
