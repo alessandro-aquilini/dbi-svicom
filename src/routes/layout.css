@@ -2,18 +2,11 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
+@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
 
 /* ─── Montserrat Variable Font (matches svicom.com brand) ─── */
-@font-face {
-	font-family: "Montserrat";
-	src: url("https://cdn.jsdelivr.net/fontsource/fonts/montserrat:vf@latest/latin-wght-normal.woff2")
-		format("woff2-variations");
-	font-weight: 100 900;
-	font-display: swap;
-}
-
 /*
  * ─── Svicom Living Hub Design System ───
  *
@@ -21,13 +14,13 @@
  * Accent:  #65BC7B (green, brand)
  * Palette: neutral grayscale (oklch)
  * Radius: 0.625rem
- * Font: Montserrat (brand)
+ * Font: Geist Variable
  * Theme: Light only
  */
 
 :root {
 	--radius: 0.625rem;
-	--font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
 
 	/* ─ Primary (blue-gray #5D7D94) ─ */
 	--primary: oklch(0.556 0.04 233);
@@ -225,5 +218,1916 @@
 	}
 	.login-cta {
 		@apply mt-8 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+	}
+
+	/* Resident modules */
+	.resident-module-page {
+		@apply mx-auto w-full max-w-3xl p-4 pb-8;
+	}
+	.resident-module-stack {
+		@apply space-y-4;
+	}
+	.resident-module-summary-card {
+		@apply rounded-[1.25rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.resident-module-summary-card__header {
+		@apply gap-2;
+	}
+	.resident-module-summary-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.resident-module-summary-card__title {
+		@apply text-[1.6rem] font-semibold tracking-tight text-foreground;
+	}
+	.resident-module-summary-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-module-summary-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.resident-module-summary-card__stats {
+		@apply grid gap-3 sm:grid-cols-3;
+	}
+	.resident-module-summary-card__stat {
+		@apply rounded-2xl border border-border/80 bg-background/85 p-3;
+	}
+	.resident-module-summary-card__stat-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.resident-module-summary-card__stat-value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.resident-module-summary-card__chips {
+		@apply flex flex-wrap gap-2;
+	}
+	.resident-module-summary-card__chip {
+		@apply inline-flex items-center rounded-full border border-border bg-background/90 px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.resident-module-section {
+		@apply space-y-3;
+	}
+	.resident-module-section__header {
+		@apply space-y-1;
+	}
+	.resident-module-section__title {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.resident-module-section__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-empty-card {
+		@apply rounded-[1.25rem] border-dashed shadow-none;
+	}
+	.resident-empty-card__header {
+		@apply text-center;
+	}
+	.resident-empty-card__title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.resident-empty-card__content {
+		@apply pt-0 text-center;
+	}
+	.resident-empty-card__copy {
+		@apply mx-auto max-w-xs text-sm leading-6 text-muted-foreground;
+	}
+
+	/* Documents */
+	.document-cards-stack {
+		@apply space-y-3;
+	}
+	.document-card-shell {
+		@apply rounded-[1.25rem] shadow-sm;
+	}
+	.document-card-shell__header {
+		@apply gap-3;
+	}
+	.document-card-shell__header-main {
+		@apply min-w-0;
+	}
+	.document-card-shell__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.document-card-shell__title {
+		@apply mt-1 text-base font-semibold leading-6 text-foreground;
+	}
+	.document-card-shell__description {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.document-card-shell__content {
+		@apply space-y-4;
+	}
+	.document-card-shell__meta {
+		@apply flex flex-wrap gap-2;
+	}
+	.document-card-shell__chip {
+		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.document-card-shell__facts {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.document-card-shell__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.document-card-shell__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.document-card-shell__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.document-card-shell__separator {
+		@apply mx-4;
+	}
+	.document-card-shell__footer {
+		@apply flex flex-col items-start gap-3 border-t border-border;
+	}
+	.document-card-shell__path {
+		@apply min-w-0;
+	}
+	.document-card-shell__path-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-card-shell__path-value {
+		@apply mt-2 break-all text-xs leading-5 text-foreground/70;
+	}
+	.document-card-shell__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.document-type-badge {
+		@apply rounded-full px-3 py-1 text-xs font-medium;
+	}
+	.document-status-badge {
+		@apply rounded-full border px-3 py-1 text-xs font-medium;
+	}
+	.document-status-badge--essential {
+		@apply border-transparent bg-primary/12 text-primary;
+	}
+	.document-status-badge--updated {
+		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
+	}
+	.document-status-badge--review {
+		@apply border-transparent bg-[color:var(--warning)]/15 text-[color:var(--warning-foreground)];
+	}
+	.document-status-badge--neutral {
+		@apply border-border bg-background text-muted-foreground;
+	}
+	.document-context-grid {
+		@apply grid gap-3;
+	}
+	.document-detail-actions {
+		@apply flex items-center;
+	}
+	.document-detail-actions__back {
+		@apply px-0 text-sm font-medium text-muted-foreground no-underline hover:text-foreground;
+	}
+	.document-detail-card {
+		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.document-detail-card__header {
+		@apply gap-4;
+	}
+	.document-detail-card__heading {
+		@apply min-w-0;
+	}
+	.document-detail-card__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.document-detail-card__title {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.document-detail-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.document-detail-card__badge-row {
+		@apply flex flex-wrap gap-2;
+	}
+	.document-detail-panels {
+		@apply grid gap-3;
+	}
+	.document-detail-card__content {
+		@apply pt-0;
+	}
+	.document-detail-card__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.document-detail-card__fact {
+		@apply rounded-2xl border border-border/80 bg-background/90 p-3;
+	}
+	.document-detail-card__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-detail-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+	.document-detail-context-card {
+		@apply rounded-[1.25rem] shadow-sm;
+	}
+	.document-detail-context-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.document-detail-context-card__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.document-detail-context-card__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.document-detail-context-card__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-detail-context-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+	.document-detail-context-card__chips {
+		@apply flex flex-wrap gap-2;
+	}
+	.document-detail-context-card__chip {
+		@apply rounded-full;
+	}
+	.document-detail-context-card__separator {
+		@apply my-1;
+	}
+	.document-assistant-launcher {
+		@apply rounded-[1.25rem] border-primary/10 bg-gradient-to-r from-primary/8 to-card shadow-sm;
+	}
+	.document-assistant-launcher__content {
+		@apply flex flex-col gap-4 pt-6;
+	}
+	.document-assistant-launcher__main {
+		@apply space-y-2;
+	}
+	.document-assistant-launcher__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.document-assistant-launcher__title {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.document-assistant-launcher__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.document-assistant-launcher__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.document-assistant-dialog {
+		width: min(calc(100vw - 1rem), 64rem);
+		max-width: min(calc(100vw - 1rem), 64rem);
+		max-height: min(88vh, 56rem);
+		grid-template-rows: auto minmax(0, 1fr);
+		overflow: hidden;
+	}
+	.document-assistant-dialog__header {
+		@apply pr-8;
+	}
+	.document-assistant-dialog__title {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.document-assistant-dialog__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.document-assistant-dialog__body {
+		@apply min-h-0 overflow-y-auto pr-1;
+	}
+	.document-assistant-panel {
+		@apply space-y-4;
+	}
+	.document-assistant-panel__prompt-grid {
+		@apply flex flex-col gap-2;
+	}
+	.document-assistant-panel__prompt-button {
+		@apply h-auto w-full items-start justify-start rounded-2xl px-4 py-3 text-left leading-5 whitespace-normal break-words;
+	}
+	.document-assistant-panel__separator {
+		@apply my-1;
+	}
+	.document-assistant-panel__footer {
+		@apply flex;
+	}
+	.document-assistant-panel__reset {
+		@apply min-h-11 rounded-full px-4;
+	}
+	.document-related-list {
+		@apply space-y-3;
+	}
+	.document-related-list__item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.document-related-list__row {
+		@apply flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between;
+	}
+	.document-related-list__title {
+		@apply text-sm font-semibold leading-6 text-foreground;
+	}
+	.document-related-list__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.document-related-list__badges {
+		@apply flex flex-wrap gap-2;
+	}
+	.document-related-list__details {
+		@apply mt-3 space-y-2;
+	}
+	.document-related-list__detail {
+		@apply text-sm leading-6 text-foreground/80;
+	}
+	.document-related-list__minutes {
+		@apply mt-3 rounded-2xl border border-border/80 bg-background/85 p-3;
+	}
+	.document-related-list__minutes-title {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-related-list__minutes-copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.document-related-list__resolution-list {
+		@apply mt-3 space-y-2;
+	}
+	.document-related-list__resolution {
+		@apply flex flex-col gap-2 rounded-2xl bg-secondary p-3 sm:flex-row sm:items-start sm:justify-between;
+	}
+	.document-related-list__resolution-title {
+		@apply text-sm font-medium leading-6 text-foreground;
+	}
+	.document-related-list__resolution-notes {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.document-related-list__link {
+		@apply mt-3 min-h-11 rounded-full px-4 text-foreground;
+	}
+	.document-related-list__empty {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.document-chat-card {
+		@apply rounded-[1.25rem] shadow-sm;
+	}
+	.document-chat-card__header {
+		@apply gap-2;
+	}
+	.document-chat-card__title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.document-chat-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.document-chat-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.document-chat-card__prompt-grid {
+		@apply grid gap-2;
+	}
+	.document-chat-card__prompt-button {
+		@apply min-h-11 justify-start rounded-2xl px-4 text-left whitespace-normal;
+	}
+	.document-chat-card__separator {
+		@apply my-1;
+	}
+	.document-chat-card__footer {
+		@apply border-t border-border;
+	}
+	.document-chat-card__reset {
+		@apply min-h-11 rounded-full px-4;
+	}
+	.document-chat-thread {
+		@apply space-y-3;
+	}
+	.document-chat-thread__message {
+		@apply rounded-2xl p-3;
+	}
+	.document-chat-thread__message--assistant {
+		@apply bg-secondary;
+	}
+	.document-chat-thread__message--user {
+		@apply bg-accent;
+	}
+	.document-chat-thread__role {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-chat-thread__text {
+		@apply mt-2 text-sm leading-6 text-foreground;
+	}
+	.document-chat-thread__citations {
+		@apply mt-3 space-y-2;
+	}
+	.document-chat-thread__citation {
+		@apply rounded-2xl border border-border/80 bg-background/90 p-3;
+	}
+	.document-chat-thread__citation-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-chat-thread__citation-text {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+
+	/* Assemblies */
+	.assembly-cards-stack {
+		@apply space-y-3;
+	}
+	.assembly-card-shell {
+		@apply rounded-[1.25rem] shadow-sm;
+	}
+	.assembly-card-shell__header {
+		@apply gap-3;
+	}
+	.assembly-card-shell__header-main {
+		@apply min-w-0;
+	}
+	.assembly-card-shell__badge-row {
+		@apply mb-1;
+	}
+	.assembly-card-shell__title {
+		@apply text-base font-semibold leading-6 text-foreground;
+	}
+	.assembly-card-shell__description {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-card-shell__content {
+		@apply space-y-4;
+	}
+	.assembly-card-shell__facts {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.assembly-card-shell__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.assembly-card-shell__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-card-shell__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.assembly-card-shell__section {
+		@apply space-y-3;
+	}
+	.assembly-card-shell__section-label {
+		@apply text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.assembly-card-shell__agenda-list {
+		@apply space-y-2;
+	}
+	.assembly-card-shell__agenda-item {
+		@apply rounded-2xl bg-background p-3 text-sm leading-6 text-foreground;
+	}
+	.assembly-card-shell__separator {
+		@apply my-1;
+	}
+	.assembly-card-shell__minutes-copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-card-shell__resolution-list {
+		@apply space-y-2;
+	}
+	.assembly-card-shell__resolution {
+		@apply flex items-start justify-between gap-3 rounded-2xl bg-background p-3;
+	}
+	.assembly-card-shell__resolution-main {
+		@apply min-w-0;
+	}
+	.assembly-card-shell__resolution-title {
+		@apply text-sm font-medium leading-6 text-foreground;
+	}
+	.assembly-card-shell__resolution-notes {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-card-shell__footer {
+		@apply border-t border-border;
+	}
+	.assembly-card-shell__footer-main {
+		@apply min-w-0;
+	}
+	.assembly-card-shell__footer-copy {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
+	.assembly-card-shell__button {
+		@apply min-h-11 rounded-full px-4;
+	}
+	.assembly-hero-card {
+		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.assembly-hero-card__header {
+		@apply gap-3;
+	}
+	.assembly-hero-card__heading {
+		@apply min-w-0;
+	}
+	.assembly-hero-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.assembly-hero-card__title {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.assembly-hero-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-hero-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.assembly-hero-card__facts {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.assembly-hero-card__fact {
+		@apply rounded-2xl bg-background/90 p-3;
+	}
+	.assembly-hero-card__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-hero-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.assembly-hero-card__agenda {
+		@apply space-y-2;
+	}
+	.assembly-hero-card__agenda-item {
+		@apply rounded-2xl bg-background p-3 text-sm leading-6 text-foreground;
+	}
+	.assembly-hero-card__actions {
+		@apply flex flex-col gap-2;
+	}
+	.assembly-hero-card__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.assembly-highlight-card {
+		@apply shadow-sm;
+	}
+	.assembly-highlight-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.assembly-highlight-card__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.assembly-minutes-highlights {
+		@apply grid gap-3;
+	}
+	.assembly-minutes-highlights__item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.assembly-minutes-highlights__label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-minutes-highlights__value {
+		@apply mt-2 text-sm font-semibold leading-5 text-foreground;
+	}
+	.assembly-minutes-highlights__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-transcript-list {
+		@apply space-y-3;
+	}
+	.assembly-transcript-list__item {
+		@apply rounded-2xl border border-border/80 bg-background p-3;
+	}
+	.assembly-transcript-list__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.assembly-transcript-list__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-detail-actions {
+		@apply -mb-2;
+	}
+	.assembly-detail-actions__back {
+		@apply min-h-11 px-0 text-sm font-medium text-muted-foreground no-underline hover:text-foreground;
+	}
+	.assembly-detail-card {
+		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.assembly-detail-card__header {
+		@apply gap-3;
+	}
+	.assembly-detail-card__heading {
+		@apply min-w-0;
+	}
+	.assembly-detail-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.assembly-detail-card__title {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.assembly-detail-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-detail-card__badge-row {
+		@apply flex flex-wrap gap-2;
+	}
+	.assembly-detail-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.assembly-detail-card__summary {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-detail-card__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.assembly-detail-card__fact {
+		@apply rounded-2xl bg-background/90 p-3;
+	}
+	.assembly-detail-card__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-detail-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.assembly-detail-card__agenda {
+		@apply space-y-3;
+	}
+	.assembly-detail-card__section-label {
+		@apply text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.assembly-detail-card__agenda-list {
+		@apply space-y-2;
+	}
+	.assembly-detail-card__agenda-item {
+		@apply rounded-2xl bg-background p-3 text-sm leading-6 text-foreground;
+	}
+	.assembly-access-grid {
+		@apply grid gap-3;
+	}
+	.assembly-access-card {
+		@apply rounded-[1.25rem] shadow-sm;
+	}
+	.assembly-access-card__header {
+		@apply gap-3;
+	}
+	.assembly-access-card__heading {
+		@apply min-w-0;
+	}
+	.assembly-access-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+	.assembly-access-card__title {
+		@apply mt-2 text-lg font-semibold text-foreground;
+	}
+	.assembly-access-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-access-card__session {
+		@apply w-fit rounded-full;
+	}
+	.assembly-access-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.assembly-access-card__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.assembly-access-card__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.assembly-access-card__fact--full {
+		@apply sm:col-span-2;
+	}
+	.assembly-access-card__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-access-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.assembly-access-card__fact-value--mono {
+		@apply break-all font-mono text-xs leading-5;
+	}
+	.assembly-access-card__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.assembly-minutes-launcher {
+		@apply rounded-[1.25rem] border-primary/10 bg-gradient-to-r from-primary/8 to-card shadow-sm;
+	}
+	.assembly-minutes-launcher__content {
+		@apply flex flex-col gap-4 pt-6;
+	}
+	.assembly-minutes-launcher__main {
+		@apply space-y-2;
+	}
+	.assembly-minutes-launcher__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.assembly-minutes-launcher__title {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.assembly-minutes-launcher__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-minutes-launcher__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.assembly-minutes-dialog {
+		width: min(calc(100vw - 0.75rem), 78rem);
+		max-width: min(calc(100vw - 0.75rem), 78rem);
+		max-height: min(92vh, 64rem);
+		grid-template-rows: auto minmax(0, 1fr);
+		overflow: hidden;
+		@apply gap-5 p-5 sm:p-6;
+	}
+	.assembly-minutes-dialog__header {
+		@apply pr-10;
+	}
+	.assembly-minutes-dialog__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.assembly-minutes-dialog__title {
+		@apply text-xl font-semibold tracking-tight text-foreground sm:text-2xl;
+	}
+	.assembly-minutes-dialog__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-minutes-dialog__badge-row {
+		@apply flex flex-wrap gap-2;
+	}
+	.assembly-minutes-dialog__meta-badge {
+		@apply rounded-full;
+	}
+	.assembly-minutes-dialog__body {
+		@apply min-h-0 space-y-4 overflow-y-auto pr-1;
+	}
+	.assembly-minutes-overview-card {
+		@apply rounded-[1.25rem] border-primary/10 bg-gradient-to-r from-accent to-card shadow-sm;
+	}
+	.assembly-minutes-overview-card__header {
+		@apply gap-2;
+	}
+	.assembly-minutes-overview-card__heading {
+		@apply min-w-0;
+	}
+	.assembly-minutes-overview-card__title {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.assembly-minutes-overview-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-minutes-overview-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.assembly-minutes-overview-card__layout {
+		@apply space-y-4;
+	}
+	.assembly-minutes-overview-card__summary-panel,
+	.assembly-minutes-overview-card__facts-panel {
+		@apply min-w-0;
+	}
+	.assembly-minutes-overview-card__summary-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+	.assembly-minutes-overview-card__summary {
+		@apply mt-3 rounded-[1.25rem] bg-background/95 p-5 text-base leading-8 text-foreground;
+	}
+	.assembly-minutes-overview-card__facts-list {
+		@apply space-y-3;
+	}
+	.assembly-minutes-overview-card__fact-row {
+		@apply flex flex-col gap-3 rounded-[1.25rem] border border-border/70 bg-secondary/65 p-4;
+	}
+	.assembly-minutes-overview-card__fact-main {
+		@apply min-w-0;
+	}
+	.assembly-minutes-overview-card__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.assembly-minutes-overview-card__fact-copy {
+		@apply mt-2 text-sm leading-6 text-foreground/80;
+	}
+	.assembly-minutes-overview-card__fact-value {
+		@apply w-fit rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground;
+	}
+	.assembly-minutes-dialog__layout {
+		@apply grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.95fr)];
+	}
+	.assembly-minutes-dialog__main,
+	.assembly-minutes-dialog__side {
+		@apply space-y-4;
+	}
+	.assembly-minutes-dialog__facts {
+		@apply grid gap-3 sm:grid-cols-2 xl:grid-cols-2;
+	}
+	.assembly-minutes-dialog__fact {
+		@apply rounded-[1.25rem] border border-border/70 bg-secondary/75 p-4;
+	}
+	.assembly-minutes-dialog__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-minutes-dialog__fact-value {
+		@apply mt-2 text-lg font-semibold leading-6 text-foreground;
+	}
+	.assembly-minutes-dialog__fact-copy {
+		@apply mt-3 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-dialog-section__header {
+		@apply gap-2;
+	}
+	.assembly-minutes-card--dialog .assembly-minutes-highlights {
+		@apply grid-cols-1;
+	}
+	.assembly-minutes-card--dialog .assembly-minutes-highlights__item {
+		@apply rounded-[1.25rem] bg-secondary/70 p-4;
+	}
+	.assembly-transcript-card--dialog .assembly-transcript-list {
+		@apply space-y-4;
+	}
+	.assembly-transcript-card--dialog .assembly-transcript-list__item {
+		@apply rounded-[1.25rem] border border-border/80 bg-secondary/30 p-4;
+	}
+	.assembly-transcript-card--dialog .assembly-transcript-list__title {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-primary;
+	}
+	.assembly-transcript-card--dialog .assembly-transcript-list__copy {
+		@apply mt-3 text-sm leading-7 text-foreground/85;
+	}
+	.assembly-detail-panels,
+	.assembly-session-panels {
+		@apply grid gap-3;
+	}
+	.assembly-context-card {
+		@apply shadow-sm;
+	}
+	.assembly-context-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.assembly-context-card__facts {
+		@apply grid gap-3;
+	}
+	.assembly-context-card__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.assembly-context-card__fact-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-context-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.assembly-context-card__chips {
+		@apply flex flex-wrap gap-2;
+	}
+	.assembly-context-card__chip {
+		@apply rounded-full;
+	}
+	.assembly-materials-list {
+		@apply space-y-3;
+	}
+	.assembly-materials-list__item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.assembly-materials-list__top {
+		@apply flex items-start justify-between gap-3;
+	}
+	.assembly-materials-list__label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-materials-list__value {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.assembly-materials-list__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-minutes-card,
+	.assembly-transcript-card,
+	.assembly-resolutions-card,
+	.assembly-session-card {
+		@apply shadow-sm;
+	}
+	.assembly-minutes-card__content,
+	.assembly-transcript-card__content,
+	.assembly-resolutions-card__content {
+		@apply pt-0;
+	}
+	.assembly-resolution-stack {
+		@apply space-y-3;
+	}
+	.assembly-resolution-row {
+		@apply rounded-[1.25rem] border border-border/70 bg-secondary/55 p-4;
+	}
+	.assembly-resolution-row__header {
+		@apply flex items-start justify-between gap-3;
+	}
+	.assembly-resolution-row__heading {
+		@apply min-w-0;
+	}
+	.assembly-resolution-row__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-resolution-row__title {
+		@apply mt-2 text-sm font-semibold leading-6 text-foreground;
+	}
+	.assembly-resolution-row__badge {
+		@apply rounded-full;
+	}
+	.assembly-resolution-row__copy {
+		@apply mt-3 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-resolution-row__notes {
+		@apply mt-3 rounded-2xl bg-background/85 p-3 text-sm leading-6 text-foreground/80;
+	}
+	.assembly-resolution-row__separator {
+		@apply mt-3;
+	}
+	.assembly-resolution-row__votes {
+		@apply mt-4 grid grid-cols-3 gap-2;
+	}
+	.assembly-resolution-row__vote {
+		@apply rounded-2xl bg-background/85 p-3 text-center;
+	}
+	.assembly-resolution-row__vote-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-resolution-row__vote-value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.assembly-session-card__header {
+		@apply gap-3;
+	}
+	.assembly-session-card__heading {
+		@apply min-w-0;
+	}
+	.assembly-session-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.assembly-session-card__title {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.assembly-session-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-session-card__badge-row {
+		@apply flex flex-wrap gap-2;
+	}
+	.assembly-checklist {
+		@apply space-y-3;
+	}
+	.assembly-checklist__item {
+		@apply rounded-2xl bg-secondary p-3 text-sm leading-6 text-foreground;
+	}
+	.assembly-status-badge,
+	.assembly-type-badge,
+	.resolution-outcome-badge {
+		@apply rounded-full px-3 py-1 text-xs font-medium;
+	}
+	.assembly-status-badge--pianificata {
+		@apply border-transparent bg-primary/12 text-primary;
+	}
+	.assembly-status-badge--svolta {
+		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
+	}
+	.assembly-status-badge--annullata {
+		@apply border-transparent bg-destructive/15 text-destructive;
+	}
+	.resolution-outcome-badge--approvata {
+		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
+	}
+	.resolution-outcome-badge--respinta {
+		@apply border-transparent bg-destructive/15 text-destructive;
+	}
+	.resolution-outcome-badge--rinviata {
+		@apply border-transparent bg-[color:var(--warning)]/15 text-[color:var(--warning-foreground)];
+	}
+
+	/* Resident reports */
+	.reports-page {
+		@apply mx-auto w-full max-w-3xl p-4 pb-8;
+	}
+	.reports-page--detail {
+		@apply pb-10;
+	}
+	.reports-stack {
+		@apply space-y-4;
+	}
+	.report-summary-card {
+		@apply rounded-[1.25rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.report-summary-card__header {
+		@apply gap-2;
+	}
+	.report-summary-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.report-summary-card__title {
+		@apply mt-2 text-[1.6rem] font-semibold tracking-tight text-foreground;
+	}
+	.report-summary-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.report-summary-card__content {
+		@apply pt-0;
+	}
+	.report-summary-card__stats {
+		@apply mt-4 grid grid-cols-2 gap-3;
+	}
+	.report-summary-card__stat {
+		@apply rounded-2xl border border-border/80 bg-background/85 p-3;
+	}
+	.report-summary-card__stat-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-summary-card__stat-value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.report-summary-card__meta {
+		@apply mt-4 flex flex-wrap gap-2;
+	}
+	.report-summary-card__actions {
+		@apply mt-4;
+	}
+	.report-summary-card__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.report-cards-stack {
+		@apply space-y-3;
+	}
+	.report-empty-card {
+		@apply border-dashed shadow-none;
+	}
+	.report-empty-card--detail {
+		@apply mt-4;
+	}
+	.report-empty-card__content {
+		@apply flex flex-col items-center justify-center gap-2 py-12 text-center;
+	}
+	.report-empty-card__title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.report-empty-card__copy {
+		@apply max-w-xs text-sm leading-6 text-muted-foreground;
+	}
+	.report-card-shell {
+		@apply rounded-[1.25rem] shadow-sm transition-all hover:border-primary/30 hover:shadow-md;
+	}
+	.report-card-shell__header {
+		@apply flex items-start justify-between gap-3;
+	}
+	.report-card-shell__header-main {
+		@apply min-w-0;
+	}
+	.report-card-shell__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.report-card-shell__title-link {
+		@apply inline-block min-w-0 text-foreground transition-colors hover:text-primary;
+	}
+	.report-card-shell__title {
+		@apply mt-1 text-base font-semibold leading-6 text-foreground;
+	}
+	.report-card-shell__content {
+		@apply space-y-4;
+	}
+	.report-card-shell__description {
+		@apply mt-3 text-sm leading-6 text-muted-foreground;
+	}
+	.report-card-shell__glance {
+		@apply mt-4 grid grid-cols-2 gap-3;
+	}
+	.report-card-shell__glance-item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.report-card-shell__glance-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-card-shell__glance-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.report-card-shell__meta {
+		@apply mt-3 flex flex-wrap gap-2;
+	}
+	.report-chip {
+		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.report-card-shell__footer {
+		@apply flex items-end justify-between gap-3 border-t border-border;
+	}
+	.report-card-shell__footer-copy {
+		@apply min-w-0;
+	}
+	.report-card-shell__footer-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-card-shell__footer-value {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
+	}
+	.report-card-shell__button {
+		@apply min-h-11 rounded-full px-4;
+	}
+	.ticket-status-badge {
+		@apply rounded-full border px-3 py-1 text-xs font-medium;
+	}
+	.ticket-status-badge--opened {
+		@apply border-border bg-background text-muted-foreground;
+	}
+	.ticket-status-badge--estimating,
+	.ticket-status-badge--in_progress {
+		@apply border-transparent bg-[color:var(--warning)]/15 text-[color:var(--warning-foreground)];
+	}
+	.ticket-status-badge--approved {
+		@apply border-transparent bg-primary/12 text-primary;
+	}
+	.ticket-status-badge--completed,
+	.ticket-status-badge--paid {
+		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
+	}
+	.ticket-priority-badge {
+		@apply rounded-full px-3 py-1 text-xs font-medium;
+	}
+	.ticket-priority-badge--bassa {
+		@apply border-border bg-background text-muted-foreground;
+	}
+	.ticket-priority-badge--media {
+		@apply border-transparent bg-primary/12 text-primary;
+	}
+	.ticket-priority-badge--alta {
+		@apply border-transparent bg-[color:var(--warning)]/15 text-[color:var(--warning-foreground)];
+	}
+	.ticket-priority-badge--critica {
+		@apply border-transparent bg-destructive/15 text-destructive;
+	}
+	.report-back-button {
+		@apply px-0 text-sm font-medium text-muted-foreground no-underline hover:text-foreground;
+	}
+	.report-detail-stack {
+		@apply mt-4 space-y-4;
+	}
+	.report-hero-card {
+		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.report-hero-card__header {
+		@apply flex items-start justify-between gap-3;
+	}
+	.report-hero-card__heading {
+		@apply min-w-0;
+	}
+	.report-hero-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.report-hero-card__title {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.report-hero-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.report-hero-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-progress-card {
+		@apply rounded-2xl border border-border/80 bg-background/90 p-3;
+	}
+	.report-progress-card__row {
+		@apply flex items-center justify-between gap-3;
+	}
+	.report-progress-card__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-progress-card__value {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.report-progress-card__track {
+		@apply mt-3 h-2 rounded-full;
+	}
+	.report-progress-card__meta {
+		@apply mt-3 text-xs text-muted-foreground;
+	}
+	.report-hero-card__meta-grid {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.report-hero-card__meta-block {
+		@apply rounded-2xl bg-background/90 p-3;
+	}
+	.report-hero-card__meta-label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.report-hero-card__meta-value {
+		@apply mt-2 text-sm font-medium text-foreground;
+	}
+	.report-hero-card__meta-copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.report-section-card {
+		@apply shadow-sm;
+	}
+	.report-section-card__header {
+		@apply gap-2;
+	}
+	.report-section-card__title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.report-section-card__copy {
+		@apply text-sm text-muted-foreground;
+	}
+	.report-section-card__content {
+		@apply pt-0;
+	}
+	.report-facts-grid {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.report-fact-card {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.report-fact-card__label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.report-fact-card__value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.report-fact-card__badge-row {
+		@apply mt-2;
+	}
+	.ticket-timeline {
+		@apply space-y-3;
+	}
+	.ticket-timeline__item {
+		@apply flex gap-3;
+	}
+	.ticket-timeline__rail {
+		@apply flex flex-col items-center;
+	}
+	.ticket-timeline__dot {
+		@apply mt-1 h-2.5 w-2.5 rounded-full bg-primary;
+	}
+	.ticket-timeline__line {
+		@apply mt-2 h-full w-px bg-border;
+	}
+	.ticket-timeline__content {
+		@apply flex-1 rounded-2xl bg-secondary p-3;
+	}
+	.ticket-timeline__row {
+		@apply flex items-start justify-between gap-3;
+	}
+	.ticket-timeline__main {
+		@apply min-w-0;
+	}
+	.ticket-timeline__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.ticket-timeline__meta {
+		@apply mt-1 text-xs text-muted-foreground;
+	}
+	.ticket-timeline__date {
+		@apply mt-3 text-xs font-medium text-foreground/75;
+	}
+	.report-chat-card {
+		@apply rounded-[1.25rem] border-primary/10 bg-primary text-primary-foreground shadow-sm;
+	}
+	.report-chat-card__content {
+		@apply flex flex-col gap-4;
+	}
+	.report-chat-card__title {
+		@apply text-sm font-semibold;
+	}
+	.report-chat-card__copy {
+		@apply mt-1 text-sm leading-6 text-primary-foreground/80;
+	}
+	.report-chat-card__button {
+		@apply min-h-11 w-full rounded-full border-card bg-card px-4 text-foreground hover:bg-card/90;
+	}
+	.report-created-card {
+		@apply rounded-[1.25rem] border-primary/10 bg-primary text-primary-foreground shadow-sm;
+	}
+	.report-created-card__content {
+		@apply flex flex-col gap-2;
+	}
+	.report-created-card__title {
+		@apply text-sm font-semibold;
+	}
+	.report-created-card__copy {
+		@apply text-sm leading-6 text-primary-foreground/80;
+	}
+	.report-create-prefill {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.report-create-prefill__item {
+		@apply rounded-2xl bg-background/90 p-3;
+	}
+	.report-create-prefill__label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.report-create-prefill__value {
+		@apply mt-2 text-sm font-medium text-foreground;
+	}
+	.report-create-prefill__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.report-form-card {
+		@apply shadow-sm;
+	}
+	.report-form-card__content {
+		@apply pt-0;
+	}
+	.report-form {
+		@apply space-y-4;
+	}
+	.report-form__grid {
+		@apply grid gap-4 sm:grid-cols-2;
+	}
+	.report-form__field {
+		@apply space-y-2;
+	}
+	.report-form__input,
+	.report-form__select-trigger,
+	.report-form__textarea {
+		@apply min-h-11 w-full rounded-2xl;
+	}
+	.report-form__textarea {
+		@apply px-4 py-3;
+	}
+	.report-form__hint {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-form__error {
+		@apply text-sm font-medium text-destructive;
+	}
+	.report-form__actions {
+		@apply flex flex-col gap-2 pt-2;
+	}
+	.report-form__submit,
+	.report-form__cancel {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.report-dynamic-grid {
+		@apply grid gap-4;
+	}
+	.report-attachments {
+		@apply grid gap-3;
+	}
+	.report-attachments--detail {
+		@apply mt-4;
+	}
+	.report-attachments__item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.report-attachments__name {
+		@apply text-sm font-medium text-foreground;
+	}
+	.report-attachments__meta {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
+	}
+	.report-created-card__summary {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.report-created-card__summary-item {
+		@apply rounded-2xl bg-card/10 p-3;
+	}
+	.report-created-card__summary-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary-foreground/75;
+	}
+	.report-created-card__summary-value {
+		@apply mt-2 text-sm font-semibold text-primary-foreground;
+	}
+	.ticket-progress-steps {
+		@apply grid gap-2;
+	}
+	.ticket-progress-steps__item {
+		@apply flex items-center gap-3 rounded-2xl border border-border/70 bg-background/90 px-3 py-2;
+	}
+	.ticket-progress-steps__item--active {
+		@apply border-primary/20 bg-primary/8;
+	}
+	.ticket-progress-steps__dot {
+		@apply h-2.5 w-2.5 rounded-full bg-border;
+	}
+	.ticket-progress-steps__item--active .ticket-progress-steps__dot {
+		@apply bg-primary;
+	}
+	.ticket-progress-steps__label {
+		@apply text-sm font-medium text-foreground;
+	}
+	.report-meta-grid {
+		@apply grid gap-3;
+	}
+	.report-meta-card {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.report-meta-card__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-meta-card__value {
+		@apply mt-2 text-sm leading-6 text-foreground;
+	}
+
+	/* Resident payments */
+	.payment-cards-stack {
+		@apply space-y-3;
+	}
+	.payment-card-shell {
+		@apply rounded-[1.25rem] shadow-sm transition-all hover:border-primary/20 hover:shadow-md;
+	}
+	.payment-card-shell__header {
+		@apply flex items-start justify-between gap-3;
+	}
+	.payment-card-shell__header-main {
+		@apply min-w-0;
+	}
+	.payment-card-shell__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.payment-card-shell__title-link {
+		@apply inline-block min-w-0 text-foreground transition-colors hover:text-primary;
+	}
+	.payment-card-shell__title {
+		@apply mt-1 text-base font-semibold leading-6 text-foreground;
+	}
+	.payment-card-shell__content {
+		@apply space-y-4;
+	}
+	.payment-card-shell__amount {
+		@apply text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.payment-card-shell__description {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payment-card-shell__chips {
+		@apply flex flex-wrap gap-2;
+	}
+	.payment-card-shell__chip {
+		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.payment-card-shell__facts {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.payment-card-shell__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.payment-card-shell__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-card-shell__fact-value {
+		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+	}
+	.payment-card-shell__separator {
+		@apply mx-4;
+	}
+	.payment-card-shell__footer {
+		@apply flex flex-col items-start gap-3 border-t border-border;
+	}
+	.payment-card-shell__footer-copy {
+		@apply min-w-0;
+	}
+	.payment-card-shell__footer-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-card-shell__footer-value {
+		@apply mt-2 text-xs leading-5 text-muted-foreground;
+	}
+	.payment-card-shell__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.payment-status-badge {
+		@apply rounded-full border px-3 py-1 text-xs font-medium;
+	}
+	.payment-status-badge--paid {
+		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
+	}
+	.payment-status-badge--pending {
+		@apply border-transparent bg-primary/12 text-primary;
+	}
+	.payment-status-badge--overdue {
+		@apply border-transparent bg-destructive/15 text-destructive;
+	}
+	.payment-support-grid,
+	.payment-detail-panels {
+		@apply grid gap-3;
+	}
+	.payment-support-card,
+	.payment-detail-card {
+		@apply rounded-[1.25rem] shadow-sm;
+	}
+	.payment-support-card__header,
+	.payment-detail-card__header {
+		@apply gap-2;
+	}
+	.payment-support-card__title,
+	.payment-detail-card__title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.payment-support-card__copy,
+	.payment-detail-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payment-support-card__content,
+	.payment-detail-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.payment-support-card__facts,
+	.payment-detail-card__facts,
+	.payment-detail-hero__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.payment-support-card__fact,
+	.payment-detail-card__fact,
+	.payment-detail-hero__fact {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.payment-support-card__fact-label,
+	.payment-detail-card__fact-label,
+	.payment-detail-hero__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-support-card__fact-value,
+	.payment-detail-card__fact-value,
+	.payment-detail-hero__fact-value {
+		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+	.payment-support-card__actions {
+		@apply flex;
+	}
+	.payment-support-card__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.payment-support-card__empty,
+	.payment-detail-card__empty {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payment-support-list,
+	.payment-detail-documents {
+		@apply space-y-3;
+	}
+	.payment-support-list__item,
+	.payment-detail-documents__item {
+		@apply flex flex-col gap-4 rounded-2xl bg-secondary p-4;
+	}
+	.payment-support-list__main,
+	.payment-detail-documents__main {
+		@apply min-w-0;
+	}
+	.payment-support-list__eyebrow,
+	.payment-detail-documents__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+	.payment-support-list__title,
+	.payment-detail-documents__title {
+		@apply mt-2 text-sm font-semibold leading-6 text-foreground;
+	}
+	.payment-support-list__copy,
+	.payment-detail-documents__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.payment-support-list__meta {
+		@apply flex flex-col gap-3;
+	}
+	.payment-support-list__meta-copy {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
+	.payment-support-list__button,
+	.payment-detail-documents__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.payment-detail-actions {
+		@apply -mb-2;
+	}
+	.payment-detail-actions__back {
+		@apply min-h-11 px-0 text-sm font-medium text-muted-foreground no-underline hover:text-foreground;
+	}
+	.payment-detail-hero {
+		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+	}
+	.payment-detail-hero__header {
+		@apply gap-3;
+	}
+	.payment-detail-hero__heading {
+		@apply min-w-0;
+	}
+	.payment-detail-hero__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.payment-detail-hero__title {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.payment-detail-hero__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.payment-detail-hero__badge-row {
+		@apply flex flex-wrap gap-2;
+	}
+	.payment-detail-hero__content {
+		@apply space-y-4 pt-0;
+	}
+	.payment-detail-hero__amount-block {
+		@apply rounded-[1.25rem] border border-border/80 bg-background/90 p-4;
+	}
+	.payment-detail-hero__amount-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-detail-hero__amount-value {
+		@apply mt-3 text-3xl font-semibold tracking-tight text-foreground;
+	}
+	.payment-detail-hero__amount-copy {
+		@apply mt-3 text-sm leading-6 text-muted-foreground;
+	}
+	.payment-detail-card__notes {
+		@apply rounded-2xl border border-border/80 bg-background/90 p-4;
+	}
+	.payment-detail-card__notes-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-detail-card__notes-copy {
+		@apply mt-2 text-sm leading-6 text-foreground/80;
+	}
+	.payment-chat-card {
+		@apply rounded-[1.25rem] border-primary/10 bg-primary text-primary-foreground shadow-sm;
+	}
+	.payment-chat-card__content {
+		@apply flex flex-col gap-4;
+	}
+	.payment-chat-card__title {
+		@apply text-sm font-semibold;
+	}
+	.payment-chat-card__copy {
+		@apply mt-1 text-sm leading-6 text-primary-foreground/80;
+	}
+	.payment-chat-card__button {
+		@apply min-h-11 w-full rounded-full border-card bg-card px-4 text-foreground hover:bg-card/90;
+	}
+	.payment-reminder-card {
+		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-r from-primary/8 to-card shadow-sm;
+	}
+	.payment-reminder-card__header {
+		@apply gap-3;
+	}
+	.payment-reminder-card__heading {
+		@apply min-w-0;
+	}
+	.payment-reminder-card__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.payment-reminder-card__title {
+		@apply mt-2 text-xl font-semibold tracking-tight text-foreground;
+	}
+	.payment-reminder-card__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.payment-reminder-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.payment-reminder-card__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.payment-reminder-card__fact {
+		@apply rounded-2xl bg-background/90 p-3;
+	}
+	.payment-reminder-card__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-reminder-card__fact-value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.payment-reminder-card__actions,
+	.payment-form__actions {
+		@apply flex flex-col gap-2;
+	}
+	.payment-reminder-card__button,
+	.payment-form__submit,
+	.payment-form__cancel {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.payment-form {
+		@apply space-y-4;
+	}
+	.payment-form__field {
+		@apply space-y-2;
+	}
+	.payment-form__select-trigger {
+		@apply min-h-11 w-full rounded-2xl;
+	}
+	.payment-form__hint {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payment-detail-card__narrative {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payment-breakdown-list {
+		@apply grid gap-3;
+	}
+	.payment-breakdown-list__item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.payment-breakdown-list__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payment-breakdown-list__value {
+		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+
+	/* Assemblies additions */
+	.assembly-card-shell__footer-actions {
+		@apply flex w-full flex-col gap-2;
+	}
+	.assembly-detail-card__actions {
+		@apply flex flex-col gap-2;
+	}
+	.assembly-detail-card__action-button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.assembly-vote-summary {
+		@apply grid gap-3;
+	}
+	.assembly-vote-summary__item {
+		@apply rounded-2xl bg-secondary p-3;
+	}
+	.assembly-vote-summary__label {
+		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.assembly-vote-summary__value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.assembly-vote-summary__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-vote-form,
+	.assembly-proxy-form {
+		@apply space-y-4;
+	}
+	.assembly-vote-form__item {
+		@apply rounded-2xl bg-secondary p-4;
+	}
+	.assembly-vote-form__main {
+		@apply min-w-0;
+	}
+	.assembly-vote-form__title {
+		@apply text-sm font-semibold leading-6 text-foreground;
+	}
+	.assembly-vote-form__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.assembly-vote-form__field,
+	.assembly-proxy-form__field {
+		@apply mt-3 space-y-2;
+	}
+	.assembly-vote-form__trigger,
+	.assembly-proxy-form__input,
+	.assembly-proxy-form__textarea {
+		@apply min-h-11 w-full rounded-2xl;
+	}
+	.assembly-proxy-form__grid {
+		@apply grid gap-4;
+	}
+	.assembly-vote-form__actions,
+	.assembly-proxy-form__actions {
+		@apply flex;
+	}
+	.assembly-vote-form__button,
+	.assembly-proxy-form__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.assembly-proxy-form__error {
+		@apply text-sm font-medium text-destructive;
+	}
+
+	/* Documents additions */
+	.document-card-shell__actions {
+		@apply flex w-full flex-col gap-2;
+	}
+	.document-assistant-overview {
+		@apply rounded-[1.25rem] border border-border/80 bg-secondary/40 p-4;
+	}
+	.document-assistant-overview__main {
+		@apply min-w-0;
+	}
+	.document-assistant-overview__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.document-assistant-overview__title {
+		@apply mt-2 text-base font-semibold text-foreground;
+	}
+	.document-assistant-overview__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.document-assistant-overview__facts {
+		@apply mt-4 grid gap-3 sm:grid-cols-3;
+	}
+	.document-assistant-overview__fact {
+		@apply rounded-2xl bg-background/90 p-3;
+	}
+	.document-assistant-overview__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-assistant-overview__fact-value {
+		@apply mt-2 text-sm font-medium text-foreground;
+	}
+	.document-chat-thread__header {
+		@apply flex items-center justify-between gap-3;
+	}
+	.document-chat-thread__step {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.document-chat-thread__citation-header {
+		@apply flex items-center justify-between gap-2;
+	}
+	.document-chat-thread__citation-index {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+
+	@media (min-width: 640px) {
+		.document-card-shell__footer {
+			@apply flex-row items-center justify-between;
+		}
+		.document-card-shell__actions {
+			@apply w-auto flex-row;
+		}
+		.document-card-shell__button {
+			@apply w-auto;
+		}
+		.document-detail-panels {
+			@apply grid-cols-2;
+		}
+		.document-context-grid {
+			@apply grid-cols-2;
+		}
+		.document-assistant-launcher__content {
+			@apply flex-row items-center justify-between;
+		}
+		.document-assistant-launcher__button {
+			@apply w-auto;
+		}
+		.document-chat-card__prompt-grid {
+			@apply grid-cols-2;
+		}
+		.reports-page {
+			@apply px-6 py-5;
+		}
+		.report-card-shell__footer {
+			@apply items-center;
+		}
+		.report-card-shell__button {
+			@apply px-5;
+		}
+		.report-chat-card__content {
+			@apply flex-row items-center justify-between;
+		}
+		.report-chat-card__button {
+			@apply w-auto;
+		}
+		.report-summary-card__button,
+		.report-form__submit,
+		.report-form__cancel {
+			@apply w-auto;
+		}
+		.report-form__actions {
+			@apply flex-row;
+		}
+		.report-dynamic-grid,
+		.report-meta-grid {
+			@apply grid-cols-2;
+		}
+		.payment-card-shell__footer {
+			@apply flex-row items-center justify-between;
+		}
+		.payment-card-shell__button,
+		.payment-support-card__button,
+		.payment-support-list__button,
+		.payment-detail-documents__button,
+		.payment-chat-card__button {
+			@apply w-auto;
+		}
+		.payment-support-grid,
+		.payment-detail-panels {
+			@apply grid-cols-2;
+		}
+		.payment-support-list__item,
+		.payment-detail-documents__item {
+			@apply flex-row items-center justify-between;
+		}
+		.payment-support-list__meta {
+			@apply items-end;
+		}
+		.payment-chat-card__content {
+			@apply flex-row items-center justify-between;
+		}
+		.payment-reminder-card__actions,
+		.payment-form__actions {
+			@apply flex-row;
+		}
+		.payment-reminder-card__button,
+		.payment-form__submit,
+		.payment-form__cancel {
+			@apply w-auto;
+		}
+		.payment-breakdown-list {
+			@apply grid-cols-2;
+		}
+		.assembly-card-shell__footer {
+			@apply flex-row items-center justify-between;
+		}
+		.assembly-card-shell__footer-actions {
+			@apply w-auto flex-row;
+		}
+		.assembly-card-shell__button,
+		.assembly-highlight-card__button,
+		.assembly-access-card__button,
+		.assembly-minutes-launcher__button {
+			@apply w-auto;
+		}
+		.assembly-hero-card__actions {
+			@apply flex-row flex-wrap;
+		}
+		.assembly-hero-card__button {
+			@apply w-auto;
+		}
+		.assembly-detail-card__actions {
+			@apply flex-row flex-wrap;
+		}
+		.assembly-detail-card__action-button {
+			@apply w-auto;
+		}
+		.assembly-highlight-card .assembly-minutes-highlights {
+			@apply grid-cols-3;
+		}
+		.assembly-access-grid,
+		.assembly-detail-panels,
+		.assembly-session-panels {
+			@apply grid-cols-2;
+		}
+		.assembly-context-card__facts {
+			@apply grid-cols-2;
+		}
+		.assembly-vote-summary,
+		.assembly-proxy-form__grid {
+			@apply grid-cols-2;
+		}
 	}
 }

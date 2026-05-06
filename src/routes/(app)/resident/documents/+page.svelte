@@ -1,36 +1,136 @@
 <script lang="ts">
+	import { ResidentDocumentCard, formatDocumentDate } from '$lib/components/documents';
+	import { ResidentEmptyCard, ResidentSummaryCard } from '$lib/components/resident';
 	import { getCurrentUser } from '$lib/auth';
-	import { getResidentById } from '$lib/data/residents';
-	import { getPropertyById } from '$lib/data/properties';
 	import { getDocumentsByPropertyId } from '$lib/data/documents';
+	import { getPropertyById } from '$lib/data/properties';
+	import { getResidentById } from '$lib/data/residents';
+	import { getUserById } from '$lib/data/users';
 
 	const currentUser = getCurrentUser();
 	const resident = currentUser ? getResidentById(currentUser.id) : undefined;
 	const property = resident ? getPropertyById(resident.propertyId) : undefined;
 	const documents = property ? getDocumentsByPropertyId(property.id) : [];
+	const propertyAdmin = property ? getUserById(property.adminId) : undefined;
+
+	const sortedDocuments = [...documents].sort((left, right) =>
+		right.updatedAt.localeCompare(left.updatedAt)
+	);
+	const featuredDocument = sortedDocuments[0];
+	const essentialDocuments = sortedDocuments.filter(
+		(document) => document.status === 'Essenziale' && document.id !== featuredDocument?.id
+	);
+	const archiveDocuments = sortedDocuments.filter(
+		(document) => document.status !== 'Essenziale' && document.id !== featuredDocument?.id
+	);
+	const distinctCategories = [...new Set(sortedDocuments.map((document) => document.category))].length;
+
+	const summaryCopy =
+		property && resident
+			? `${property.name}, ${resident.apartment}. Consulta regolamenti, ripartizioni e allegati disponibili per il tuo stabile.`
+			: 'Profilo residente non disponibile.';
+
+	const summaryStats = [
+		{ label: 'Documenti disponibili', value: sortedDocuments.length },
+		{ label: 'Documenti essenziali', value: sortedDocuments.filter((document) => document.status === 'Essenziale').length },
+		{ label: 'Categorie presenti', value: distinctCategories }
+	];
+
+	const summaryChips = property
+		? [
+				property.address.street,
+				propertyAdmin ? `Admin: ${propertyAdmin.name}` : 'Admin non disponibile',
+				featuredDocument ? `Ultimo aggiornamento ${formatDocumentDate(featuredDocument.updatedAt)}` : 'Nessun aggiornamento'
+			]
+		: [];
 </script>
 
 <svelte:head>
-	<title>Documenti — Residente — Svicom Living Hub</title>
+	<title>Documenti - Residente - Svicom Living Hub</title>
 </svelte:head>
 
-<div class="p-4">
-	<h1 class="mb-1 text-xl font-semibold text-foreground">Documenti</h1>
-	<p class="mb-4 text-sm text-muted-foreground">{documents.length} documenti disponibili</p>
+<div class="resident-module-page">
+	<div class="resident-module-stack">
+		<ResidentSummaryCard
+			eyebrow="Area residente"
+			title="Documenti"
+			copy={summaryCopy}
+			stats={summaryStats}
+			chips={summaryChips}
+		/>
 
-	<div class="space-y-3">
-		{#each documents as doc}
-			<div class="rounded-lg border border-border bg-card p-4 shadow-sm">
-				<div class="flex items-start justify-between">
-					<h3 class="text-sm font-medium text-foreground">{doc.title}</h3>
-					<span class="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">{doc.type.toUpperCase()}</span>
+		{#if featuredDocument}
+			<section class="resident-module-section">
+				<div class="resident-module-section__header">
+					<h1 class="resident-module-section__title">In primo piano</h1>
+					<p class="resident-module-section__copy">
+						Il documento aggiornato piu di recente e pronto per la consultazione.
+					</p>
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">{doc.summary}</p>
-				<p class="mt-2 text-xs text-muted-foreground">{doc.category} · {doc.status}</p>
-			</div>
-		{/each}
-		{#if documents.length === 0}
-			<p class="py-8 text-center text-sm text-muted-foreground">Nessun documento disponibile.</p>
+
+				<div class="document-cards-stack">
+					<ResidentDocumentCard
+						document={featuredDocument}
+						uploadedByLabel={getUserById(featuredDocument.uploadedBy)?.name ?? 'Operatore Svicom'}
+						updatedAtLabel={formatDocumentDate(featuredDocument.updatedAt)}
+						href={`/resident/documents/${featuredDocument.id}`}
+						assistantHref={`/resident/documents/${featuredDocument.id}?assistant=1`}
+					/>
+				</div>
+			</section>
+		{/if}
+
+		{#if essentialDocuments.length > 0}
+			<section class="resident-module-section">
+				<div class="resident-module-section__header">
+					<h2 class="resident-module-section__title">Documenti essenziali</h2>
+					<p class="resident-module-section__copy">
+						Regole e riferimenti da tenere sempre a portata di mano.
+					</p>
+				</div>
+
+				<div class="document-cards-stack">
+					{#each essentialDocuments as document}
+						<ResidentDocumentCard
+							document={document}
+							uploadedByLabel={getUserById(document.uploadedBy)?.name ?? 'Operatore Svicom'}
+							updatedAtLabel={formatDocumentDate(document.updatedAt)}
+							href={`/resident/documents/${document.id}`}
+							assistantHref={`/resident/documents/${document.id}?assistant=1`}
+						/>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		{#if archiveDocuments.length > 0}
+			<section class="resident-module-section">
+				<div class="resident-module-section__header">
+					<h2 class="resident-module-section__title">Archivio documenti</h2>
+					<p class="resident-module-section__copy">
+						Tutti i documenti disponibili per il tuo stabile, ordinati dal piu recente.
+					</p>
+				</div>
+
+				<div class="document-cards-stack">
+					{#each archiveDocuments as document}
+						<ResidentDocumentCard
+							document={document}
+							uploadedByLabel={getUserById(document.uploadedBy)?.name ?? 'Operatore Svicom'}
+							updatedAtLabel={formatDocumentDate(document.updatedAt)}
+							href={`/resident/documents/${document.id}`}
+							assistantHref={`/resident/documents/${document.id}?assistant=1`}
+						/>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		{#if sortedDocuments.length === 0}
+			<ResidentEmptyCard
+				title="Nessun documento disponibile"
+				copy="Quando saranno disponibili nuovi allegati del tuo stabile, li troverai qui."
+			/>
 		{/if}
 	</div>
 </div>
