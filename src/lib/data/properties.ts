@@ -17,10 +17,8 @@ export interface Property {
 	units: number;
 	adminId: string;
 	residentIds: string[];
-	supplierIds: string[];
 	status: PropertyStatus;
 	health: PropertyHealth;
-	activeTickets: number;
 	tags: string[];
 }
 
@@ -32,19 +30,8 @@ export const properties: Property[] = [
 		units: 24,
 		adminId: 'adm-svicom-01',
 		residentIds: ['res-bianchi-01'],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-secure-entry',
-			'frn-thermo-audit',
-			'frn-pet-care-milano',
-			'frn-babycare-studio',
-			'frn-wellness-lab',
-			'frn-casa-pulita',
-			'frn-easy-shopping'
-		],
 		status: 'attivo',
 		health: 'giallo',
-		activeTickets: 6,
 		tags: ['storico', 'centro']
 	},
 	{
@@ -54,18 +41,8 @@ export const properties: Property[] = [
 		units: 32,
 		adminId: 'adm-svicom-01',
 		residentIds: ['res-conti-02'],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-secure-entry',
-			'frn-green-habit',
-			'frn-pet-care-milano',
-			'frn-babycare-studio',
-			'frn-wellness-lab',
-			'frn-easy-shopping'
-		],
 		status: 'attivo',
 		health: 'verde',
-		activeTickets: 3,
 		tags: ['direzionale-misto']
 	},
 	{
@@ -75,15 +52,8 @@ export const properties: Property[] = [
 		units: 18,
 		adminId: 'adm-svicom-01',
 		residentIds: ['res-rossi-03'],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-green-habit',
-			'frn-babycare-studio',
-			'frn-casa-pulita'
-		],
 		status: 'attivo',
 		health: 'verde',
-		activeTickets: 2,
 		tags: []
 	},
 	{
@@ -93,15 +63,8 @@ export const properties: Property[] = [
 		units: 12,
 		adminId: 'adm-svicom-01',
 		residentIds: ['res-greco-04'],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-green-habit',
-			'frn-wellness-lab',
-			'frn-casa-pulita'
-		],
 		status: 'attivo',
 		health: 'rosso',
-		activeTickets: 9,
 		tags: ['ristrutturazione-in-corso']
 	},
 	{
@@ -110,16 +73,9 @@ export const properties: Property[] = [
 		address: { street: 'Via Filippo Pacini 44', city: 'Milano', cap: '20131', province: 'MI' },
 		units: 28,
 		adminId: 'adm-svicom-01',
-		residentIds: [],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-green-habit',
-			'frn-babycare-studio',
-			'frn-casa-pulita'
-		],
+		residentIds: ['res-ext-05', 'res-ext-06', 'res-ext-10', 'res-ext-11', 'res-ext-12', 'res-ext-13', 'res-ext-14', 'res-ext-15', 'res-ext-16', 'res-ext-17', 'res-ext-18', 'res-ext-19'],
 		status: 'onboarding',
 		health: 'giallo',
-		activeTickets: 1,
 		tags: ['nuovo']
 	},
 	{
@@ -128,17 +84,9 @@ export const properties: Property[] = [
 		address: { street: 'Via Andrea Solari 30', city: 'Milano', cap: '20144', province: 'MI' },
 		units: 40,
 		adminId: 'adm-svicom-01',
-		residentIds: [],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-secure-entry',
-			'frn-green-habit',
-			'frn-pet-care-milano',
-			'frn-wellness-lab'
-		],
+		residentIds: ['res-ext-07', 'res-ext-08', 'res-ext-20', 'res-ext-21', 'res-ext-22', 'res-ext-23', 'res-ext-24', 'res-ext-25', 'res-ext-26', 'res-ext-27', 'res-ext-28', 'res-ext-29'],
 		status: 'attivo',
 		health: 'verde',
-		activeTickets: 4,
 		tags: []
 	},
 	{
@@ -147,14 +95,9 @@ export const properties: Property[] = [
 		address: { street: 'Via Tortona 12', city: 'Milano', cap: '20144', province: 'MI' },
 		units: 22,
 		adminId: 'adm-svicom-01',
-		residentIds: [],
-		supplierIds: [
-			'frn-idroclima-nord',
-			'frn-thermo-audit'
-		],
+		residentIds: ['res-ext-09', 'res-ext-30', 'res-ext-31', 'res-ext-32', 'res-ext-33', 'res-ext-34', 'res-ext-35', 'res-ext-36', 'res-ext-37', 'res-ext-38', 'res-ext-39'],
 		status: 'in-uscita',
 		health: 'rosso',
-		activeTickets: 5,
 		tags: ['in-uscita-q3']
 	}
 ];

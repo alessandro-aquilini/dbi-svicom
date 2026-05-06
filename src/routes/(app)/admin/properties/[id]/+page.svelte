@@ -3,7 +3,6 @@
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentsByPropertyId } from '$lib/data/residents';
 	import { getTicketsByPropertyId } from '$lib/data/ticket/tickets-admin';
-	import { getUserById } from '$lib/data/users';
 	import { getCurrentStatus } from '$lib/components/tickets';
 
 	const property = $derived(getPropertyById(page.params.id ?? ''));
@@ -58,10 +57,6 @@
 			<div class="rounded-lg border border-border bg-card p-4">
 				<p class="text-sm text-muted-foreground">Residenti registrati</p>
 				<p class="mt-1 text-xl font-semibold">{residents.length}</p>
-			</div>
-			<div class="rounded-lg border border-border bg-card p-4">
-				<p class="text-sm text-muted-foreground">Pratiche attive</p>
-				<p class="mt-1 text-xl font-semibold">{property.activeTickets}</p>
 			</div>
 		</div>
 

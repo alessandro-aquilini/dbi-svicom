@@ -74,11 +74,32 @@ export const users: User[] = [
 		phone: '+39 02 3344 5566'
 	},
 	{
+		id: 'frn-termoservice-milano',
+		role: 'supplier',
+		name: 'Termoservice Milano',
+		email: 'info@termoservicemilano.it',
+		phone: '+39 02 1234 5678'
+	},
+	{
+		id: 'frn-idraulica-smart',
+		role: 'supplier',
+		name: 'Idraulica Smart',
+		email: 'tech@idraulicasmart.it',
+		phone: '+39 02 9876 5432'
+	},
+	{
 		id: 'frn-secure-entry',
 		role: 'supplier',
 		name: 'Secure Entry',
 		email: 'tecnici@secureentry.it',
 		phone: '+39 02 7788 9900'
+	},
+	{
+		id: 'frn-access-pro',
+		role: 'supplier',
+		name: 'Access Pro',
+		email: 'service@accesspro.it',
+		phone: '+39 02 1122 3355'
 	},
 	{
 		id: 'frn-green-habit',
@@ -88,6 +109,13 @@ export const users: User[] = [
 		phone: '+39 02 1122 3344'
 	},
 	{
+		id: 'frn-natura-viva',
+		role: 'supplier',
+		name: 'Natura Viva',
+		email: 'progetti@naturaviva.it',
+		phone: '+39 02 6677 8811'
+	},
+	{
 		id: 'frn-thermo-audit',
 		role: 'supplier',
 		name: 'Thermo Audit',
@@ -95,39 +123,18 @@ export const users: User[] = [
 		phone: '+39 02 5566 7788'
 	},
 	{
-		id: 'frn-pet-care-milano',
+		id: 'frn-global-cleaning-hub',
 		role: 'supplier',
-		name: 'Pet Care Milano',
-		email: 'prenotazioni@petcaremilano.it',
-		phone: '+39 02 9988 7766'
+		name: 'Global Cleaning Hub',
+		email: 'info@globalcleaning.it',
+		phone: '+39 02 9988 1122'
 	},
 	{
-		id: 'frn-babycare-studio',
+		id: 'frn-service-clean-24',
 		role: 'supplier',
-		name: 'BabyCare Studio Milano',
-		email: 'studio@babycaremilano.it',
-		phone: '+39 02 4455 6677'
-	},
-	{
-		id: 'frn-wellness-lab',
-		role: 'supplier',
-		name: 'Wellness Lab Milano',
-		email: 'agenda@wellnesslabmilano.it',
-		phone: '+39 02 3322 1100'
-	},
-	{
-		id: 'frn-casa-pulita',
-		role: 'supplier',
-		name: 'Casa Pulita Milano',
-		email: 'info@casapulitamilano.it',
-		phone: '+39 02 6677 8899'
-	},
-	{
-		id: 'frn-easy-shopping',
-		role: 'supplier',
-		name: 'Easy Shopping Milano',
-		email: 'ordini@easyshoppingmilano.it',
-		phone: '+39 02 1199 8877'
+		name: 'Service Clean 24',
+		email: 'servizi@clean24.it',
+		phone: '+39 02 5544 3322'
 	}
 ];
 

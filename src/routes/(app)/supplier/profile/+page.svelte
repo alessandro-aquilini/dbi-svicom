@@ -40,8 +40,8 @@
 					<p class="font-medium text-foreground">{supplier.category}</p>
 				</div>
 				<div>
-					<p class="text-muted-foreground">Tipologia</p>
-					<p class="font-medium text-foreground">{supplier.type}</p>
+					<p class="text-muted-foreground">Descrizione</p>
+					<p class="font-medium text-foreground">{supplier.description}</p>
 				</div>
 				<div>
 					<p class="text-muted-foreground">Valutazione</p>
@@ -52,14 +52,36 @@
 					<p class="font-medium text-foreground">{supplier.availability}</p>
 				</div>
 			</div>
-			<div class="mt-3">
-				<p class="text-sm text-muted-foreground">Servizi offerti</p>
-				<div class="mt-1 flex flex-wrap gap-1">
-					{#each supplier.servicesOffered as service}
-						<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{service}</span>
-					{/each}
+			{#if supplier.tags}
+				<div class="mt-3">
+					<p class="text-sm text-muted-foreground">Tag</p>
+					<div class="mt-1 flex flex-wrap gap-1">
+						{#each supplier.tags as tag}
+							<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{tag}</span>
+						{/each}
+					</div>
 				</div>
-			</div>
+			{/if}
+			{#if supplier.residentialServices}
+				<div class="mt-3">
+					<p class="text-sm text-muted-foreground">Servizi residenziali collegati</p>
+					<div class="mt-1 flex flex-wrap gap-1">
+						{#each supplier.residentialServices as rs}
+							<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{rs}</span>
+						{/each}
+					</div>
+				</div>
+			{/if}
+			{#if supplier.comments}
+				<div class="mt-3">
+					<p class="text-sm text-muted-foreground">Note amministrative</p>
+					<ul class="mt-1 list-disc pl-5 text-sm text-foreground">
+						{#each supplier.comments as c}
+							<li>{c}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		</div>
 	{:else}
 		<p class="text-muted-foreground">Profilo non trovato.</p>

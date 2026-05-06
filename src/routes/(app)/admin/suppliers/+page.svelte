@@ -1,55 +1,35 @@
 <script lang="ts">
-	import { suppliers, type SupplierStatus, type SupplierType, type Supplier } from '$lib/data/suppliers';
+	import { suppliers, type Supplier } from '$lib/data/suppliers';
 	import { getUserById } from '$lib/data/users';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip } from '$lib/components/shared';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { Search01Icon, GridIcon, MenuSquareIcon, StarIcon } from '@hugeicons/core-free-icons';
+	import { Search01Icon, GridIcon, MenuSquareIcon, StarIcon, Contact01Icon, Mail01Icon } from '@hugeicons/core-free-icons';
 
 	type Availability = Supplier['availability'];
-
-	const statusColors: Record<string, string> = {
-		affidabile: 'bg-success/15 text-success',
-		attivo: 'bg-primary/10 text-primary',
-		'in-corso': 'bg-warning/15 text-warning',
-		'da-monitorare': 'bg-destructive/15 text-destructive'
-	};
 
 	type ViewMode = 'grid' | 'table';
 	let view = $state<ViewMode>('grid');
 
 	let query = $state('');
-	let filterStatus = $state<SupplierStatus | ''>('');
-	let filterType = $state<SupplierType | ''>('');
 	let filterAvailability = $state<Availability | ''>('');
 
-	const hasLocalFilters = $derived(
-		query.trim().length > 0 ||
-			filterStatus !== '' ||
-			filterType !== '' ||
-			filterAvailability !== ''
-	);
+	const hasLocalFilters = $derived(query.trim().length > 0 || filterAvailability !== '');
 
-	// Suppliers scoped to the active property (sidebar): a supplier is shown only
-	// if the active property lists it among its `supplierIds`. Relationship comes
-	// from `properties.ts`, so no schema change needed.
 	const scopedSuppliers = $derived.by(() => {
 		const property = propertySelection.selected;
 		if (!property) return suppliers;
-		const ids = new Set(property.supplierIds);
-		return suppliers.filter((s) => ids.has(s.id));
+		return suppliers.filter((s) => s.propertyIds.includes(property.id));
 	});
 
 	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
 		return scopedSuppliers.filter((s) => {
-			if (filterStatus && s.status !== filterStatus) return false;
-			if (filterType && s.type !== filterType) return false;
 			if (filterAvailability && s.availability !== filterAvailability) return false;
 			if (q) {
 				const user = getUserById(s.id);
-				const haystack =
-					`${user?.name ?? ''} ${s.category} ${s.servicesOffered.join(' ')} ${s.tags.join(' ')}`.toLowerCase();
+				const tags = (s.tags ?? []).join(' ');
+				const haystack = `${user?.name ?? ''} ${s.category} ${s.description} ${tags}`.toLowerCase();
 				if (!haystack.includes(q)) return false;
 			}
 			return true;
@@ -58,8 +38,6 @@
 
 	function clearFilters() {
 		query = '';
-		filterStatus = '';
-		filterType = '';
 		filterAvailability = '';
 	}
 </script>
@@ -130,30 +108,6 @@
 		</div>
 
 		<select
-			bind:value={filterStatus}
-			class="filter-select"
-			aria-label="Filtra per stato"
-			class:is-active={filterStatus !== ''}
-		>
-			<option value="">Tutti gli stati</option>
-			<option value="affidabile">Affidabile</option>
-			<option value="attivo">Attivo</option>
-			<option value="in-corso">In corso</option>
-			<option value="da-monitorare">Da monitorare</option>
-		</select>
-
-		<select
-			bind:value={filterType}
-			class="filter-select"
-			aria-label="Filtra per tipo"
-			class:is-active={filterType !== ''}
-		>
-			<option value="">Tutti i tipi</option>
-			<option value="condominiale">Condominiale</option>
-			<option value="residenziale">Residenziale</option>
-		</select>
-
-		<select
 			bind:value={filterAvailability}
 			class="filter-select"
 			aria-label="Filtra per disponibilità"
@@ -205,20 +159,56 @@
 							<h3 class="text-sm font-medium text-foreground">{user?.name ?? supplier.id}</h3>
 							<p class="text-xs text-muted-foreground">{supplier.category}</p>
 						</div>
-						<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[supplier.status] ?? ''}">
-							{supplier.status}
-						</span>
+						<div class="flex flex-col items-end gap-1">
+							<span class="text-xs font-medium text-foreground">{supplier.availability}</span>
+							<span class="rating text-xs">
+								<HugeiconsIcon icon={StarIcon} size={10} strokeWidth={2} />
+								{supplier.rating.toFixed(1)}
+							</span>
+						</div>
 					</div>
-					<div class="mt-3 flex items-center gap-2">
-						<span class="text-sm font-medium text-foreground">★ {supplier.rating}</span>
-						<span class="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">{supplier.type}</span>
-						<span class="ml-auto text-xs text-muted-foreground">{supplier.availability}</span>
+					<div class="mt-3 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+						{supplier.description}
 					</div>
-					<div class="mt-2 flex flex-wrap gap-1">
-						{#each supplier.tags as tag}
-							<span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{tag}</span>
-						{/each}
+
+					<div class="mt-4 space-y-1.5 border-t border-border/50 pt-3">
+						{#if user?.email}
+							<div class="flex items-center gap-2 text-[11px] text-muted-foreground">
+								<HugeiconsIcon icon={Mail01Icon} size={12} strokeWidth={2} />
+								<span class="truncate">{user.email}</span>
+							</div>
+						{/if}
+						{#if user?.phone}
+							<div class="flex items-center gap-2 text-[11px] text-muted-foreground">
+								<HugeiconsIcon icon={Contact01Icon} size={12} strokeWidth={2} />
+								<span>{user.phone}</span>
+							</div>
+						{/if}
 					</div>
+
+					{#if supplier.tags && supplier.tags.length > 0}
+						<div class="mt-3 flex flex-wrap gap-1">
+							{#each supplier.tags as tag}
+								<span class="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-secondary-foreground">
+									{tag}
+								</span>
+							{/each}
+						</div>
+					{/if}
+					{#if supplier.comments && supplier.comments.length > 0}
+						<div class="mt-4 space-y-2 border-t border-border/50 pt-3">
+							<p class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Note Admin</p>
+							{#each supplier.comments.slice(0, 1) as comment}
+								<div class="rounded bg-muted/30 p-2">
+									<p class="text-xs italic text-foreground/80">"{comment.text}"</p>
+									<div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+										<span>{comment.author}</span>
+										<span>{new Date(comment.date).toLocaleDateString()}</span>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -229,22 +219,35 @@
 					<thead>
 						<tr class="border-b border-border text-left">
 							<th class="px-4 py-3 font-medium text-muted-foreground">Fornitore</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Contatti</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Categoria</th>
-							<th class="px-4 py-3 font-medium text-muted-foreground">Tipo</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Descrizione</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Rating</th>
-							<th class="px-4 py-3 font-medium text-muted-foreground">Stato</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Disponibilità</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Tag</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-border">
 						{#each filtered as supplier (supplier.id)}
 							{@const user = getUserById(supplier.id)}
 							<tr class="hover:bg-muted/50">
-								<td class="px-4 py-3 font-medium text-foreground">{user?.name ?? supplier.id}</td>
+								<td class="px-4 py-3">
+									<p class="font-medium text-foreground">{user?.name ?? supplier.id}</p>
+								</td>
+								<td class="px-4 py-3">
+									<div class="flex flex-col gap-0.5 text-[11px] text-muted-foreground">
+										{#if user?.email}
+											<span class="truncate">{user.email}</span>
+										{/if}
+										{#if user?.phone}
+											<span>{user.phone}</span>
+										{/if}
+									</div>
+								</td>
 								<td class="px-4 py-3 text-muted-foreground">{supplier.category}</td>
 								<td class="px-4 py-3">
-									<span class="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-										{supplier.type}
+									<span class="block max-w-xs truncate text-xs text-muted-foreground" title={supplier.description}>
+										{supplier.description}
 									</span>
 								</td>
 								<td class="px-4 py-3">
@@ -253,12 +256,14 @@
 										{supplier.rating.toFixed(1)}
 									</span>
 								</td>
-								<td class="px-4 py-3">
-									<span class="rounded-md px-2 py-0.5 text-xs font-medium {statusColors[supplier.status] ?? ''}">
-										{supplier.status}
-									</span>
-								</td>
 								<td class="px-4 py-3 text-xs text-muted-foreground">{supplier.availability}</td>
+								<td class="px-4 py-3">
+									<div class="flex flex-wrap gap-1">
+										{#each supplier.tags ?? [] as tag}
+											<span class="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{tag}</span>
+										{/each}
+									</div>
+								</td>
 							</tr>
 						{/each}
 					</tbody>
