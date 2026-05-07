@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { TicketEvent } from '$lib/data/ticket/tickets';
 	import { ticketStatusLabels } from './presentation';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
 
@@ -8,7 +7,8 @@
 		getAuthorLabel,
 		formatDate
 	}: {
-		events: TicketEvent[];
+		// events is an array of objects with at, actorId and toStatus fields (built from report.statusHistory)
+		events: Array<{ at: string; actorId?: string; toStatus?: string; note?: string; id?: string }>;
 		getAuthorLabel: (authorId?: string) => string;
 		formatDate: (value: string | undefined) => string;
 	} = $props();
@@ -16,14 +16,14 @@
 	const timelineSteps = $derived(
 		events
 			.map((ev) => {
-				if (ev.kind === 'status' || ev.kind === 'created' || ev.kind === 'closed') {
+				if (ev.toStatus) {
 					return {
 						...ev,
-						label: ticketStatusLabels[ev.toStatus!],
-						status: ev.toStatus!
+						label: ticketStatusLabels[ev.toStatus] ?? ev.toStatus,
+						status: ev.toStatus
 					};
 				}
-				if (ev.kind === 'note') {
+				if (ev.note) {
 					return {
 						...ev,
 						label: 'Nota informativa',

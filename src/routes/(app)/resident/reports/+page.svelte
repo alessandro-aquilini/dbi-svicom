@@ -7,7 +7,7 @@
 		formatTicketDate,
 		getResidentVisibleTicketsByCreatorId,
 		getCurrentStatus
-	} from '$lib/components/tickets';
+	} from '$lib/components/reports';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
 
@@ -18,10 +18,10 @@
 		currentUser
 			? getResidentVisibleTicketsByCreatorId(currentUser.id).sort(
 					(a, b) =>
-						new Date(b.eventTimeline.at(-1)?.at ?? 0).getTime() -
-						new Date(a.eventTimeline.at(-1)?.at ?? 0).getTime()
-				)
-			: []
+						new Date(b.updatedAt ?? b.statusHistory.at(-1)?.at ?? 0).getTime() -
+						new Date(a.updatedAt ?? a.statusHistory.at(-1)?.at ?? 0).getTime()
+			)
+		: []
 	);
 	const featuredReport = $derived(sortedReports[0]);
 </script>
@@ -54,7 +54,7 @@
 					<div class="report-summary-card__stat">
 						<p class="report-summary-card__stat-label">Ultimo aggiornamento</p>
 						<p class="report-summary-card__stat-value">
-							{featuredReport ? formatTicketDate(featuredReport.eventTimeline.at(-1)?.at) : 'Nessun ticket'}
+							{featuredReport ? formatTicketDate(featuredReport.updatedAt ?? featuredReport.statusHistory.at(-1)?.at) : 'Nessun ticket'}
 						</p>
 					</div>
 				</div>
@@ -83,7 +83,7 @@
 					href={`/resident/reports/${report.id}`}
 					propertyName={property?.name}
 					apartment={resident?.apartment}
-					updatedAtLabel={formatTicketDate(report.eventTimeline.at(-1)?.at)}
+					updatedAtLabel={formatTicketDate(report.updatedAt ?? report.statusHistory.at(-1)?.at)}
 				/>
 			{/each}
 

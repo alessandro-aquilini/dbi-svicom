@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import type { Ticket } from '$lib/data/ticket/tickets';
+	import type { Report } from '$lib/data/ticket/reports';
 	import { getCurrentStatus } from './presentation';
 	import TicketPriorityBadge from './TicketPriorityBadge.svelte';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';
@@ -13,7 +13,7 @@
 		apartment,
 		updatedAtLabel
 	}: {
-		ticket: Ticket;
+		ticket: Report;
 		href: string;
 		propertyName?: string;
 		apartment?: string;
@@ -53,7 +53,7 @@
 		<div class="report-card-shell__meta">
 			<span class="report-chip">{ticket.category}</span>
 			<TicketPriorityBadge priority={ticket.priority} />
-			<span class="report-chip">{ticket.eventTimeline.length} step</span>
+			<span class="report-chip">{ticket.statusHistory.length} step</span>
 		</div>
 	</CardContent>
 

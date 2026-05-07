@@ -1,16 +1,16 @@
 import { browser } from '$app/environment';
-import { getTicketById, tickets, type Ticket, type TicketPriority } from '$lib/data/ticket/tickets';
+import { reports, getReportById, type Report, type ReportPriority } from '$lib/data/ticket/reports';
 
 const RESIDENT_LOCAL_TICKETS_STORAGE_KEY = 'svicom_resident_local_tickets';
 const RESIDENT_LOCAL_TICKET_META_STORAGE_KEY = 'svicom_resident_local_ticket_meta';
 
 export interface ResidentTicketDraftInput {
-	title: string;
-	description: string;
-	priority: TicketPriority;
-	category: string;
-	creatorId: string;
-	propertyId: string;
+    title: string;
+    description: string;
+    priority: ReportPriority;
+    category: string;
+    reportedById: string;
+    propertyId: string;
 }
 
 export interface ResidentTicketOption {
@@ -42,10 +42,10 @@ export interface ResidentTicketFieldAnswer {
 }
 
 export interface ResidentTicketPresentationMeta {
-	ticketId: string;
-	submittedAt: string;
-	attachments: ResidentTicketAttachmentSummary[];
-	fieldAnswers: ResidentTicketFieldAnswer[];
+    ticketId: string;
+    submittedAt: string;
+    attachments: ResidentTicketAttachmentSummary[];
+    fieldAnswers: ResidentTicketFieldAnswer[];
 }
 
 export interface ResidentTicketDraftPresentationInput {
@@ -101,35 +101,33 @@ const residentTicketDynamicFields: ResidentTicketDynamicFieldDefinition[] = [
 ];
 
 export const residentTicketCategoryOptions: ResidentTicketOption[] = [
-	...new Set(tickets.map((ticket) => ticket.category))
+	...new Set(reports.map((r) => r.category))
 ]
 	.sort((left, right) => left.localeCompare(right))
 	.map((category) => ({
 		value: category,
 		label: category.charAt(0).toUpperCase() + category.slice(1),
-		copy:
-			residentTicketCategoryCopyByValue[category] ??
-			'Categoria attualmente presente nel catalogo ticket.'
+		copy: residentTicketCategoryCopyByValue[category] ?? 'Categoria attualmente presente nel catalogo report.'
 	}));
 
-function isTicketPriority(value: string): value is TicketPriority {
+function isTicketPriority(value: string): value is ReportPriority {
 	return residentTicketPriorityOptions.some((option) => option.value === value);
 }
 
-function parseResidentLocalTickets(rawValue: string | null): Ticket[] {
+function parseResidentLocalTickets(rawValue: string | null): Report[] {
 	if (!rawValue) return [];
 
 	try {
 		const parsed = JSON.parse(rawValue);
 		if (!Array.isArray(parsed)) return [];
 
-		return parsed.filter((ticket): ticket is Ticket => {
+		return parsed.filter((ticket): ticket is Report => {
 			return (
 				typeof ticket?.id === 'string' &&
 				typeof ticket?.title === 'string' &&
 				typeof ticket?.description === 'string' &&
 				typeof ticket?.priority === 'string' &&
-				typeof ticket?.creatorId === 'string' &&
+				typeof ticket?.reportedById === 'string' &&
 				typeof ticket?.propertyId === 'string' &&
 				typeof ticket?.category === 'string' &&
 				Array.isArray(ticket?.statusHistory)
@@ -160,7 +158,7 @@ function parseResidentLocalTicketMeta(rawValue: string | null): ResidentTicketPr
 	}
 }
 
-function getResidentLocalTicketStorage(): Ticket[] {
+function getResidentLocalTicketStorage(): Report[] {
 	if (!browser) return [];
 
 	return parseResidentLocalTickets(localStorage.getItem(RESIDENT_LOCAL_TICKETS_STORAGE_KEY));
@@ -172,7 +170,7 @@ function getResidentLocalTicketMetaStorage(): ResidentTicketPresentationMeta[] {
 	return parseResidentLocalTicketMeta(localStorage.getItem(RESIDENT_LOCAL_TICKET_META_STORAGE_KEY));
 }
 
-function setResidentLocalTicketStorage(localTickets: Ticket[]) {
+function setResidentLocalTicketStorage(localTickets: Report[]) {
 	if (!browser) return;
 
 	localStorage.setItem(RESIDENT_LOCAL_TICKETS_STORAGE_KEY, JSON.stringify(localTickets));
@@ -184,52 +182,45 @@ function setResidentLocalTicketMetaStorage(metaItems: ResidentTicketPresentation
 	localStorage.setItem(RESIDENT_LOCAL_TICKET_META_STORAGE_KEY, JSON.stringify(metaItems));
 }
 
-function generateResidentLocalTicketId(existingTickets: Ticket[]): string {
+function generateResidentLocalTicketId(existingTickets: Report[]): string {
 	const maxId = existingTickets.reduce((currentMax, ticket) => {
-		const match = /^TCK-(\d+)$/.exec(ticket.id);
+		const match = /^rep-(\d+)$/.exec(ticket.id);
 		return match ? Math.max(currentMax, Number(match[1])) : currentMax;
-	}, 475);
+	}, 1000);
 
-	return `TCK-${maxId + 1}`;
+	return `rep-${String(maxId + 1).padStart(3, '0')}`;
 }
 
-export function getResidentVisibleTicketsByCreatorId(creatorId: string | undefined): Ticket[] {
+export function getResidentVisibleTicketsByCreatorId(creatorId: string | undefined): Report[] {
 	if (!creatorId) return [];
 
 	return [
-		...tickets.filter((ticket) => ticket.creatorId === creatorId),
-		...getResidentLocalTicketStorage().filter((ticket) => ticket.creatorId === creatorId)
+		...reports.filter((r) => r.reportedById === creatorId),
+		...getResidentLocalTicketStorage().filter((r) => r.reportedById === creatorId)
 	];
 }
 
-export function getResidentVisibleTicketById(id: string): Ticket | undefined {
-	return getResidentLocalTicketStorage().find((ticket) => ticket.id === id) ?? getTicketById(id);
+export function getResidentVisibleTicketById(id: string): Report | undefined {
+	return getResidentLocalTicketStorage().find((ticket) => ticket.id === id) ?? getReportById(id);
 }
 
-export function createResidentLocalTicket(input: ResidentTicketDraftInput): Ticket {
+export function createResidentLocalTicket(input: ResidentTicketDraftInput): Report {
 	const localTickets = getResidentLocalTicketStorage();
 	const now = new Date().toISOString();
-	const ticket: Ticket = {
-		id: generateResidentLocalTicketId([...tickets, ...localTickets]),
+	const ticket: Report = {
+		id: generateResidentLocalTicketId([...reports, ...localTickets]),
 		title: input.title.trim(),
 		description: input.description.trim(),
 		priority: input.priority,
-		creatorId: input.creatorId,
+		reportedById: input.reportedById,
 		propertyId: input.propertyId,
 		category: input.category,
-		eventTimeline: [
-			{
-				id: `ev-${now}-${input.creatorId}`,
-				kind: 'created',
-				at: now,
-				actorId: input.creatorId,
-				toStatus: 'opened'
-			}
-		],
-		cc: [],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: []
+		status: 'nuova',
+		createdAt: now,
+		updatedAt: now,
+		statusHistory: [
+			{ status: 'nuova', at: now }
+		]
 	};
 
 	setResidentLocalTicketStorage([ticket, ...localTickets]);
@@ -239,14 +230,14 @@ export function createResidentLocalTicket(input: ResidentTicketDraftInput): Tick
 export function createResidentLocalTicketWithPresentation(
 	input: ResidentTicketDraftInput,
 	presentation?: ResidentTicketDraftPresentationInput
-): Ticket {
+): Report {
 	const ticket = createResidentLocalTicket(input);
 
 	if (presentation?.attachments?.length || presentation?.fieldAnswers?.length) {
 		const metaItems = getResidentLocalTicketMetaStorage().filter((item) => item.ticketId !== ticket.id);
 		const meta: ResidentTicketPresentationMeta = {
 			ticketId: ticket.id,
-			submittedAt: ticket.eventTimeline[0]?.at ?? new Date().toISOString(),
+			submittedAt: ticket.statusHistory[0]?.at ?? new Date().toISOString(),
 			attachments: presentation.attachments ?? [],
 			fieldAnswers: presentation.fieldAnswers ?? []
 		};
@@ -271,7 +262,7 @@ export function getResidentTicketPriorityOption(value: string | undefined): Resi
 	return residentTicketPriorityOptions.find((option) => option.value === value);
 }
 
-export function sanitizeResidentTicketPriority(value: string | undefined): TicketPriority {
+export function sanitizeResidentTicketPriority(value: string | undefined): ReportPriority {
 	return value && isTicketPriority(value) ? value : 'media';
 }
 

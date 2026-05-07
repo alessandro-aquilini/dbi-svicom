@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { TicketPriority } from '$lib/data/ticket/tickets';
+	// priority is a string from Report.priority (bassa | media | alta | critica)
 	import { ticketPriorityLabels } from './presentation';
 
 	let {
 		priority,
 		class: className
 	}: {
-		priority: TicketPriority;
+		priority: string;
 		class?: string;
 	} = $props();
 

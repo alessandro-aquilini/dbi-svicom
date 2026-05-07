@@ -14,7 +14,7 @@
 		getResidentVisibleTicketById,
 		getCurrentStatus,
 		ticketProgressValues
-	} from '$lib/components/tickets';
+	} from '$lib/components/reports';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
 	import { getUserById } from '$lib/data/users';
@@ -25,15 +25,24 @@
 	const ticketId = $derived(page.params.id ?? '');
 	const ticket = $derived(getResidentVisibleTicketById(ticketId));
 	const presentationMeta = $derived(ticket ? getResidentTicketPresentationMetaById(ticket.id) : undefined);
-	const isOwnedTicket = $derived(Boolean(ticket && currentUser && ticket.creatorId === currentUser.id));
+	const isOwnedTicket = $derived(Boolean(ticket && currentUser && ticket.reportedById === currentUser.id));
 	const latestStatus = $derived(ticket ? getCurrentStatus(ticket) : undefined);
-	const latestUpdateAt = $derived(ticket?.eventTimeline.at(-1)?.at);
+	const latestUpdateAt = $derived(ticket?.updatedAt ?? ticket?.statusHistory.at(-1)?.at);
 	const progressValue = $derived(latestStatus ? ticketProgressValues[latestStatus] : 0);
 	const isJustCreated = $derived(page.url.searchParams.get('created') === '1');
 
 	function getAuthorLabel(authorId?: string): string {
 		return authorId ? (getUserById(authorId)?.name ?? 'Operatore Svicom') : 'Operatore Svicom';
 	}
+
+	// Build a lightweight timeline from statusHistory so TicketTimeline can render it
+	const timelineEvents = $derived(ticket ? (ticket.statusHistory || []).map((h, idx) => ({
+		id: `st-${idx}-${ticket?.id}`,
+		kind: 'status',
+		at: h.at,
+		actorId: ticket?.reportedById,
+		toStatus: h.status
+	})) : []);
 </script>
 
 <svelte:head>
@@ -116,12 +125,12 @@
 						<div class="report-hero-card__meta-block">
 							<p class="report-hero-card__meta-label">Immobile</p>
 							<p class="report-hero-card__meta-value">{property.name}</p>
-							<p class="report-hero-card__meta-copy">{resident.apartment}</p>
+								<p class="report-hero-card__meta-copy">{resident.apartment}</p>
 						</div>
 						<div class="report-hero-card__meta-block">
 							<p class="report-hero-card__meta-label">Fornitore assegnato</p>
 							<p class="report-hero-card__meta-value">
-								{ticket.supplierId ? (getUserById(ticket.supplierId)?.name ?? 'Da assegnare') : 'Da assegnare'}
+									{ticket.assignedToId ? (getUserById(ticket.assignedToId)?.name ?? 'Da assegnare') : 'Da assegnare'}
 							</p>
 							<p class="report-hero-card__meta-copy">{property.address.street}, {property.address.city}</p>
 						</div>
@@ -149,11 +158,11 @@
 						</div>
 						<div class="report-fact-card">
 							<p class="report-fact-card__label">Creato da</p>
-							<p class="report-fact-card__value">{getUserById(ticket.creatorId)?.name ?? 'Utente non disponibile'}</p>
+							<p class="report-fact-card__value">{getUserById(ticket.reportedById)?.name ?? 'Utente non disponibile'}</p>
 						</div>
 						<div class="report-fact-card">
 							<p class="report-fact-card__label">Step registrati</p>
-							<p class="report-fact-card__value">{ticket.eventTimeline.length}</p>
+							<p class="report-fact-card__value">{ticket.statusHistory.length}</p>
 						</div>
 					</div>
 				</CardContent>
@@ -203,7 +212,7 @@
 				</CardHeader>
 
 				<CardContent class="report-section-card__content">
-					<TicketTimeline events={ticket.eventTimeline} {getAuthorLabel} formatDate={formatTicketDate} />
+					<TicketTimeline events={timelineEvents} {getAuthorLabel} formatDate={formatTicketDate} />
 				</CardContent>
 			</Card>
 

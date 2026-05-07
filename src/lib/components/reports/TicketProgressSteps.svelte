@@ -1,17 +1,10 @@
 <script lang="ts">
-	import type { TicketStatus } from '$lib/data/ticket/tickets';
 	import { ticketStatusLabels } from './presentation';
 
-	const ticketFlow: TicketStatus[] = [
-		'opened',
-		'estimating',
-		'approved',
-		'in_progress',
-		'completed',
-		'paid'
-	];
+	// Use report statuses
+	const ticketFlow: string[] = ['nuova', 'presa_in_carico', 'completata'];
 
-	let { currentStatus }: { currentStatus?: TicketStatus } = $props();
+	let { currentStatus }: { currentStatus?: string } = $props();
 
 	const currentIndex = $derived(currentStatus ? ticketFlow.indexOf(currentStatus) : -1);
 </script>

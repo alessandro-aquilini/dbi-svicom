@@ -13,7 +13,7 @@
 		getResidentVisiblePaymentById,
 		PaymentStatusBadge
 	} from '$lib/components/payments';
-	import { getCurrentStatus, ticketStatusLabels } from '$lib/components/tickets';
+	import { getCurrentStatus, ticketStatusLabels } from '$lib/components/reports';
 	import { ResidentEmptyCard } from '$lib/components/resident';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';

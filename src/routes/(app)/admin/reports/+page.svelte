@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { reports, type ReportStatus, type ReportPriority } from '$lib/data/ticket/reports';
 	import { getPropertyById } from '$lib/data/properties';
+	import { getUserById } from '$lib/data/users';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip, EmptyState } from '$lib/components/shared';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
@@ -101,6 +102,7 @@
 			<div class="grid gap-4">
 				{#each filtered as report}
 					{@const property = getPropertyById(report.propertyId)}
+					{@const reporter = getUserById(report.reportedById)}
 					<div
 						class="flex flex-col gap-4 rounded-xl border bg-card p-4 transition-colors hover:bg-accent/50 md:flex-row md:items-center md:justify-between"
 					>
@@ -120,6 +122,9 @@
 							<p class="line-clamp-1 text-sm text-muted-foreground">
 								{report.description}
 							</p>
+							{#if reporter}
+								<span class="text-sm text-muted-foreground">Segnalata da {reporter.name}</span>
+							{/if}
 						</div>
 
 						<div class="flex items-center gap-4 md:text-right">

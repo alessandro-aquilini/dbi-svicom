@@ -12,7 +12,7 @@
 		sanitizeResidentTicketPriority,
 		ticketStatusLabels,
 		type ResidentTicketFieldAnswer
-	} from '$lib/components/tickets';
+	} from '$lib/components/reports';
 	import { getCurrentUser } from '$lib/auth';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
@@ -68,7 +68,7 @@
 					{ label: 'Residente', value: currentUser.name, copy: 'Profilo che inviera la segnalazione.' },
 					{ label: 'Condominio', value: property.name, copy: property.address.street },
 					{ label: 'Unita abitativa', value: resident.apartment, copy: 'Dato collegato al profilo residente.' },
-					{ label: 'Stato iniziale', value: ticketStatusLabels.opened, copy: 'La pratica parte come nuova segnalazione.' }
+					{ label: 'Stato iniziale', value: ticketStatusLabels['nuova'], copy: 'La pratica parte come nuova segnalazione.' }
 				]
 			: []
 	);
@@ -147,7 +147,7 @@
 				description: form.description,
 				priority: sanitizeResidentTicketPriority(form.priority),
 				category: form.category,
-				creatorId: currentUser.id,
+				reportedById: currentUser.id,
 				propertyId: property.id
 			},
 			{

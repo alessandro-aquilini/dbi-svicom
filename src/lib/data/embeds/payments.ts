@@ -7,7 +7,7 @@ export interface Payment {
 	dueDate: string;
 	paidAt: string;
 	description: string;
-	ticketId: string;
+	ticketId?: string;
 	propertyId?: string;
 }
 

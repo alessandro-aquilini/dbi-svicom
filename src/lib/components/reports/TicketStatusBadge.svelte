@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { TicketStatus } from '$lib/data/ticket/tickets';
+	// status is a string from Report.status (nuova | presa_in_carico | completata)
 	import { ticketStatusLabels } from './presentation';
 
 	let {
 		status,
 		class: className
 	}: {
-		status: TicketStatus;
+		status: string;
 		class?: string;
 	} = $props();
 
