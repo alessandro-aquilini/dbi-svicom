@@ -26,7 +26,6 @@ export interface TicketEvent {
 	id: string;
 	kind: TicketEventKind;
 	at: string;          // ISO 8601
-	actorId?: string;    // References User.id — who triggered this event
 
 	// ── status / closed events ──
 	fromStatus?: TicketStatus;
@@ -93,13 +92,13 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-bianchi-01', 'res-ext-05'],
 		eventTimeline: [
-			{ id: 'ev-1', kind: 'created', at: '2026-05-01T10:00:00Z', actorId: 'adm-giorgio-01' },
-			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00Z', actorId: 'adm-giorgio-01', fromStatus: 'opened', toStatus: 'estimating' },
-			{ id: 'ev-3', kind: 'assigned', at: '2026-05-01T10:05:00Z', actorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord' },
-			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00Z', actorId: 'frn-idroclima-nord', body: 'Ricevuto. Invio tecnico per sopralluogo immediato.' },
-			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:00:00Z', actorId: 'frn-idroclima-nord', fromStatus: 'estimating', toStatus: 'approved' },
-			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00Z', actorId: 'frn-idroclima-nord', fromStatus: 'approved', toStatus: 'in_progress' },
-			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00Z', actorId: 'frn-idroclima-nord', fromStatus: 'in_progress', toStatus: 'completed' }
+			{ id: 'ev-1', kind: 'created', at: '2026-05-01T10:00:00' },
+			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00', fromStatus: 'opened', toStatus: 'estimating' },
+			{ id: 'ev-3', kind: 'assigned', at: '2026-05-01T10:05:00', supplierId: 'frn-idroclima-nord' },
+			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00', body: 'Idroclina Nord ha risposto subito ed è disponibile.' },
+			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:00:00', fromStatus: 'estimating', toStatus: 'approved' },
+			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00', fromStatus: 'approved', toStatus: 'in_progress' },
+			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00', fromStatus: 'in_progress', toStatus: 'completed' }
 		],
 		paymentIds: ['pay-001'],
 		quoteIds: ['quo-001'],
@@ -116,9 +115,9 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
 		eventTimeline: [
-			{ id: 'ev-201', kind: 'created', at: '2026-05-03T16:30:00Z', actorId: 'adm-giorgio-01' },
-			{ id: 'ev-202', kind: 'assigned', at: '2026-05-03T16:35:00Z', actorId: 'adm-giorgio-01', supplierId: 'frn-secure-entry' },
-			{ id: 'ev-203', kind: 'status', at: '2026-05-03T16:35:00Z', actorId: 'adm-giorgio-01', fromStatus: 'opened', toStatus: 'estimating' }
+			{ id: 'ev-201', kind: 'created', at: '2026-05-03T16:30:00' },
+			{ id: 'ev-202', kind: 'assigned', at: '2026-05-03T16:35:00', supplierId: 'frn-secure-entry' },
+			{ id: 'ev-203', kind: 'status', at: '2026-05-03T16:35:00', fromStatus: 'opened', toStatus: 'estimating' }
 		],
 		paymentIds: [],
 		quoteIds: ['quo-002'],

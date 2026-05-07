@@ -20,6 +20,9 @@
 	} from '$lib/data/ticket/tickets';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getUserById, type User } from '$lib/data/users';
+	import { getQuoteById } from '$lib/data/embeds/quotes';
+	import { getInvoiceById } from '$lib/data/embeds/invoices';
+	import { getPaymentById } from '$lib/data/embeds/payments';
 
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);
@@ -32,6 +35,39 @@
 	const currentStatus = $derived(ticket ? getCurrentStatus(ticket) : 'opened');
 	const firstEvent = $derived(ticket?.eventTimeline[0]);
 	const lastEvent = $derived(ticket?.eventTimeline[ticket.eventTimeline.length - 1]);
+
+	type UnifiedEvent = 
+		| { type: 'ticket-event'; data: TicketEvent; at: string }
+		| { type: 'quote'; data: any; at: string }
+		| { type: 'invoice'; data: any; at: string }
+		| { type: 'payment'; data: any; at: string };
+
+	const unifiedTimeline = $derived.by<UnifiedEvent[]>(() => {
+		if (!ticket) return [];
+		
+		const items: UnifiedEvent[] = ticket.eventTimeline.map(ev => ({
+			type: 'ticket-event',
+			data: ev,
+			at: ev.at
+		}));
+
+		ticket.quoteIds.forEach(id => {
+			const q = getQuoteById(id);
+			if (q) items.push({ type: 'quote', data: q, at: q.sentAt });
+		});
+
+		ticket.invoiceIds.forEach(id => {
+			const i = getInvoiceById(id);
+			if (i) items.push({ type: 'invoice', data: i, at: i.issueDate });
+		});
+
+		ticket.paymentIds.forEach(id => {
+			const p = getPaymentById(id);
+			if (p) items.push({ type: 'payment', data: p, at: p.paidAt || p.dueDate });
+		});
+
+		return items.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+	});
 
 	let newNote = $state('');
 
@@ -202,65 +238,133 @@
 					<section class="block">
 						<h2 class="block__title">Cronologia</h2>
 						<ol class="timeline mt-5">
-							{#each timeline as ev (ev.id)}
-								{@const actor = ev.actorId ? getUserById(ev.actorId) : undefined}
-								{#if ev.kind === 'note'}
-									<li class="tl-item tl-item--comment">
-										<span class="tl-node">
-											{#if actor}
-												<span
-													class="avatar avatar--sm"
-													style:background-color={avatarColor(actor)}
-													aria-hidden="true"
-												>
-													{initials(actor.name)}
-												</span>
-											{:else}
-												<span class="tl-dot"></span>
-											{/if}
-										</span>
-										<div class="tl-card">
-											<header class="tl-card__head">
-												<span class="tl-card__author">{actor?.name ?? 'Utente'}</span>
-												<span class="tl-card__time">{relativeTime(ev.at)}</span>
-											</header>
-											<p class="tl-card__body">{ev.body}</p>
-										</div>
-									</li>
-								{:else}
-									<li class="tl-item tl-item--inline">
-										<span class="tl-node">
-											<span class="tl-dot tl-dot--{ev.kind}" aria-hidden="true">
-												{#if ev.kind === 'created'}
-													<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
-												{:else if ev.kind === 'assigned'}
-													<HugeiconsIcon icon={UserAdd01Icon} size={11} strokeWidth={2} />
-												{:else if ev.kind === 'status'}
-													<HugeiconsIcon icon={Exchange01Icon} size={11} strokeWidth={2} />
-												{:else if ev.kind === 'ai'}
-													<HugeiconsIcon icon={SparklesIcon} size={11} strokeWidth={2} />
+							{#each unifiedTimeline as item}
+								{#if item.type === 'ticket-event'}
+									{@const ev = item.data}
+									{@const actor = reporter}
+									{#if ev.kind === 'note'}
+										<li class="tl-item tl-item--comment">
+											<span class="tl-node">
+												{#if actor}
+													<span
+														class="avatar avatar--sm"
+														style:background-color={avatarColor(actor)}
+														aria-hidden="true"
+													>
+														{initials(actor.name)}
+													</span>
+												{:else}
+													<span class="tl-dot"></span>
 												{/if}
 											</span>
+											<div class="tl-card">
+												<header class="tl-card__head">
+													<span class="tl-card__author">{actor?.name ?? 'Amministratore'}</span>
+													<span class="tl-card__time">{relativeTime(ev.at)}</span>
+												</header>
+												<p class="tl-card__body">{ev.body}</p>
+											</div>
+										</li>
+									{:else}
+										<li class="tl-item tl-item--inline">
+											<span class="tl-node">
+												<span class="tl-dot tl-dot--{ev.kind}" aria-hidden="true">
+													{#if ev.kind === 'created'}
+														<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
+													{:else if ev.kind === 'assigned'}
+														<HugeiconsIcon icon={UserAdd01Icon} size={11} strokeWidth={2} />
+													{:else if ev.kind === 'status'}
+														<HugeiconsIcon icon={Exchange01Icon} size={11} strokeWidth={2} />
+													{:else if ev.kind === 'ai'}
+														<HugeiconsIcon icon={SparklesIcon} size={11} strokeWidth={2} />
+													{/if}
+												</span>
+											</span>
+											<div class="tl-inline-group">
+												<p class="tl-inline">
+													{#if ev.kind === 'created'}
+														<strong>{actor?.name ?? 'Amministratore'}</strong>
+														<span class="tl-inline__verb">ha aperto la pratica</span>
+													{:else if ev.kind === 'assigned' || ev.kind === 'reassigned'}
+														{@const target = ev.supplierId ? getUserById(ev.supplierId) : undefined}
+														<span class="tl-inline__verb"
+															>{ev.kind === 'assigned' ? 'Pratica assegnata a' : 'Pratica riassegnata a'}</span
+														>
+														<strong>{target?.name ?? '—'}</strong>
+													{:else if ev.kind === 'status' || ev.kind === 'closed'}
+														<span class="tl-inline__verb">Stato cambiato in</span>
+														<strong>{ev.toStatus ? statusLabel[ev.toStatus as TicketStatus] : '—'}</strong>
+													{:else if ev.kind === 'ai'}
+														<strong>Assistente</strong>
+														<span class="tl-inline__verb">{ev.body}</span>
+													{/if}
+													<span class="tl-inline__time">· {relativeTime(ev.at)}</span>
+												</p>
+											</div>
+										</li>
+									{/if}
+								{:else if item.type === 'quote'}
+									{@const q = item.data}
+									<li class="tl-item tl-item--inline">
+										<span class="tl-node">
+											<span class="tl-dot" aria-hidden="true">
+												<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
+											</span>
 										</span>
-										<p class="tl-inline">
-											{#if ev.kind === 'created'}
-												<strong>{actor?.name ?? 'Segnalante'}</strong>
-												<span class="tl-inline__verb">ha aperto la pratica</span>
-											{:else if ev.kind === 'assigned' || ev.kind === 'reassigned'}
-												{@const target = ev.supplierId ? getUserById(ev.supplierId) : undefined}
-												<span class="tl-inline__verb"
-													>{ev.kind === 'assigned' ? 'Pratica assegnata a' : 'Pratica riassegnata a'}</span
-												>
-												<strong>{target?.name ?? '—'}</strong>
-											{:else if ev.kind === 'status' || ev.kind === 'closed'}
-												<span class="tl-inline__verb">Stato cambiato in</span>
-												<strong>{ev.toStatus ? statusLabel[ev.toStatus] : '—'}</strong>
-											{:else if ev.kind === 'ai'}
-												<strong>Assistente</strong>
-												<span class="tl-inline__verb">{ev.body}</span>
-											{/if}
-											<span class="tl-inline__time">· {relativeTime(ev.at)}</span>
-										</p>
+										<div class="tl-inline-group">
+											<p class="tl-inline">
+												<strong>Documento ricevuto</strong>
+												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
+											</p>
+											<div class="mt-2">
+												<div class="embed-pill embed-pill--quote">
+													<span class="embed-pill__label">Preventivo</span>
+													<span class="embed-pill__value">{q.title} ({q.amount} {q.currency})</span>
+												</div>
+											</div>
+										</div>
+									</li>
+								{:else if item.type === 'invoice'}
+									{@const i = item.data}
+									<li class="tl-item tl-item--inline">
+										<span class="tl-node">
+											<span class="tl-dot" aria-hidden="true">
+												<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
+											</span>
+										</span>
+										<div class="tl-inline-group">
+											<p class="tl-inline">
+												<strong>Fattura emessa</strong>
+												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
+											</p>
+											<div class="mt-2">
+												<div class="embed-pill embed-pill--invoice">
+													<span class="embed-pill__label">Fattura</span>
+													<span class="embed-pill__value">N. {i.number} ({i.amount} {i.currency})</span>
+												</div>
+											</div>
+										</div>
+									</li>
+								{:else if item.type === 'payment'}
+									{@const p = item.data}
+									<li class="tl-item tl-item--inline">
+										<span class="tl-node">
+											<span class="tl-dot" aria-hidden="true">
+												<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
+											</span>
+										</span>
+										<div class="tl-inline-group">
+											<p class="tl-inline">
+												<strong>Transazione finanziaria</strong>
+												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
+											</p>
+											<div class="mt-2">
+												<div class="embed-pill embed-pill--payment">
+													<span class="embed-pill__label">Pagamento</span>
+													<span class="embed-pill__value">{p.paidAt ? 'Eseguito' : 'In attesa'} ({p.amount} {p.currency})</span>
+												</div>
+											</div>
+										</div>
 									</li>
 								{/if}
 							{/each}
@@ -374,7 +478,7 @@
 								<dd class="capitalize">{ticket.category}</dd>
 							</div>
 							<div class="detail-row">
-								<dt>Segnalata da</dt>
+								<dt>Creata da</dt>
 								<dd>{reporter?.name ?? '—'}</dd>
 							</div>
 							<div class="detail-row">
@@ -769,6 +873,42 @@
 
 	.tl-form__submit:not(:disabled):hover {
 		opacity: 0.92;
+	}
+
+	/* ─── Embed Pills ─────────────────────────────────────────── */
+	.embed-pill {
+		display: inline-flex;
+		flex-direction: column;
+		padding: 0.5rem 0.75rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--border);
+		background: var(--card);
+		min-width: 8rem;
+	}
+
+	.embed-pill--quote {
+		border-left: 3px solid #a07a55;
+	}
+	.embed-pill--invoice {
+		border-left: 3px solid #5d7d94;
+	}
+	.embed-pill--payment {
+		border-left: 3px solid #7b8c76;
+	}
+
+	.embed-pill__label {
+		font-size: 0.625rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--muted-foreground);
+	}
+
+	.embed-pill__value {
+		margin-top: 0.125rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--foreground);
 	}
 
 	/* ─── Assign CTA (empty supplier slot) ────────────────────── */
