@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { suppliers, type Supplier } from '$lib/data/suppliers';
+	import { suppliers, type Supplier, type SupplierType } from '$lib/data/suppliers';
 	import { getUserById } from '$lib/data/users';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip } from '$lib/components/shared';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { Search01Icon, GridIcon, MenuSquareIcon, StarIcon, Contact01Icon, Mail01Icon } from '@hugeicons/core-free-icons';
+	import { Search01Icon, GridIcon, MenuSquareIcon, StarIcon, Contact01Icon, Mail01Icon, Building01Icon, UserIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
+	import { getServiceById } from '$lib/data/services';
 
 	type Availability = Supplier['availability'];
 
@@ -13,8 +14,9 @@
 
 	let query = $state('');
 	let filterAvailability = $state<Availability | ''>('');
+	let filterType = $state<SupplierType | ''>('');
 
-	const hasLocalFilters = $derived(query.trim().length > 0 || filterAvailability !== '');
+	const hasLocalFilters = $derived(query.trim().length > 0 || filterAvailability !== '' || filterType !== '');
 
 	const scopedSuppliers = $derived.by(() => {
 		const property = propertySelection.selected;
@@ -26,6 +28,7 @@
 		const q = query.trim().toLowerCase();
 		return scopedSuppliers.filter((s) => {
 			if (filterAvailability && s.availability !== filterAvailability) return false;
+			if (filterType && s.type !== filterType) return false;
 			if (q) {
 				const user = getUserById(s.id);
 				const tags = (s.tags ?? []).join(' ');
@@ -39,6 +42,19 @@
 	function clearFilters() {
 		query = '';
 		filterAvailability = '';
+		filterType = '';
+	}
+
+	function getTypeIcon(type: SupplierType) {
+		if (type === 'Condominium') return Building01Icon;
+		if (type === 'Residential') return UserIcon;
+		return UserGroupIcon;
+	}
+
+	function availabilityDotClass(av: Supplier['availability']) {
+		if (av === 'disponibile') return 'bg-emerald-500';
+		if (av === 'occupato') return 'bg-amber-500';
+		return 'bg-rose-500';
 	}
 </script>
 
@@ -113,10 +129,22 @@
 			aria-label="Filtra per disponibilità"
 			class:is-active={filterAvailability !== ''}
 		>
-			<option value="">Tutte le disponibilità</option>
+			<option value="">Disponibilità</option>
 			<option value="disponibile">Disponibile</option>
 			<option value="occupato">Occupato</option>
 			<option value="fuori-servizio">Fuori servizio</option>
+		</select>
+
+		<select
+			bind:value={filterType}
+			class="filter-select"
+			aria-label="Filtra per tipo"
+			class:is-active={filterType !== ''}
+		>
+			<option value="">Tutti i tipi</option>
+			<option value="Condominium">Condominiale</option>
+			<option value="Residential">Residenziale</option>
+			<option value="Both">Entrambi</option>
 		</select>
 
 		{#if hasLocalFilters}
@@ -153,62 +181,91 @@
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 			{#each filtered as supplier (supplier.id)}
 				{@const user = getUserById(supplier.id)}
-				<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
-					<div class="flex items-start justify-between">
-						<div>
-							<h3 class="text-sm font-medium text-foreground">{user?.name ?? supplier.id}</h3>
-							<p class="text-xs text-muted-foreground">{supplier.category}</p>
+				<div class="flex flex-col rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
+					<div class="p-5">
+						<div class="flex items-start justify-between">
+							<div class="flex gap-3">
+								<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+									<HugeiconsIcon icon={getTypeIcon(supplier.type)} size={20} strokeWidth={1.5} />
+								</div>
+								<div>
+									<h3 class="text-sm font-semibold text-foreground">{user?.name ?? supplier.id}</h3>
+									<p class="text-xs font-medium text-primary">{supplier.category}</p>
+								</div>
+							</div>
+							<div class="flex flex-col items-end gap-1">
+								<div class="flex items-center gap-1 rounded bg-secondary/50 px-1.5 py-0.5 text-[10px] font-bold text-secondary-foreground uppercase tracking-tight">
+									<span class={`h-1 w-1 rounded-full ${availabilityDotClass(supplier.availability)}`}></span>
+									{supplier.availability}
+								</div>
+								<span class="rating text-xs">
+									<HugeiconsIcon icon={StarIcon} size={10} strokeWidth={2} class="text-amber-500 fill-amber-500" />
+									{supplier.rating.toFixed(1)}
+								</span>
+							</div>
 						</div>
-						<div class="flex flex-col items-end gap-1">
-							<span class="text-xs font-medium text-foreground">{supplier.availability}</span>
-							<span class="rating text-xs">
-								<HugeiconsIcon icon={StarIcon} size={10} strokeWidth={2} />
-								{supplier.rating.toFixed(1)}
+						
+						<div class="mt-4 text-xs leading-relaxed text-muted-foreground">
+							{supplier.description}
+						</div>
+
+						<div class="mt-4 flex flex-wrap gap-1">
+							<span class="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+								<HugeiconsIcon icon={getTypeIcon(supplier.type)} size={10} />
+								{supplier.type}
 							</span>
-						</div>
-					</div>
-					<div class="mt-3 text-xs leading-relaxed text-muted-foreground line-clamp-2">
-						{supplier.description}
-					</div>
-
-					<div class="mt-4 space-y-1.5 border-t border-border/50 pt-3">
-						{#if user?.email}
-							<div class="flex items-center gap-2 text-[11px] text-muted-foreground">
-								<HugeiconsIcon icon={Mail01Icon} size={12} strokeWidth={2} />
-								<span class="truncate">{user.email}</span>
-							</div>
-						{/if}
-						{#if user?.phone}
-							<div class="flex items-center gap-2 text-[11px] text-muted-foreground">
-								<HugeiconsIcon icon={Contact01Icon} size={12} strokeWidth={2} />
-								<span>{user.phone}</span>
-							</div>
-						{/if}
-					</div>
-
-					{#if supplier.tags && supplier.tags.length > 0}
-						<div class="mt-3 flex flex-wrap gap-1">
-							{#each supplier.tags as tag}
-								<span class="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-secondary-foreground">
+							{#each supplier.tags ?? [] as tag}
+								<span class="rounded-full bg-secondary/30 px-2 py-0.5 text-[10px] font-medium text-secondary-foreground">
 									{tag}
 								</span>
 							{/each}
-						</div>
-					{/if}
-					{#if supplier.comments && supplier.comments.length > 0}
-						<div class="mt-4 space-y-2 border-t border-border/50 pt-3">
-							<p class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Note Admin</p>
-							{#each supplier.comments.slice(0, 1) as comment}
-								<div class="rounded bg-muted/30 p-2">
-									<p class="text-xs italic text-foreground/80">"{comment.text}"</p>
-									<div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-										<span>{comment.author}</span>
-										<span>{new Date(comment.date).toLocaleDateString()}</span>
-									</div>
+
+							{#if supplier.serviceIds && supplier.serviceIds.length > 0}
+								<div class="w-full mt-2 text-[12px] text-muted-foreground">
+									<p class="text-[11px] font-semibold text-muted-foreground/80">Servizi residenziali</p>
+									<ul class="mt-1 list-disc list-inside">
+										{#each supplier.serviceIds as sid}
+											{@const svc = getServiceById(sid)}
+											<li>{svc ? svc.name : sid}</li>
+										{/each}
+									</ul>
 								</div>
-							{/each}
+							{/if}
 						</div>
-					{/if}
+					</div>
+
+					<div class="mt-auto border-t border-border/50 bg-muted/5 p-4 space-y-3">
+						<div class="grid grid-cols-2 gap-2">
+							{#if user?.email}
+								<div class="flex items-center gap-2 overflow-hidden text-[11px] text-muted-foreground">
+									<HugeiconsIcon icon={Mail01Icon} size={14} strokeWidth={1.5} />
+									<span class="truncate">{user.email}</span>
+								</div>
+							{/if}
+							{#if user?.phone}
+								<div class="flex items-center gap-2 text-[11px] text-muted-foreground">
+									<HugeiconsIcon icon={Contact01Icon} size={14} strokeWidth={1.5} />
+									<span>{user.phone}</span>
+								</div>
+							{/if}
+						</div>
+
+						{#if supplier.comments && supplier.comments.length > 0}
+							<div class="space-y-2 border-t border-border/50 pt-3">
+								<p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Note Recenti</p>
+								{#each supplier.comments as comment}
+									{@const author = getUserById(comment.authorId)}
+									<div class="rounded-md bg-white border border-border/40 p-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+										<p class="text-xs text-foreground/90 leading-normal italic">"{comment.text}"</p>
+										<div class="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/20 pt-1.5">
+											<span class="font-medium">{author?.name ?? 'Utente'}</span>
+											<span>{new Date(comment.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}</span>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -219,6 +276,7 @@
 					<thead>
 						<tr class="border-b border-border text-left">
 							<th class="px-4 py-3 font-medium text-muted-foreground">Fornitore</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Tipo</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Contatti</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Categoria</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Descrizione</th>
@@ -233,6 +291,12 @@
 							<tr class="hover:bg-muted/50">
 								<td class="px-4 py-3">
 									<p class="font-medium text-foreground">{user?.name ?? supplier.id}</p>
+								</td>
+								<td class="px-4 py-3">
+									<div class="flex items-center gap-1 text-[11px] text-muted-foreground">
+										<HugeiconsIcon icon={getTypeIcon(supplier.type)} size={12} />
+										{supplier.type}
+									</div>
 								</td>
 								<td class="px-4 py-3">
 									<div class="flex flex-col gap-0.5 text-[11px] text-muted-foreground">
