@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { interventi } from '$lib/data/embeds/supplierTasks';
+	import { supplierTasks } from '$lib/data/embeds/supplierTasks';
 	import { meetings } from '$lib/data/events/meetings';
 	import { assemblies } from '$lib/data/events/assemblies';
 	import { users } from '$lib/data/users';
@@ -60,7 +60,7 @@
 		const evs: CalendarEvent[] = [];
 
 		// Interventi -> Tone Amber
-		for (const m of interventi) {
+		for (const m of supplierTasks) {
 			evs.push({
 				id: m.id,
 				title: m.title,
@@ -68,7 +68,7 @@
 				startTime: m.startTime,
 				endTime: m.endTime,
 				location: m.location,
-				group: getUserNames(m.participantIds),
+				group: users.find((u) => u.id === m.supplierId)?.name || 'Fornitore',
 				propertyId: m.propertyId,
 				ticketId: m.ticketId,
 				tone: 'amber'

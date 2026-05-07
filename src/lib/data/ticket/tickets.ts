@@ -153,7 +153,7 @@ export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string):
 			}
 		}
 
-		if (relevant) {
+		if (relevant && ev.kind != 'note') {
 			result.push(ev);
 		}
 
