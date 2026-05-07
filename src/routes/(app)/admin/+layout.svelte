@@ -21,6 +21,7 @@
 		{ label: 'Pratiche', href: '/admin/tickets', icon: Note01Icon },
 		{ label: 'Calendario', href: '/admin/calendar', icon: Calendar03Icon },
 		{ label: 'Fornitori', href: '/admin/suppliers', icon: Wrench01Icon },
+		{ label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
 		{ label: 'Chat', href: '/admin/chat', icon: BubbleChatIcon },
 		{ label: 'Pagamenti', href: '/admin/payments', icon: CreditCardIcon },
 		{ label: 'Impostazioni', href: '/admin/settings', icon: Settings02Icon }

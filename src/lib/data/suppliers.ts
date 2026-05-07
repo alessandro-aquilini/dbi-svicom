@@ -2,8 +2,8 @@
 
 export type SupplierType = 'Condominium' | 'Residential' | 'Both';
 
-export interface Comment {
-	authorId: string; // References User.id
+export interface Comment { 
+	authorId: string; // Use only admins as authors.
 	date: string; // ISO timestamp
 	text: string;
 }

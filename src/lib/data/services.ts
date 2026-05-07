@@ -11,6 +11,10 @@ export interface Service {
 	status: ServiceStatus;
 	pricing: string;
 	rating: number;
+	supplierId: string; // references Supplier.id / User.id
+	// NOTE: The contact email / phone for the get service, is different from the general one. 
+	contactEmail?: string; 
+	contactPhone?: string;
 	comments: { authorId: string; date: string; text: string }[]; // feedback from residents
 }
 
@@ -23,6 +27,9 @@ export const services: Service[] = [
 		status: 'attivo',
 		pricing: '€15/ora',
 		rating: 4.9,
+		supplierId: 'frn-pet-care-h24',
+		contactEmail: 'reservations@petcareh24.it',
+		contactPhone: '+39 02 999 889',
 		comments: [
 			{
 				authorId: 'res-conti-02',
@@ -39,6 +46,9 @@ export const services: Service[] = [
 		status: 'attivo',
 		pricing: '€20/ora',
 		rating: 4.7,
+		supplierId: 'frn-clean-green',
+		contactEmail: 'booking@cleangreen.it',
+		contactPhone: '+39 02 777 667',
 		comments: [
 			{
 				authorId: 'res-bianchi-01',
@@ -55,6 +65,9 @@ export const services: Service[] = [
 		status: 'beta',
 		pricing: '€10/persona',
 		rating: 4.5,
+		supplierId: 'frn-wellness-studio',
+		contactEmail: 'info@wellnessstudio.it',
+		contactPhone: '+39 02 555 445',
 		comments: []
 	}
 ];

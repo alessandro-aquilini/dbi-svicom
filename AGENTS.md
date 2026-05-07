@@ -24,7 +24,9 @@ Svicom Living Hub is a proprietary management and relationship platform for the 
 - **Mockup Fidelity**: Prioritize a "production-ready" feel. This means handling empty states, loading skeletons, responsive design, and accessible ARIA attributes. Frontend quality is the primary metric.
 
 ## 3. Data Layer (Read-Only Fake Backend)
-The backend is a deterministic, read-only domain simulation. It is structured around domain entities, not UI pages or user roles. Each module represents a single source of truth for a business concept, and all relationships are expressed through stable identifiers.
+This should be updated.
+
+<!-- The backend is a deterministic, read-only domain simulation. It is structured around domain entities, not UI pages or user roles. Each module represents a single source of truth for a business concept, and all relationships are expressed through stable identifiers.
 
 ```
 src/lib/data/
@@ -60,7 +62,7 @@ The data layer is domain-first. It must never be structured around UI views, pag
 | `announcements.ts`| Admin → many communication           | Bulletin posts (`title`, `content`, `propertyId`, `createdBy`)           | Replaces need for group chats                                        |
 | `documents.ts`    | Shared files                         | Documents linked to properties                                           | Used by both admin and residents                                     |
 | `assemblies.ts`   | Governance domain entity | Condominium assemblies with agenda, attendance, voting, and official minutes (verbale + delibere) | Represents formal decision-making events;               |
-| `services.ts`     | Resident-facing services (optional)  | Service catalog linked to suppliers                                      | Nice-to-have to enrich the product                                   |
+| `services.ts`     | Resident-facing services (optional)  | Service catalog linked to suppliers                                      | Nice-to-have to enrich the product                                   | -->
 
 UI-specific logic (filtering, sorting, pagination, view composition) must never live in the data layer. It belongs exclusively to route-level or page-level code.
 
