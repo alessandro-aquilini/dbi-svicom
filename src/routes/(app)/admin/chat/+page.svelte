@@ -156,6 +156,33 @@
         composerText = '';
         queueMicrotask(scrollToBottom);
     }
+
+    // Action buttons handlers (they add a local message to the conversation so the action is visible)
+    function sendAction(action: string) {
+        if (!selectedChat) return;
+        const ticketId = selectedChat.ticketIds?.[0] ?? null;
+        let text = '';
+        switch (action) {
+            case 'update-ticket-status':
+                text = ticketId ? `Ticket ${ticketId}: status updated by admin.` : 'Ticket status updated by admin.';
+                break;
+            case 'reassign-ticket':
+                text = ticketId ? `Ticket ${ticketId}: ticket reassigned by admin.` : 'Ticket reassigned by admin.';
+                break;
+            case 'pay':
+                text = ticketId ? `Payment requested for ticket ${ticketId}.` : 'Payment requested.';
+                break;
+            case 'update-report':
+                const reportId = selectedChat.reportIds?.[0] ?? null;
+                text = reportId ? `Report ${reportId}: updated by admin.` : 'Report updated by admin.';
+                break;
+            default:
+                text = action;
+        }
+        const msg: Message = { id: `local-${Date.now()}`, senderId: adminId, text, timestamp: new Date().toISOString() };
+        localMessages = { ...localMessages, [selectedChat.id]: [...(localMessages[selectedChat.id] ?? []), msg] };
+        queueMicrotask(scrollToBottom);
+    }
 </script>
 
 <style>
@@ -417,20 +444,44 @@
                                 <div class="ts">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</div>
                             </div>
                         {:else if ev.type === 'ticket-event'}
-                            <div class="embed-card" style="align-self: flex-end;">
-                                <div class="embed-header">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/><path d="m10 12 2 2 4-4"/></svg>
-                                    Aggiornamento Ticket
+                            {#if ['assigned','reassigned','status_update'].includes(ev.data.event.kind)}
+                                <div class="embed-card" style="align-self: flex-end; max-width:480px;">
+                                    <div class="embed-header">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/><path d="m10 12 2 2 4-4"/></svg>
+                                        Ticket update
+                                    </div>
+                                    <div class="embed-title">[{ev.data.ticket.id}] {ev.data.event.kind.replace(/_/g,' ')}</div>
+                                    <div style="font-size:0.9rem;color:var(--foreground)">
+                                        {#if ev.data.event.kind === 'assigned'}
+                                            <div style="font-weight:600">This ticket has been assigned to you.</div>
+                                            <div>New status: <span style="color:var(--primary); text-transform: capitalize">{(ev.data.event.toStatus || 'open').replace(/_/g,' ')}</span></div>
+                                        {:else if ev.data.event.kind === 'reassigned'}
+                                            <div style="font-weight:600">This ticket has been reassigned.</div>
+                                        {:else}
+                                            <div style="font-weight:600">Status changed to <span style="color:var(--primary); text-transform: capitalize">{(ev.data.event.toStatus || '').replace(/_/g,' ')}</span></div>
+                                        {/if}
+                                    </div>
+                                    <div class="embed-footer">
+                                        <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                        <span style="font-weight: 600; color: var(--primary)">Details →</span>
+                                    </div>
                                 </div>
-                                <div class="embed-title">[{ev.data.ticket.id}] {ev.data.event.kind}</div>
-                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); display: flex; align-items: center; gap: 0.5rem;">
-                                    Stato: <span style="text-transform: capitalize; color: var(--primary)">{(ev.data.event.toStatus || 'Aperto').replace(/_/g, ' ')}</span>
+                            {:else}
+                                <div class="embed-card" style="align-self: flex-end;">
+                                    <div class="embed-header">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/><path d="m10 12 2 2 4-4"/></svg>
+                                        Aggiornamento Ticket
+                                    </div>
+                                    <div class="embed-title">[{ev.data.ticket.id}] {ev.data.event.kind}</div>
+                                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); display: flex; align-items: center; gap: 0.5rem;">
+                                        Stato: <span style="text-transform: capitalize; color: var(--primary)">{(ev.data.event.toStatus || 'Aperto').replace(/_/g, ' ')}</span>
+                                    </div>
+                                    <div class="embed-footer">
+                                        <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                        <span style="font-weight: 600; color: var(--primary)">Dettagli →</span>
+                                    </div>
                                 </div>
-                                <div class="embed-footer">
-                                    <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
-                                    <span style="font-weight: 600; color: var(--primary)">Dettagli →</span>
-                                </div>
-                            </div>
+                            {/if}
                         {:else if ev.type === 'payment'}
                             <div class="embed-card" style="align-self: flex-end;">
                                 <div class="embed-header" style="color: #10b981">
@@ -463,7 +514,8 @@
                                 'presa_in_carico': '#f59e0b',
                                 'completata': '#10b981'
                              }}
-                             <div class="embed-card" style="border-left: 4px solid {statusColors[ev.data.status] || '#f59e0b'}; align-self: flex-start;">
+                             {@const adminDone = ['presa_in_carico','completata'].includes(ev.data.status)}
+                             <div class="embed-card" style="border-left: 4px solid {statusColors[ev.data.status] || '#f59e0b'}; align-self: {adminDone ? 'flex-end' : 'flex-start'};">
                                 <div class="embed-header" style="color: {statusColors[ev.data.status] || '#f59e0b'}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" x2="17" y1="17" y2="17.01"/></svg>
                                     Stato Segnalazione
@@ -480,6 +532,22 @@
                     {/each}
                 {/each}
             </div>
+
+            <!-- Role-aware action buttons (supplier vs resident) -->
+            {#if selectedChat}
+                {@const cpRole = cp?.role}
+                {#if cpRole === 'supplier'}
+                    <div style="padding:0.75rem 1.5rem; display:flex; gap:0.5rem; background: #fff; border-top:1px solid var(--border);">
+                        <button type="button" onclick={() => sendAction('update-ticket-status')} style="background:#2563eb;color:white;border:none;padding:0.4rem 0.6rem;border-radius:0.5rem;font-weight:600;">Update ticket status</button>
+                        <button type="button" onclick={() => sendAction('reassign-ticket')} style="background:#f59e0b;color:white;border:none;padding:0.4rem 0.6rem;border-radius:0.5rem;font-weight:600;">Reassign ticket</button>
+                        <button type="button" onclick={() => sendAction('pay')} style="background:#10b981;color:white;border:none;padding:0.4rem 0.6rem;border-radius:0.5rem;font-weight:600;">Pay</button>
+                    </div>
+                {:else if cpRole === 'resident'}
+                    <div style="padding:0.75rem 1.5rem; display:flex; gap:0.5rem; background: #fff; border-top:1px solid var(--border);">
+                        <button type="button" onclick={() => sendAction('update-report')} style="background:#2563eb;color:white;border:none;padding:0.4rem 0.6rem;border-radius:0.5rem;font-weight:600;">Update report</button>
+                    </div>
+                {/if}
+            {/if}
 
             <div class="composer">
                 <button type="button" style="border:none; background:none; color: var(--muted-foreground)" aria-label="Allega file">

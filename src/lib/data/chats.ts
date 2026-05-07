@@ -82,6 +82,7 @@ export const chats: Chat[] = [
 			// 	text: 'Buongiorno, il portone d\'ingresso rimane aperto. Credo sia il braccio idraulico.',
 			// 	timestamp: '2026-05-05T11:00:00Z'
 			// }
+			// FIX: Removing the chat (even though there is a report open), gives empty chat in "Segnalazioni". 
 		],
 		reportIds: ['rep-004']
 	},

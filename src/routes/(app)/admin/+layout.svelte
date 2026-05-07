@@ -8,6 +8,7 @@
 		Calendar03Icon,
 		Wrench01Icon,
 		BubbleChatIcon,
+		InformationCircleIcon,
 		CreditCardIcon,
 		Settings02Icon
 	} from '@hugeicons/core-free-icons';
@@ -18,11 +19,11 @@
 	const navItems = [
 		{ label: 'Dashboard', href: '/admin', icon: DashboardSquare01Icon },
 		{ label: 'Condomìni', href: '/admin/properties', icon: Building03Icon },
-		{ label: 'Pratiche', href: '/admin/tickets', icon: Note01Icon },
-		{ label: 'Segnalazioni', href: '/admin/reports', icon: Note01Icon },
+		{ label: 'Ticket', href: '/admin/tickets', icon: Note01Icon },
+		{ label: 'Segnalazioni', href: '/admin/reports', icon: InformationCircleIcon },
 		{ label: 'Calendario', href: '/admin/calendar', icon: Calendar03Icon },
 		{ label: 'Fornitori', href: '/admin/suppliers', icon: Wrench01Icon },
-		{ label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
+		// { label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
 		{ label: 'Chat', href: '/admin/chat', icon: BubbleChatIcon },
 		{ label: 'Pagamenti', href: '/admin/payments', icon: CreditCardIcon },
 		{ label: 'Impostazioni', href: '/admin/settings', icon: Settings02Icon }
