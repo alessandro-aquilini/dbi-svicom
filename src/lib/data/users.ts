@@ -25,14 +25,14 @@ export const users: User[] = [
 		phone: '+39 02 4567 8900'
 	},
 	{
-		id: 'adm-matteo-01',
+		id: 'adm-matteo-02',
 		role: 'admin',
 		name: 'Matteo Boleso',
 		email: 'matteo.boleso@gmail.it',
 		phone: '+39 06 1234 5678'
 	},
 	{
-		id: 'adm-ludovica-01',
+		id: 'adm-ludovica-03',
 		role: 'admin',
 		name: 'Ludovica Andreasi',
 		email: 'ludovica.andreasi@gmail.it',
@@ -74,28 +74,28 @@ export const users: User[] = [
 		phone: '+39 333 2211 334'
 	},
 	{
-		id: 'res-ext-06',
+		id: 'res-esposito-06',
 		role: 'resident',
 		name: 'Marco Esposito',
 		email: 'marco.esposito@example.it',
 		phone: '+39 333 4455 667'
 	},
 	{
-		id: 'res-ext-07',
+		id: 'res-moretti-07',
 		role: 'resident',
 		name: 'Anna Moretti',
 		email: 'anna.moretti@example.it',
 		phone: '+39 333 7788 990'
 	},
 	{
-		id: 'res-ext-08',
+		id: 'res-ricci-08',
 		role: 'resident',
 		name: 'Davide Ricci',
 		email: 'davide.ricci@example.it',
 		phone: '+39 333 5566 221'
 	},
 	{
-		id: 'res-ext-09',
+		id: 'res-bruno-08',
 		role: 'resident',
 		name: 'Elisa Bruno',
 		email: 'elisa.bruno@example.it',
@@ -107,20 +107,6 @@ export const users: User[] = [
 		name: 'Idroclima Nord',
 		email: 'operativo@idroclimanord.it',
 		phone: '+39 02 3344 5566'
-	},
-	{
-		id: 'frn-termoservice-milano',
-		role: 'supplier',
-		name: 'Termoservice Milano',
-		email: 'info@termoservicemilano.it',
-		phone: '+39 02 1234 5678'
-	},
-	{
-		id: 'frn-idraulica-smart',
-		role: 'supplier',
-		name: 'Idraulica Smart',
-		email: 'tech@idraulicasmart.it',
-		phone: '+39 02 9876 5432'
 	},
 	{
 		id: 'frn-secure-entry',
@@ -137,39 +123,32 @@ export const users: User[] = [
 		phone: '+39 02 1122 3355'
 	},
 	{
-		id: 'frn-green-habit',
+		id: 'frn-pet-care-h24',
 		role: 'supplier',
-		name: 'Green Habit',
-		email: 'cantiere@greenhabit.it',
-		phone: '+39 02 1122 3344'
+		name: 'Pet Care H24',
+		email: 'info@petcareh24.it',
+		phone: '+39 02 999 888'
 	},
 	{
-		id: 'frn-natura-viva',
+		id: 'frn-clean-green',
 		role: 'supplier',
-		name: 'Natura Viva',
-		email: 'progetti@naturaviva.it',
-		phone: '+39 02 6677 8811'
+		name: 'Clean & Green',
+		email: 'contact@cleangreen.it',
+		phone: '+39 02 777 666'
 	},
 	{
-		id: 'frn-thermo-audit',
+		id: 'frn-wellness-studio',
 		role: 'supplier',
-		name: 'Thermo Audit',
-		email: 'compliance@thermoaudit.it',
-		phone: '+39 02 5566 7788'
+		name: 'Wellness Studio',
+		email: 'yoga@wellnessstudio.it',
+		phone: '+39 02 555 444'
 	},
 	{
-		id: 'frn-global-cleaning-hub',
+		id: 'frn-spurghi-veloci',
 		role: 'supplier',
-		name: 'Global Cleaning Hub',
-		email: 'info@globalcleaning.it',
-		phone: '+39 02 9988 1122'
-	},
-	{
-		id: 'frn-service-clean-24',
-		role: 'supplier',
-		name: 'Service Clean 24',
-		email: 'servizi@clean24.it',
-		phone: '+39 02 5544 3322'
+		name: 'Spurghi Veloci Milano',
+		email: 'emergenza@spurghiveloci.it',
+		phone: '+39 02 222 111'
 	}
 ];
 

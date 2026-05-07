@@ -73,7 +73,7 @@ export const properties: Property[] = [
 		address: { street: 'Via Filippo Pacini 44', city: 'Milano', cap: '20131', province: 'MI' },
 		units: 28,
 		adminId: 'adm-giorgio-01',
-		residentIds: ['res-bellini-05', 'res-ext-06'],
+		residentIds: ['res-bellini-05', 'res-esposito-06'],
 		status: 'onboarding',
 		health: 'giallo',
 		tags: ['nuovo']
@@ -84,7 +84,7 @@ export const properties: Property[] = [
 		address: { street: 'Via Andrea Solari 30', city: 'Milano', cap: '20144', province: 'MI' },
 		units: 40,
 		adminId: 'adm-giorgio-01',
-		residentIds: ['res-ext-07', 'res-ext-08'],
+		residentIds: ['res-moretti-07', 'res-ricci-08'],
 		status: 'attivo',
 		health: 'verde',
 		tags: []
@@ -95,7 +95,7 @@ export const properties: Property[] = [
 		address: { street: 'Via Tortona 12', city: 'Milano', cap: '20144', province: 'MI' },
 		units: 22,
 		adminId: 'adm-giorgio-01',
-		residentIds: ['res-ext-09'],
+		residentIds: ['res-bruno-08'],
 		status: 'in-uscita',
 		health: 'rosso',
 		tags: ['in-uscita-q3']
