@@ -12,7 +12,7 @@ export * as residents from './residents';
 export * as suppliers from './suppliers';
 export * as services from './services';
 
-export * as tickets from './ticket/tickets-admin';
+export * as tickets from './ticket/tickets';
 
 export * as announcements from './announcements';
 export * as documents from './documents';

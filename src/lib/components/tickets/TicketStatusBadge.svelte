@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { TicketStatus } from '$lib/data/ticket/tickets-admin';
+	import type { TicketStatus } from '$lib/data/ticket/tickets';
 	import { ticketStatusLabels } from './presentation';
 
 	let {

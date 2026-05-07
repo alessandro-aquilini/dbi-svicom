@@ -18,7 +18,7 @@ export const maintenanceWorks: MaintenanceWork[] = [
 		startTime: '15:30',
 		endTime: '16:00',
 		location: 'Via Carducci 21',
-		participantIds: ['frn-secure-entry', 'adm-svicom-01'],
+		participantIds: ['frn-secure-entry', 'adm-giorgio-01'],
 		propertyId: 'cnd-carducci-21',
 		ticketId: 'TCK-476'
 	}

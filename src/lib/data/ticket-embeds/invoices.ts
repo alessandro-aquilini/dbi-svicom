@@ -19,7 +19,7 @@ export const invoices: Invoice[] = [
 		id: 'inv-001',
 		number: 'FT-2024-001',
 		supplierId: 'frn-idroclima-nord',
-		customerId: 'adm-svicom-01',
+		customerId: 'adm-giorgio-01',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'TCK-482',
 		amount: 1250.0,

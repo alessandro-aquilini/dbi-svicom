@@ -22,7 +22,7 @@
 	} from '@hugeicons/core-free-icons';
 
 	const currentUser = getCurrentUser();
-	const adminId = currentUser?.id ?? 'adm-svicom-01';
+	const adminId = currentUser?.id ?? 'adm-giorgio-01';
 
 	let selectedChatId = $state(chats[0]?.id ?? '');
 	let listQuery = $state('');

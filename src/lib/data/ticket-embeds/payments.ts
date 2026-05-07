@@ -15,7 +15,7 @@ export const payments: Payment[] = [
 	{
 		id: 'pay-001',
 		fromId: 'res-bianchi-01',
-		toId: 'adm-svicom-01',
+		toId: 'adm-giorgio-01',
 		amount: 450.0,
 		currency: 'EUR',
 		dueDate: '2024-04-10T12:00:00Z',
@@ -25,7 +25,7 @@ export const payments: Payment[] = [
 	},
 	{
 		id: 'pay-003',
-		fromId: 'adm-svicom-01',
+		fromId: 'adm-giorgio-01',
 		toId: 'frn-idroclima-nord',
 		amount: 1250.0,
 		currency: 'EUR',
@@ -48,7 +48,7 @@ export const payments: Payment[] = [
 	},
 	{
 		id: 'pay-005',
-		fromId: 'adm-svicom-02',
+		fromId: 'adm-matteo-01',
 		toId: 'frn-idroclima-nord',
 		amount: 850.0,
 		currency: 'EUR',
@@ -59,7 +59,7 @@ export const payments: Payment[] = [
 	},
 	{
 		id: 'pay-006',
-		fromId: 'adm-svicom-01',
+		fromId: 'adm-giorgio-01',
 		toId: 'frn-idroclima-nord',
 		amount: 320.0,
 		currency: 'EUR',

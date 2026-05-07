@@ -1,6 +1,6 @@
 import type { Announcement } from '$lib/data/announcements';
 import type { Assembly } from '$lib/data/events/assemblies';
-import type { DocumentCategory, SvicomDocument } from '$lib/data/documents';
+import type { DocumentCategory, PropertyDocument } from '$lib/data/documents';
 import type { Property } from '$lib/data/properties';
 import type { User } from '$lib/data/users';
 
@@ -14,7 +14,7 @@ type DocumentStatusTone =
 	| (typeof documentStatusToneMap)[keyof typeof documentStatusToneMap]
 	| 'neutral';
 
-export const documentTypeLabels: Record<SvicomDocument['type'], string> = {
+export const documentTypeLabels: Record<PropertyDocument['type'], string> = {
 	pdf: 'PDF',
 	doc: 'DOC',
 	image: 'IMG'
@@ -57,7 +57,7 @@ export interface DocumentDemoAnswer {
 }
 
 export interface DocumentDemoContext {
-	document: SvicomDocument;
+	document: PropertyDocument;
 	property: Property;
 	uploader?: User;
 	admin?: User;

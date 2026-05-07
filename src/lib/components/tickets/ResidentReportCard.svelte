@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import type { Ticket } from '$lib/data/ticket/tickets-admin';
+	import type { Ticket } from '$lib/data/ticket/tickets';
 	import { getCurrentStatus } from './presentation';
 	import TicketPriorityBadge from './TicketPriorityBadge.svelte';
 	import TicketStatusBadge from './TicketStatusBadge.svelte';

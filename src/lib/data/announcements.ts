@@ -19,7 +19,7 @@ export const announcements: Announcement[] = [
 		content: 'L\'ordine del giorno è stato pubblicato. Gli allegati sono disponibili nell\'area documenti. Potete caricare le deleghe entro il 29 aprile.',
 		category: 'official',
 		propertyId: 'cnd-marconi-14',
-		createdBy: 'adm-svicom-01',
+		createdBy: 'adm-giorgio-01',
 		createdAt: '2024-04-20T09:20:00Z',
 		pinned: true,
 		tags: ['Assemblea', 'Ufficiale']
@@ -30,7 +30,7 @@ export const announcements: Announcement[] = [
 		content: 'Intervento di manutenzione previsto mercoledì mattina (08:30 - 12:30). Si prega di non utilizzare l\'acqua durante questa fascia oraria.',
 		category: 'service',
 		propertyId: 'cnd-marconi-14',
-		createdBy: 'adm-svicom-01',
+		createdBy: 'adm-giorgio-01',
 		createdAt: '2024-04-28T08:10:00Z',
 		tags: ['Manutenzione', 'Acqua']
 	},

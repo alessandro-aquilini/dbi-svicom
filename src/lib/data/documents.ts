@@ -1,4 +1,4 @@
-// TODO: Rimuovere status
+// NOTE: Documents of a "condominium".
 
 export type DocumentCategory =
 	| 'verbale'
@@ -9,7 +9,7 @@ export type DocumentCategory =
 	| 'bilancio'
 	| 'lavori';
 
-export interface SvicomDocument {
+export interface PropertyDocument {
 	id: string;
 	title: string;
 	category: DocumentCategory;
@@ -22,14 +22,14 @@ export interface SvicomDocument {
 	type: 'pdf' | 'doc' | 'image';
 }
 
-export const documents: SvicomDocument[] = [
+export const documents: PropertyDocument[] = [
 	{
 		id: 'doc-marconi-regolamento',
 		title: 'Regolamento condominiale',
 		category: 'regolamento',
 		propertyId: 'cnd-marconi-14',
 		summary: 'Uso spazi comuni, animali, rumori e orari per attività straordinarie.',
-		uploadedBy: 'adm-svicom-01',
+		uploadedBy: 'adm-giorgio-01',
 		updatedAt: '2024-04-26',
 		status: 'Essenziale',
 		url: '/docs/regolamento-marconi.pdf',
@@ -41,7 +41,7 @@ export const documents: SvicomDocument[] = [
 		category: 'bilancio',
 		propertyId: 'cnd-marconi-14',
 		summary: 'Dettaglio costi per pulizie, ascensore, energia comune e giardinaggio.',
-		uploadedBy: 'adm-svicom-01',
+		uploadedBy: 'adm-giorgio-01',
 		updatedAt: '2024-04-28',
 		status: 'Aggiornato',
 		url: '/docs/bilancio-q1-marconi.pdf',
@@ -49,10 +49,10 @@ export const documents: SvicomDocument[] = [
 	}
 ];
 
-export function getDocumentsByPropertyId(propertyId: string): SvicomDocument[] {
+export function getDocumentsByPropertyId(propertyId: string): PropertyDocument[] {
 	return documents.filter((d) => d.propertyId === propertyId);
 }
 
-export function getDocumentById(id: string): SvicomDocument | undefined {
+export function getDocumentById(id: string): PropertyDocument | undefined {
 	return documents.find((d) => d.id === id);
 }

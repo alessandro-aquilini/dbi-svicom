@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tickets } from '$lib/data/ticket/tickets-admin';
+	import { tickets } from '$lib/data/ticket/tickets';
 	import { quotes } from '$lib/data/ticket-embeds/quotes';
 	import { getCurrentUser } from '$lib/auth';
 

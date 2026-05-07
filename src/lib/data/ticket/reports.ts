@@ -49,7 +49,7 @@ export const reports: Report[] = [
 		priority: 'media',
 		propertyId: 'cnd-marconi-14',
 		reportedById: 'res-bianchi-01',
-		assignedToId: 'adm-svicom-01',
+		assignedToId: 'adm-giorgio-01',
 		createdAt: '2024-04-29T09:00:00Z',
 		updatedAt: '2024-04-29T09:30:00Z',
 		category: 'impianti',

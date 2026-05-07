@@ -20,9 +20,9 @@ import {
 	CardTitle
 } from '$lib/components/ui/card';
 import { getCurrentUser } from '$lib/auth';
-import type { SvicomDocument } from '$lib/data/documents';
+import type { PropertyDocument } from '$lib/data/documents';
 import type { Payment } from '$lib/data/ticket-embeds/payments';
-import { getTicketById } from '$lib/data/ticket/tickets-admin';
+import { getTicketById } from '$lib/data/ticket/tickets';
 import { getUserById } from '$lib/data/users';
 
 type PaymentCardModel = {
@@ -68,7 +68,7 @@ const statusLabels: Record<string, string> = {
 	cancelled: 'Annullato'
 };
 
-function getDocumentButtonLabel(document: SvicomDocument) {
+function getDocumentButtonLabel(document: PropertyDocument) {
 	// Simple helper to decide label for accounting documents
 	if (document.status === 'draft') return 'Modifica';
 	if (document.status === 'published') return 'Visualizza';

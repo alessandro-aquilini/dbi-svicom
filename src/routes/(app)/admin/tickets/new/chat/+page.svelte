@@ -3,7 +3,7 @@
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { DemoDialog } from '$lib/components/shared';
 	import { getPropertyById } from '$lib/data/properties';
-	import type { TicketPriority } from '$lib/data/ticket/tickets-admin';
+	import type { TicketPriority } from '$lib/data/ticket/tickets';
 	import {
 		SparklesIcon,
 		ArrowUp01Icon,

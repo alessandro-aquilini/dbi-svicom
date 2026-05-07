@@ -10,7 +10,7 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
-	import type { SvicomDocument } from '$lib/data/documents';
+	import type { PropertyDocument } from '$lib/data/documents';
 	import { documentCategoryLabels } from './presentation';
 	import DocumentStatusBadge from './DocumentStatusBadge.svelte';
 	import DocumentTypeBadge from './DocumentTypeBadge.svelte';
@@ -22,7 +22,7 @@
 		href,
 		assistantHref
 	}: {
-		document: SvicomDocument;
+		document: PropertyDocument;
 		uploadedByLabel: string;
 		updatedAtLabel: string;
 		href?: string;

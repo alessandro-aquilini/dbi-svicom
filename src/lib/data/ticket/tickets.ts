@@ -91,7 +91,7 @@ export const tickets: Ticket[] = [
 			'Tre segnalazioni sullo stesso punto in meno di due ore: va capito se è un nuovo guasto o un ritorno di un caso chiuso.',
 		priority: 'alta',
 		category: 'impianti',
-		creatorId: 'adm-svicom-01',
+		creatorId: 'adm-giorgio-01',
 		supplierId: 'frn-idroclima-nord',
 		propertyId: 'cnd-marconi-14',
 		cc: [],
@@ -103,14 +103,14 @@ export const tickets: Ticket[] = [
 				id: 'TCK-482-ev-01',
 				kind: 'created',
 				at: '2024-04-29T09:14:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				toStatus: 'opened'
 			},
 			{
 				id: 'TCK-482-ev-02',
 				kind: 'assigned',
 				at: '2024-04-29T09:14:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				supplierId: 'frn-idroclima-nord'
 			},
 			{
@@ -125,7 +125,7 @@ export const tickets: Ticket[] = [
 				id: 'TCK-482-ev-04',
 				kind: 'status',
 				at: '2024-04-29T09:20:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				fromStatus: 'estimating',
 				toStatus: 'approved'
 			},
@@ -149,7 +149,7 @@ export const tickets: Ticket[] = [
 				id: 'TCK-482-ev-07',
 				kind: 'status',
 				at: '2024-04-30T14:30:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				fromStatus: 'completed',
 				toStatus: 'paid'
 			},
@@ -157,7 +157,7 @@ export const tickets: Ticket[] = [
 				id: 'TCK-482-ev-08',
 				kind: 'closed',
 				at: '2024-04-30T14:35:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				fromStatus: 'paid',
 				toStatus: 'closed'
 			}
@@ -173,7 +173,7 @@ export const tickets: Ticket[] = [
 			'Il problema si presenta a ondate e richiede una squadra disponibile in finestra rapida.',
 		priority: 'alta',
 		category: 'sicurezza',
-		creatorId: 'adm-svicom-01',
+		creatorId: 'adm-giorgio-01',
 		supplierId: 'frn-eleva-service',   // current supplier after reassignment
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-bianchi-01', 'res-ferrari-04'],
@@ -185,14 +185,14 @@ export const tickets: Ticket[] = [
 				id: 'TCK-476-ev-01',
 				kind: 'created',
 				at: '2024-04-29T08:40:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				toStatus: 'opened'
 			},
 			{
 				id: 'TCK-476-ev-02',
 				kind: 'assigned',
 				at: '2024-04-29T08:41:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				supplierId: 'frn-secure-entry'
 			},
 			{
@@ -207,14 +207,14 @@ export const tickets: Ticket[] = [
 				id: 'TCK-476-ev-04',
 				kind: 'note',
 				at: '2024-04-29T10:00:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				body: 'frn-secure-entry non disponibile nei prossimi 3 giorni. Riassegno a specialista ascensori.'
 			},
 			{
 				id: 'TCK-476-ev-05',
 				kind: 'reassigned',
 				at: '2024-04-29T10:05:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				previousSupplierId: 'frn-secure-entry',
 				supplierId: 'frn-eleva-service'
 			},
@@ -245,7 +245,7 @@ export const tickets: Ticket[] = [
 			'Il condizionatore in sala perde acqua copiosamente dallo split interno. Urge intervento tecnico in appartamento privato.',
 		priority: 'alta',
 		category: 'impianti privati',
-		creatorId: 'adm-svicom-01',
+		creatorId: 'adm-giorgio-01',
 		supplierId: 'frn-idroclima-nord',
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-conti-02'],
@@ -257,14 +257,14 @@ export const tickets: Ticket[] = [
 				id: 'TCK-501-ev-01',
 				kind: 'created',
 				at: '2024-05-02T10:15:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				toStatus: 'opened'
 			},
 			{
 				id: 'TCK-501-ev-02',
 				kind: 'assigned',
 				at: '2024-05-02T10:20:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				supplierId: 'frn-idroclima-nord'
 			},
 			{
@@ -279,7 +279,7 @@ export const tickets: Ticket[] = [
 				id: 'TCK-501-ev-04',
 				kind: 'status',
 				at: '2024-05-02T11:30:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				fromStatus: 'estimating',
 				toStatus: 'approved'
 			},
@@ -310,7 +310,7 @@ export const tickets: Ticket[] = [
 			'Richiesta uscita per preventivo e sostituzione del rubinetto del lavabo bagno patronale.',
 		priority: 'bassa',
 		category: 'impianti privati',
-		creatorId: 'adm-svicom-01',
+		creatorId: 'adm-giorgio-01',
 		supplierId: 'frn-idroclima-nord',
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-rossi-03'],
@@ -322,14 +322,14 @@ export const tickets: Ticket[] = [
 				id: 'TCK-510-ev-01',
 				kind: 'created',
 				at: '2024-05-04T08:00:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				toStatus: 'opened'
 			},
 			{
 				id: 'TCK-510-ev-02',
 				kind: 'assigned',
 				at: '2024-05-04T08:05:00Z',
-				actorId: 'adm-svicom-01',
+				actorId: 'adm-giorgio-01',
 				supplierId: 'frn-idroclima-nord'
 			},
 			{

@@ -18,24 +18,24 @@ export const users: User[] = [
 		phone: '+39 02 0000 0001'
 	},
 	{
-		id: 'adm-svicom-01', // TODO: Change the ID. 
+		id: 'adm-giorgio-01', // TODO: Change the ID. 
 		role: 'admin',
-		name: 'Giorgio Amministratore',
-		email: 'giorgio@gmail.it',
+		name: 'Giorgio Limonta',
+		email: 'giorgio.limonta@gmail.it',
 		phone: '+39 02 4567 8900'
 	},
 	{
-		id: 'adm-svicom-02',
+		id: 'adm-matteo-01',
 		role: 'admin',
-		name: 'Matteo Amministratore',
-		email: 'matteo@gmail.it',
+		name: 'Matteo Boleso',
+		email: 'matteo.boleso@gmail.it',
 		phone: '+39 06 1234 5678'
 	},
 	{
-		id: 'adm-svicom-03',
+		id: 'adm-ludovica-01',
 		role: 'admin',
-		name: 'Ludovica Amministratore',
-		email: 'ludovica@gmail.it',
+		name: 'Ludovica Andreasi',
+		email: 'ludovica.andreasi@gmail.it',
 		phone: '+39 011 3344 556'
 	},
 	{

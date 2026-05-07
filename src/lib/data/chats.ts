@@ -22,7 +22,7 @@ export interface Chat {
 export const chats: Chat[] = [
 	{
 		id: 'chat-001',
-		participantIds: ['adm-svicom-01', 'res-bianchi-01'],
+		participantIds: ['adm-giorgio-01', 'res-bianchi-01'],
 		lastMessageAt: '2024-04-29T11:00:00Z',
 		messages: [
 			{
@@ -33,7 +33,7 @@ export const chats: Chat[] = [
 			},
 			{
 				id: 'msg-002',
-				senderId: 'adm-svicom-01',
+				senderId: 'adm-giorgio-01',
 				text: 'Sì, abbiamo incaricato Idroclima Nord. L\'intervento è previsto per oggi pomeriggio.',
 				timestamp: '2024-04-29T10:50:00Z'
 			}
@@ -41,12 +41,12 @@ export const chats: Chat[] = [
 	},
 	{
 		id: 'chat-002',
-		participantIds: ['adm-svicom-01', 'frn-idroclima-nord'],
+		participantIds: ['adm-giorgio-01', 'frn-idroclima-nord'],
 		lastMessageAt: '2024-04-30T14:30:00Z',
 		messages: [
 			{
 				id: 'msg-101',
-				senderId: 'adm-svicom-01',
+				senderId: 'adm-giorgio-01',
 				text: 'Potete intervenire oggi per la perdita a Via Marconi 14?',
 				timestamp: '2024-04-29T09:15:00Z'
 			},
@@ -58,7 +58,7 @@ export const chats: Chat[] = [
 			},
 			{
 				id: 'msg-103',
-				senderId: 'adm-svicom-01',
+				senderId: 'adm-giorgio-01',
 				text: 'Perfetto, grazie. Mandate documento e preventivo appena pronti.',
 				timestamp: '2024-04-29T09:25:00Z'
 			},
@@ -70,7 +70,7 @@ export const chats: Chat[] = [
 			},
 			{
 				id: 'msg-105',
-				senderId: 'adm-svicom-01',
+				senderId: 'adm-giorgio-01',
 				text: 'Grazie. Procedete con l’intervento urgente e tenetemi aggiornato.',
 				timestamp: '2024-04-29T12:15:00Z'
 			},
@@ -82,7 +82,7 @@ export const chats: Chat[] = [
 			},
 			{
 				id: 'msg-107',
-				senderId: 'adm-svicom-01',
+				senderId: 'adm-giorgio-01',
 				text: 'Pagamento autorizzato e inviato.',
 				timestamp: '2024-04-30T14:30:00Z'
 			}
@@ -90,12 +90,12 @@ export const chats: Chat[] = [
 	},
 	{
 		id: 'chat-003',
-		participantIds: ['adm-svicom-02', 'frn-idroclima-nord'],
+		participantIds: ['adm-matteo-01', 'frn-idroclima-nord'],
 		lastMessageAt: '2024-05-01T09:00:00Z',
 		messages: [
 			{
 				id: 'msg-201',
-				senderId: 'adm-svicom-02',
+				senderId: 'adm-matteo-01',
 				text: 'Ciao, serve un preventivo urgente per un controllo sulla colonna montante di Roma 12.',
 				timestamp: '2024-05-01T08:15:00Z'
 			},
@@ -107,7 +107,7 @@ export const chats: Chat[] = [
 			},
 			{
 				id: 'msg-203',
-				senderId: 'adm-svicom-02',
+				senderId: 'adm-matteo-01',
 				text: 'Perfetto, grazie. Appena pronto, caricalo come preventivo sulla pratica.',
 				timestamp: '2024-05-01T08:45:00Z'
 			}
@@ -115,12 +115,12 @@ export const chats: Chat[] = [
 	},
 	{
 		id: 'chat-004',
-		participantIds: ['adm-svicom-03', 'frn-idroclima-nord'],
+		participantIds: ['adm-ludovica-01', 'frn-idroclima-nord'],
 		lastMessageAt: '2024-05-02T10:05:00Z',
 		messages: [
 			{
 				id: 'msg-301',
-				senderId: 'adm-svicom-03',
+				senderId: 'adm-ludovica-01',
 				text: 'Hai ricevuto il pagamento relativo all’intervento di Marconi 14? Controlla il pay-003 e fammi sapere.',
 				timestamp: '2024-05-02T09:50:00Z'
 			},

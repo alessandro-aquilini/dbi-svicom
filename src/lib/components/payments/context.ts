@@ -1,4 +1,4 @@
-import { getDocumentsByPropertyId, type SvicomDocument } from '$lib/data/documents';
+import { getDocumentsByPropertyId, type PropertyDocument } from '$lib/data/documents';
 import {
 	getPaymentsByPropertyId,
 	getPaymentsByUserId,
@@ -17,8 +17,8 @@ export interface ResidentPaymentsContext {
 	propertyPayments: Payment[];
 	propertyOperationalPayments: Payment[];
 	allVisiblePayments: Payment[];
-	propertyDocuments: SvicomDocument[];
-	accountingDocuments: SvicomDocument[];
+	propertyDocuments: PropertyDocument[];
+	accountingDocuments: PropertyDocument[];
 }
 
 export function getResidentPaymentsContext(userId: string | undefined): ResidentPaymentsContext {

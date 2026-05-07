@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import type { SvicomDocument } from '$lib/data/documents';
+	import type { PropertyDocument } from '$lib/data/documents';
 	import { documentTypeLabels } from './presentation';
 
 	let {
 		type,
 		class: className
 	}: {
-		type: SvicomDocument['type'];
+		type: PropertyDocument['type'];
 		class?: string;
 	} = $props();
 

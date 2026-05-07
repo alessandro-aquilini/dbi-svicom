@@ -12,7 +12,7 @@ export interface DemoCredential {
 
 export const demoCredentials: DemoCredential[] = [
 	{
-		id: 'adm-svicom-01',
+		id: 'adm-giorgio-01',
 		role: 'admin',
 		label: 'Amministratore',
 		description: 'Giorgo Svicom',
