@@ -97,7 +97,7 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00', fromStatus: 'opened', toStatus: 'estimating' },
 			{ id: 'ev-3', kind: 'assigned', at: '2026-05-01T10:05:00', supplierId: 'frn-idroclima-nord' },
 			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00', body: 'Idroclina Nord ha risposto subito ed è disponibile.' },
-			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:00:00', fromStatus: 'estimating', toStatus: 'approved' },
+			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:40:00', fromStatus: 'estimating', toStatus: 'approved' },
 			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00', fromStatus: 'approved', toStatus: 'in_progress' },
 			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00', fromStatus: 'in_progress', toStatus: 'completed' },
 			{ id: 'ev-8', kind: 'status', at: '2026-05-03T19:00:00', fromStatus: 'completed', toStatus: 'paid' }

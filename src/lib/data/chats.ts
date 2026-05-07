@@ -29,7 +29,7 @@ export const chats: Chat[] = [
 				timestamp: '2026-05-01T09:15:00Z'
 			}
 		],
-		reportIds: ['rep-001']
+		reportIds: ['rep-001', 'rep-005']
 	},
 	{
 		id: 'chat-adm-res-bellini-05',

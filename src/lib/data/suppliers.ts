@@ -92,7 +92,7 @@ export const suppliers: Supplier[] = [
 		category: 'Benessere',
 		description: 'Corsi di yoga e pilates direttamente nel tuo condominio o a casa tua.',
 		rating: 4.6,
-		availability: 'disponibile',
+		availability: 'occupato',
 		propertyIds: ['cnd-verdi-3', 'cnd-carducci-21'],
 		serviceIds: ['srv-benessere-yoga'],
 		comments: []

@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { interventi } from '$lib/data/embeds/supplierTasks';
+	import { supplierTasks } from '$lib/data/embeds/supplierTasks';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	
 	// Filter for maintenance works matching the supplier ID
-	const myJobs = interventi.filter((e) => e.participantIds.includes(supplierId));
+	const myJobs = supplierTasks.filter((e) => e.supplierId === supplierId);
 
 	// Date context
 	const TODAY = '2026-05-05';

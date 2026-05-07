@@ -508,6 +508,23 @@
                                     <button style="border: none; background: var(--primary); color: white; padding: 0.4rem 0.8rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.75rem;">Approva</button>
                                 </div>
                             </div>
+                        {:else if ev.type === 'task'}
+                            <div class="embed-card" style="align-self: flex-start; max-width:520px;">
+                                <div class="embed-header" style="color: #ef4444">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h7"/><path d="M17 3v4M7 14h6"/></svg>
+                                    Intervento programmato
+                                </div>
+                                <div class="embed-title">[{ev.data.id}] {ev.data.title}</div>
+                                <div style="font-size: 0.9rem; color:var(--foreground);">
+                                    <div><strong>Luogo:</strong> {ev.data.location}</div>
+                                    <div><strong>Orario:</strong> {ev.data.date} {ev.data.startTime} - {ev.data.endTime}</div>
+                                    <div><strong>Fornitore:</strong> {getUserById(ev.data.supplierId)?.name ?? ev.data.supplierId}</div>
+                                </div>
+                                <div class="embed-footer">
+                                    <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                    <span style="font-weight: 600; color: var(--primary)">Dettagli →</span>
+                                </div>
+                            </div>
                         {:else if ev.type === 'report-event'}
                              {@const statusColors: Record<string, string> = {
                                 'nuova': '#3b82f6',
