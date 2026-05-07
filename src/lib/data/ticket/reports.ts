@@ -87,6 +87,21 @@ export const reports: Report[] = [
 		statusHistory: [
 			{ status: 'nuova', at: '2026-05-05T11:00:00Z' }
 		]
+	},
+	{
+		id: 'rep-005',
+		title: 'Lampadina fulminata pianerottolo secondo piano',
+		description: 'La lampadina del pianerottolo di fronte all\'interno 5 è fulminata da ieri sera.',
+		status: 'nuova',
+		priority: 'bassa',
+		propertyId: 'cnd-marconi-14',
+		reportedById: 'res-bianchi-01',
+		createdAt: '2026-05-07T09:00:00Z',
+		updatedAt: '2026-05-07T09:00:00Z',
+		category: 'Elettrico',
+		statusHistory: [
+			{ status: 'nuova', at: '2026-05-07T09:00:00Z' }
+		]
 	}
 ];
 

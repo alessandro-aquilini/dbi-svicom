@@ -19,6 +19,7 @@
 		{ label: 'Dashboard', href: '/admin', icon: DashboardSquare01Icon },
 		{ label: 'Condomìni', href: '/admin/properties', icon: Building03Icon },
 		{ label: 'Pratiche', href: '/admin/tickets', icon: Note01Icon },
+		{ label: 'Segnalazioni', href: '/admin/reports', icon: Note01Icon },
 		{ label: 'Calendario', href: '/admin/calendar', icon: Calendar03Icon },
 		{ label: 'Fornitori', href: '/admin/suppliers', icon: Wrench01Icon },
 		{ label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
