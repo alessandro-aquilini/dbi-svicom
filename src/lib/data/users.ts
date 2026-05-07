@@ -18,7 +18,7 @@ export const users: User[] = [
 		phone: '+39 02 0000 0001'
 	},
 	{
-		id: 'adm-giorgio-01', // TODO: Change the ID. 
+		id: 'adm-giorgio-01', 
 		role: 'admin',
 		name: 'Giorgio Limonta',
 		email: 'giorgio.limonta@gmail.it',

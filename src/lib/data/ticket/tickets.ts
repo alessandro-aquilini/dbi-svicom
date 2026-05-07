@@ -82,265 +82,47 @@ export function getCurrentStatus(ticket: Ticket): TicketStatus {
 // ─── Seed data ────────────────────────────────────────────────────────────────
 
 export const tickets: Ticket[] = [
-	// ── TCK-482 ── Full lifecycle: opened → estimating → approved →
-	//              in_progress → completed → paid. No reassignment.
 	{
-		id: 'TCK-482',
-		title: 'Perdita ricorrente nel locale contatori',
-		description:
-			'Tre segnalazioni sullo stesso punto in meno di due ore: va capito se è un nuovo guasto o un ritorno di un caso chiuso.',
-		priority: 'alta',
-		category: 'impianti',
+		id: 'tkt-001',
+		title: 'Riparazione perdita locale caldaia e ripristino acqua calda',
+		description: 'Intervento urgente per perdita su collettore principale e ripristino servizio acqua calda sanitaria scala B. Derivato dalle segnalazioni REP-001 e REP-002.',
+		priority: 'critica',
+		category: 'Idraulica',
 		creatorId: 'adm-giorgio-01',
 		supplierId: 'frn-idroclima-nord',
 		propertyId: 'cnd-marconi-14',
-		cc: [],
-		paymentIds: ['pay-003'],
-		quoteIds: ['qte-482-01'],
-		invoiceIds: ['inv-482-01'],
+		cc: ['res-bianchi-01', 'res-ext-05'],
 		eventTimeline: [
-			{
-				id: 'TCK-482-ev-01',
-				kind: 'created',
-				at: '2024-04-29T09:14:00Z',
-				actorId: 'adm-giorgio-01',
-				toStatus: 'opened'
-			},
-			{
-				id: 'TCK-482-ev-02',
-				kind: 'assigned',
-				at: '2024-04-29T09:14:00Z',
-				actorId: 'adm-giorgio-01',
-				supplierId: 'frn-idroclima-nord'
-			},
-			{
-				id: 'TCK-482-ev-03',
-				kind: 'status',
-				at: '2024-04-29T09:15:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'opened',
-				toStatus: 'estimating'
-			},
-			{
-				id: 'TCK-482-ev-04',
-				kind: 'status',
-				at: '2024-04-29T09:20:00Z',
-				actorId: 'adm-giorgio-01',
-				fromStatus: 'estimating',
-				toStatus: 'approved'
-			},
-			{
-				id: 'TCK-482-ev-05',
-				kind: 'status',
-				at: '2024-04-29T11:00:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'approved',
-				toStatus: 'in_progress'
-			},
-			{
-				id: 'TCK-482-ev-06',
-				kind: 'status',
-				at: '2024-04-30T14:00:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'in_progress',
-				toStatus: 'completed'
-			},
-			{
-				id: 'TCK-482-ev-07',
-				kind: 'status',
-				at: '2024-04-30T14:30:00Z',
-				actorId: 'adm-giorgio-01',
-				fromStatus: 'completed',
-				toStatus: 'paid'
-			},
-			{
-				id: 'TCK-482-ev-08',
-				kind: 'closed',
-				at: '2024-04-30T14:35:00Z',
-				actorId: 'adm-giorgio-01',
-				fromStatus: 'paid',
-				toStatus: 'closed'
-			}
-		]
+			{ id: 'ev-1', kind: 'created', at: '2026-05-01T10:00:00Z', actorId: 'adm-giorgio-01' },
+			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00Z', actorId: 'adm-giorgio-01', fromStatus: 'opened', toStatus: 'estimating' },
+			{ id: 'ev-3', kind: 'assigned', at: '2026-05-01T10:05:00Z', actorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord' },
+			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00Z', actorId: 'frn-idroclima-nord', body: 'Ricevuto. Invio tecnico per sopralluogo immediato.' },
+			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:00:00Z', actorId: 'frn-idroclima-nord', fromStatus: 'estimating', toStatus: 'approved' },
+			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00Z', actorId: 'frn-idroclima-nord', fromStatus: 'approved', toStatus: 'in_progress' },
+			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00Z', actorId: 'frn-idroclima-nord', fromStatus: 'in_progress', toStatus: 'completed' }
+		],
+		paymentIds: ['pay-001'],
+		quoteIds: ['quo-001'],
+		invoiceIds: ['inv-001']
 	},
-
-	// ── TCK-476 ── Supplier reassignment example: frn-secure-entry → frn-eleva-service.
-	//              Two residents in cc.
 	{
-		id: 'TCK-476',
-		title: 'Ascensore scala B fermo a intermittenza',
-		description:
-			'Il problema si presenta a ondate e richiede una squadra disponibile in finestra rapida.',
-		priority: 'alta',
-		category: 'sicurezza',
+		id: 'tkt-002',
+		title: 'Riparazione videocitofonia Corso Europa',
+		description: 'Verifica e riparazione modulo telecamera videocitofono esterno. Segnalazione REP-003.',
+		priority: 'media',
+		category: 'Elettrico',
 		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-eleva-service',   // current supplier after reassignment
-		propertyId: 'cnd-marconi-14',
-		cc: ['res-bianchi-01', 'res-ferrari-04'],
-		paymentIds: [],
-		quoteIds: ['qte-476-01', 'qte-476-02'],
-		invoiceIds: [],
-		eventTimeline: [
-			{
-				id: 'TCK-476-ev-01',
-				kind: 'created',
-				at: '2024-04-29T08:40:00Z',
-				actorId: 'adm-giorgio-01',
-				toStatus: 'opened'
-			},
-			{
-				id: 'TCK-476-ev-02',
-				kind: 'assigned',
-				at: '2024-04-29T08:41:00Z',
-				actorId: 'adm-giorgio-01',
-				supplierId: 'frn-secure-entry'
-			},
-			{
-				id: 'TCK-476-ev-03',
-				kind: 'status',
-				at: '2024-04-29T08:42:00Z',
-				actorId: 'frn-secure-entry',
-				fromStatus: 'opened',
-				toStatus: 'estimating'
-			},
-			{
-				id: 'TCK-476-ev-04',
-				kind: 'note',
-				at: '2024-04-29T10:00:00Z',
-				actorId: 'adm-giorgio-01',
-				body: 'frn-secure-entry non disponibile nei prossimi 3 giorni. Riassegno a specialista ascensori.'
-			},
-			{
-				id: 'TCK-476-ev-05',
-				kind: 'reassigned',
-				at: '2024-04-29T10:05:00Z',
-				actorId: 'adm-giorgio-01',
-				previousSupplierId: 'frn-secure-entry',
-				supplierId: 'frn-eleva-service'
-			},
-			{
-				id: 'TCK-476-ev-06',
-				kind: 'status',
-				at: '2024-04-29T10:10:00Z',
-				actorId: 'frn-eleva-service',
-				fromStatus: 'estimating',
-				toStatus: 'approved'
-			},
-			{
-				id: 'TCK-476-ev-07',
-				kind: 'status',
-				at: '2024-04-30T09:00:00Z',
-				actorId: 'frn-eleva-service',
-				fromStatus: 'approved',
-				toStatus: 'in_progress'
-			}
-		]
-	},
-
-	// ── TCK-501 ── Private flat, resident in cc, completed but not yet paid.
-	{
-		id: 'TCK-501',
-		title: 'Perdita dal condizionatore in sala',
-		description:
-			'Il condizionatore in sala perde acqua copiosamente dallo split interno. Urge intervento tecnico in appartamento privato.',
-		priority: 'alta',
-		category: 'impianti privati',
-		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-idroclima-nord',
-		propertyId: 'cnd-marconi-14',
+		supplierId: 'frn-secure-entry',
+		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
-		paymentIds: ['pay-004'],
-		quoteIds: ['qte-501-01'],
-		invoiceIds: ['inv-501-01'],
 		eventTimeline: [
-			{
-				id: 'TCK-501-ev-01',
-				kind: 'created',
-				at: '2024-05-02T10:15:00Z',
-				actorId: 'adm-giorgio-01',
-				toStatus: 'opened'
-			},
-			{
-				id: 'TCK-501-ev-02',
-				kind: 'assigned',
-				at: '2024-05-02T10:20:00Z',
-				actorId: 'adm-giorgio-01',
-				supplierId: 'frn-idroclima-nord'
-			},
-			{
-				id: 'TCK-501-ev-03',
-				kind: 'status',
-				at: '2024-05-02T11:00:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'opened',
-				toStatus: 'estimating'
-			},
-			{
-				id: 'TCK-501-ev-04',
-				kind: 'status',
-				at: '2024-05-02T11:30:00Z',
-				actorId: 'adm-giorgio-01',
-				fromStatus: 'estimating',
-				toStatus: 'approved'
-			},
-			{
-				id: 'TCK-501-ev-05',
-				kind: 'status',
-				at: '2024-05-03T09:00:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'approved',
-				toStatus: 'in_progress'
-			},
-			{
-				id: 'TCK-501-ev-06',
-				kind: 'status',
-				at: '2024-05-03T12:00:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'in_progress',
-				toStatus: 'completed'
-			}
-		]
-	},
-
-	// ── TCK-510 ── Still in estimating, no documents yet.
-	{
-		id: 'TCK-510',
-		title: 'Sostituzione rubinetto bagno',
-		description:
-			'Richiesta uscita per preventivo e sostituzione del rubinetto del lavabo bagno patronale.',
-		priority: 'bassa',
-		category: 'impianti privati',
-		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-idroclima-nord',
-		propertyId: 'cnd-marconi-14',
-		cc: ['res-rossi-03'],
-		paymentIds: ['pay-007'],
-		quoteIds: [],
-		invoiceIds: [],
-		eventTimeline: [
-			{
-				id: 'TCK-510-ev-01',
-				kind: 'created',
-				at: '2024-05-04T08:00:00Z',
-				actorId: 'adm-giorgio-01',
-				toStatus: 'opened'
-			},
-			{
-				id: 'TCK-510-ev-02',
-				kind: 'assigned',
-				at: '2024-05-04T08:05:00Z',
-				actorId: 'adm-giorgio-01',
-				supplierId: 'frn-idroclima-nord'
-			},
-			{
-				id: 'TCK-510-ev-03',
-				kind: 'status',
-				at: '2024-05-04T09:00:00Z',
-				actorId: 'frn-idroclima-nord',
-				fromStatus: 'opened',
-				toStatus: 'estimating'
-			}
-		]
+			{ id: 'ev-201', kind: 'created', at: '2026-05-03T16:30:00Z', actorId: 'adm-giorgio-01' },
+			{ id: 'ev-202', kind: 'assigned', at: '2026-05-03T16:35:00Z', actorId: 'adm-giorgio-01', supplierId: 'frn-secure-entry' },
+			{ id: 'ev-203', kind: 'status', at: '2026-05-03T16:35:00Z', actorId: 'adm-giorgio-01', fromStatus: 'opened', toStatus: 'estimating' }
+		],
+		paymentIds: [],
+		quoteIds: ['quo-002'],
+		invoiceIds: []
 	}
 ];
 

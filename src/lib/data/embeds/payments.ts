@@ -5,7 +5,7 @@ export interface Payment {
 	amount: number;
 	currency: string;
 	dueDate: string;
-	paidAt?: string;
+	paidAt: string;
 	description: string;
 	propertyId?: string;
 	ticketId?: string;
@@ -14,70 +14,15 @@ export interface Payment {
 export const payments: Payment[] = [
 	{
 		id: 'pay-001',
-		fromId: 'res-bianchi-01',
-		toId: 'adm-giorgio-01',
-		amount: 450.0,
-		currency: 'EUR',
-		dueDate: '2024-04-10T12:00:00Z',
-		paidAt: '2024-04-08T09:30:00Z',
-		description: 'Quota condominiale Q2 2024',
-		propertyId: 'cnd-marconi-14'
-	},
-	{
-		id: 'pay-003',
 		fromId: 'adm-giorgio-01',
 		toId: 'frn-idroclima-nord',
-		amount: 1250.0,
+		amount: 450.00,
 		currency: 'EUR',
-		dueDate: '2024-04-30T14:35:00Z',
-		paidAt: '2024-04-30T14:35:00Z',
-		description: 'Intervento riparazione perdita locale contatori',
+		dueDate: '2026-06-02T00:00:00Z',
+		paidAt: '2026-05-03T10:15:00Z',
+		description: 'Saldo fattura 2026/FT/154 per intervento idraulico Marconi 14',
 		propertyId: 'cnd-marconi-14',
-		ticketId: 'TCK-482'
-	},
-	{
-		id: 'pay-004',
-		fromId: 'res-conti-02',
-		toId: 'frn-idroclima-nord',
-		amount: 180.0,
-		currency: 'EUR',
-		dueDate: '2024-05-18T10:00:00Z',
-		description: 'Saldo fattura FT-2024-002. Lavori climatizzazione privato.',
-		propertyId: 'cnd-marconi-14',
-		ticketId: 'TCK-501'
-	},
-	{
-		id: 'pay-005',
-		fromId: 'adm-matteo-01',
-		toId: 'frn-idroclima-nord',
-		amount: 850.0,
-		currency: 'EUR',
-		dueDate: '2024-03-15T10:00:00Z',
-		paidAt: '2024-03-10T10:00:00Z',
-		description: 'Sostituzione pompa sommersa',
-		propertyId: 'cnd-roma-12'
-	},
-	{
-		id: 'pay-006',
-		fromId: 'adm-giorgio-01',
-		toId: 'frn-idroclima-nord',
-		amount: 320.0,
-		currency: 'EUR',
-		dueDate: '2024-02-28T10:00:00Z',
-		paidAt: '2024-02-26T10:00:00Z',
-		description: 'Manutenzione ordinaria caldaia',
-		propertyId: 'cnd-marconi-14'
-	},
-	{
-		id: 'pay-007',
-		fromId: 'res-rossi-03',
-		toId: 'frn-idroclima-nord',
-		amount: 220.0,
-		currency: 'EUR',
-		dueDate: '2024-05-30T10:00:00Z',
-		description: 'Sostituzione miscelatore lavabo (Acconto)',
-		propertyId: 'cnd-marconi-14',
-		ticketId: 'TCK-510'
+		ticketId: 'tkt-001'
 	}
 ];
 
