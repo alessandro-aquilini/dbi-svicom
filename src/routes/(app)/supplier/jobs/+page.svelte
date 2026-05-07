@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { interventi } from '$lib/data/events/intervento';
+	import { interventi } from '$lib/data/events/supplierTasks';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();

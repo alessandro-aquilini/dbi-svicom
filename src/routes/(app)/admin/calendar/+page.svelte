@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { interventi } from '$lib/data/events/intervento';
+	import { interventi } from '$lib/data/events/supplierTasks';
 	import { meetings } from '$lib/data/events/meetings';
 	import { assemblies } from '$lib/data/events/assemblies';
 	import { users } from '$lib/data/users';

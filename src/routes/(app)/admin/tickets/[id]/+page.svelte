@@ -23,7 +23,7 @@
 	import { getQuoteById } from '$lib/data/embeds/quotes';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getPaymentById } from '$lib/data/embeds/payments';
-	import { getInterventiByTicketId } from '$lib/data/events/intervento';
+	import { getSupplierTasksByTicketId } from '$lib/data/events/supplierTasks';
 
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);
@@ -42,7 +42,7 @@
 		| { type: 'quote'; data: any; at: string }
 		| { type: 'invoice'; data: any; at: string }
 		| { type: 'payment'; data: any; at: string }
-		| { type: 'intervention'; data: any; at: string };
+		| { type: 'supplier-task'; data: any; at: string };
 
 	const unifiedTimeline = $derived.by<UnifiedEvent[]>(() => {
 		if (!ticket) return [];
@@ -74,9 +74,9 @@
 			});
 		}
 
-		const interventions = getInterventiByTicketId(ticket.id);
-		interventions.forEach(int => {
-			items.push({ type: 'intervention' as any, data: int, at: `${int.date}T${int.startTime}:00Z` });
+		const tasks = getSupplierTasksByTicketId(ticket.id);
+		tasks.forEach(t => {
+			items.push({ type: 'supplier-task' as any, data: t, at: `${t.date}T${t.startTime}:00Z` });
 		});
 
 		return items.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
@@ -379,8 +379,8 @@
 											</div>
 										</div>
 									</li>
-								{:else if (item as any).type === 'intervention'}
-									{@const int = item.data}
+								{:else if (item as any).type === 'supplier-task'}
+									{@const task = item.data}
 									<li class="tl-item tl-item--inline">
 										<span class="tl-node">
 											<span class="tl-dot" aria-hidden="true">
@@ -389,13 +389,19 @@
 										</span>
 										<div class="tl-inline-group">
 											<p class="tl-inline">
-												<strong>Intervento sul posto</strong>
+												{#if task.type === 'intervento'}
+													<strong>Intervento sul posto</strong>
+												{:else if task.type === 'sopralluogo'}
+													<strong>Sopralluogo</strong>
+												{:else}
+													<strong>Attività fornitore</strong>
+												{/if}
 												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
 											</p>
 											<div class="mt-2">
-												<div class="embed-pill embed-pill--intervention">
+												<div class="embed-pill embed-pill--supplier-task">
 													<span class="embed-pill__label">Appuntamento</span>
-													<span class="embed-pill__value">{int.title} ({int.startTime} - {int.endTime})</span>
+													<span class="embed-pill__value">{task.title} ({task.startTime} - {task.endTime})</span>
 												</div>
 											</div>
 										</div>
@@ -944,6 +950,12 @@
 	.embed-pill--intervention {
 		border-left: 3px solid #7b6d8c;
 	}
+
+	.embed-pill--supplier-task {
+		border-left: 3px solid #7b6d8c;
+	}
+
+	/* sopralluogo could share the same visual or be overridden where data is available */
 
 	.embed-pill__label {
 		font-size: 0.625rem;

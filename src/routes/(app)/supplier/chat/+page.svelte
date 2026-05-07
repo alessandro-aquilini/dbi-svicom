@@ -5,7 +5,7 @@
 	import { getPaymentsByUserId, type Payment } from '$lib/data/embeds/payments';
 	import { getQuotesBySupplierId, type Quote } from '$lib/data/embeds/quotes';
 	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/embeds/invoices';
-	import { getInterventoById, type Intervento, interventi } from '$lib/data/events/intervento';
+	import { getInterventoById, type Intervento, interventi } from '$lib/data/events/supplierTasks';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';

@@ -1,6 +1,7 @@
-export interface Intervento {
+export interface supplierTask {
 	id: string;
 	title: string;
+    type: 'sopralluogo' | 'intervento' | 'servizio';
 	date: string;
 	startTime: string;
 	endTime: string;
@@ -11,10 +12,11 @@ export interface Intervento {
 	ticketId: string; // Reference to a ticket
 }
 
-export const interventi: Intervento[] = [
+export const supplierTasks: supplierTask[] = [
 	{
 		id: 'int-001',
 		title: 'Sopralluogo tecnico collettore',
+		type: 'sopralluogo',
 		date: '2026-05-01',
 		startTime: '10:45',
 		endTime: '11:30',
@@ -27,6 +29,7 @@ export const interventi: Intervento[] = [
 	{
 		id: 'int-002',
 		title: 'Riparazione collettore e sostituzione valvola',
+		type: 'intervento',
 		date: '2026-05-01',
 		startTime: '14:30',
 		endTime: '17:30',
@@ -38,14 +41,14 @@ export const interventi: Intervento[] = [
 	}
 ];
 
-export function getInterventoById(id: string): Intervento | undefined {
-	return interventi.find((m) => m.id === id);
+export function getSupplierTaskById(id: string): supplierTask | undefined {
+	return supplierTasks.find((m) => m.id === id);
 }
 
-export function getInterventiByPropertyId(propertyId: string): Intervento[] {
-	return interventi.filter((m) => m.propertyId === propertyId);
+export function getSupplierTasksByPropertyId(propertyId: string): supplierTask[] {
+	return supplierTasks.filter((m) => m.propertyId === propertyId);
 }
 
-export function getInterventiByTicketId(ticketId: string): Intervento[] {
-	return interventi.filter((m) => m.ticketId === ticketId);
+export function getSupplierTasksByTicketId(ticketId: string): supplierTask[] {
+	return supplierTasks.filter((m) => m.ticketId === ticketId);
 }
