@@ -2,7 +2,8 @@
     import { tick } from 'svelte';
     import { getCurrentUser } from '$lib/auth';
     import { chats, type Chat, type Message } from '$lib/data/chats';
-    import { getTicketById, getSupplierRelevantTimeline, type Ticket, type TicketEvent } from '$lib/data/ticket/tickets';
+    import { getTicketById, getSupplierRelevantTimeline, getCurrentStatus, type Ticket, type TicketEvent } from '$lib/data/ticket/tickets';
+    import { getReportById, type Report } from '$lib/data/ticket/reports';
     import { getPaymentById, type Payment } from '$lib/data/embeds/payments';
     import { getQuoteById, type Quote } from '$lib/data/embeds/quotes';
     import { getInvoiceById, type Invoice } from '$lib/data/embeds/invoices';
@@ -10,11 +11,12 @@
     import { getUserById, type User } from '$lib/data/users';
     import { propertySelection } from '$lib/state/property-selection.svelte';
     import { PropertyScopeChip } from '$lib/components/shared';
+    import { page } from '$app/state';
 
     const currentUser = getCurrentUser();
     const adminId = currentUser?.id ?? 'adm-giorgio-01';
 
-    let selectedChatId = $state(chats[0]?.id ?? '');
+    let selectedChatId = $state(page.url.searchParams.get('id') ?? chats[0]?.id ?? '');
     let composerText = $state('');
     let messagesEl: HTMLDivElement | undefined = $state();
     let localMessages = $state<Record<string, Message[]>>({});
@@ -47,7 +49,8 @@
         | { type: 'payment'; date: number; data: Payment }
         | { type: 'quote'; date: number; data: Quote }
         | { type: 'invoice'; date: number; data: Invoice }
-        | { type: 'task'; date: number; data: supplierTask };
+        | { type: 'task'; date: number; data: supplierTask }
+        | { type: 'report-event'; date: number; data: { report: Report; status: string } };
 
     function buildTimelineForChat(chat?: Chat): TimelineEvent[] {
         if (!chat) return [];
@@ -57,6 +60,14 @@
 
         for (const m of chat.messages) events.push({ type: 'message', date: new Date(m.timestamp).getTime(), data: m });
         for (const m of (localMessages[chat.id] ?? [])) events.push({ type: 'message', date: new Date(m.timestamp).getTime(), data: m });
+
+        for (const rid of chat.reportIds ?? []) {
+            const report = getReportById(rid);
+            if (!report) continue;
+            for (const h of report.statusHistory) {
+                events.push({ type: 'report-event', date: new Date(h.at).getTime(), data: { report, status: h.status } });
+            }
+        }
 
         for (const tid of chat.ticketIds ?? []) {
             const ticket = getTicketById(tid);
@@ -102,6 +113,11 @@
 
     const grouped = $derived.by(() => {
         const tl = buildTimelineForChat(selectedChat);
+        if (tl.length === 0 && selectedChat) {
+            // If there's absolutely nothing, treat it as empty, 
+            // but normally report-events or messages should exist.
+            return [];
+        }
         const map = new Map<string, { label: string; events: TimelineEvent[] }>();
         for (const ev of tl) {
             const key = isoDayKey(ev.date);
@@ -143,78 +159,343 @@
 </script>
 
 <style>
-    .chat-shell { display: grid; grid-template-columns: 320px 1fr; gap: 1rem; padding: 1rem; }
-    .list { border: 1px solid var(--border); border-radius: .5rem; background: var(--card); overflow: auto; }
-    .list button { width: 100%; text-align: left; padding: .75rem; border: 0; background: transparent; }
-    .panel { border: 1px solid var(--border); border-radius: .5rem; background: var(--card); display:flex; flex-direction: column; }
-    .messages { padding: 1rem; overflow:auto; flex:1; }
-    .composer { border-top: 1px solid var(--border); padding: .5rem; display:flex; gap:.5rem; }
-    .day { font-size:.875rem; color:var(--muted-foreground); margin: .75rem 0 .5rem; }
-    .msg { margin: .25rem 0; }
-    .ev { margin: .35rem 0; font-size:.9rem; color:var(--foreground); }
+    .chat-shell { 
+        display: grid; 
+        grid-template-columns: 350px 1fr; 
+        height: calc(100vh - 4rem);
+        background: var(--background);
+    }
+    .list { 
+        border-right: 1px solid var(--border); 
+        background: var(--card); 
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .list-scroll {
+        overflow-y: auto;
+        flex: 1;
+    }
+    .chat-item { 
+        width: 100%; 
+        text-align: left; 
+        padding: 1rem; 
+        border: 0; 
+        background: transparent; 
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .chat-item:hover {
+        background: var(--muted)/0.5;
+    }
+    .chat-item.is-active {
+        background: var(--primary)/0.05;
+        border-right: 3px solid var(--primary);
+    }
+    
+    .panel { 
+        display: flex; 
+        flex-direction: column; 
+        background: #f8fafc;
+        height: 100%;
+    }
+    
+    .messages { 
+        padding: 1.5rem; 
+        overflow-y: auto; 
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Message Bubbles */
+    .bubble-wrapper {
+        display: flex;
+        flex-direction: column;
+        max-width: 80%;
+        margin-bottom: 0.5rem;
+    }
+    .bubble-wrapper.own {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+    .bubble-wrapper.other {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+    
+    .bubble {
+        padding: 0.75rem 1rem;
+        border-radius: 1.25rem;
+        font-size: 0.9375rem;
+        line-height: 1.4;
+        position: relative;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .own .bubble {
+        background: var(--primary);
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+    }
+    .other .bubble {
+        background: white;
+        color: var(--foreground);
+        border-bottom-left-radius: 0.25rem;
+        border: 1px solid var(--border);
+    }
+    
+    .ts {
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+        margin-top: 0.25rem;
+        padding: 0 0.5rem;
+    }
+
+    /* Embed Boxes (Fintech Style) */
+    .embed-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1rem;
+        margin: 1rem 0;
+        width: 100%;
+        max-width: 400px;
+        align-self: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .embed-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted-foreground);
+    }
+    .embed-title {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .embed-amount {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--foreground);
+    }
+    .embed-footer {
+        border-top: 1px solid var(--border);
+        padding-top: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8125rem;
+    }
+
+    .composer { 
+        background: white;
+        border-top: 1px solid var(--border); 
+        padding: 1rem 1.5rem; 
+        display: flex; 
+        gap: 0.75rem; 
+        align-items: center;
+    }
+    .composer input {
+        background: #f1f5f9;
+        border: none;
+        padding: 0.75rem 1.25rem;
+        border-radius: 2rem;
+        flex: 1;
+        outline: none;
+        transition: background 0.2s;
+    }
+    .composer input:focus {
+        background: #e2e8f0;
+    }
+    
+    .day-divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .day-divider::before, .day-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+    .day-divider span {
+        padding: 0 1rem;
+    }
+
+    .btn-send {
+        background: var(--primary);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .btn-send:hover {
+        transform: scale(1.05);
+    }
 </style>
 
 <div class="chat-shell">
     <div class="list">
-        <div style="padding:.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-            <strong>Conversazioni</strong>
+        <div style="padding:1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background: white;">
+            <h2 style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em;">Messaggi</h2>
             <PropertyScopeChip gap="0.5rem" />
         </div>
-        {#each scopedChats as chat (chat.id)}
-            {@const cp = getCounterpart(chat.participantIds)}
-            <button type="button" onclick={() => selectChat(chat.id)} class:is-active={chat.id === selectedChatId}>
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                    <div>
-                        <div style="font-weight:600">{cp?.name ?? '—'}</div>
-                        <div style="font-size:.875rem;color:var(--muted-foreground)">{chat.messages[chat.messages.length-1]?.text ?? ''}</div>
+        <div class="list-scroll">
+            {#each scopedChats as chat (chat.id)}
+                {@const cp = getCounterpart(chat.participantIds)}
+                {@const lastMsg = chat.messages[chat.messages.length - 1]}
+                <button type="button" onclick={() => selectChat(chat.id)} class="chat-item" class:is-active={chat.id === selectedChatId}>
+                    <div style="display:flex; gap: 0.75rem; align-items:center">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--muted); display:flex; align-items:center; justify-content:center; font-weight: 600; color: var(--muted-foreground); flex-shrink: 0;">
+                            {cp?.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() ?? ''}
+                        </div>
+                        <div style="flex:1; min-width: 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:baseline">
+                                <span style="font-weight:700; font-size: 0.9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{cp?.name ?? '—'}</span>
+                                <span style="font-size:.75rem; color:var(--muted-foreground); flex-shrink: 0;">{lastMsg?.timestamp.slice(11,16) ?? chat.lastMessageAt.slice(11,16)}</span>
+                            </div>
+                            <div style="font-size:.875rem; color:var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                {lastMsg?.text ?? (chat.reportIds && chat.reportIds.length > 0 ? 'Nuova segnalazione' : 'Nessun messaggio')}
+                            </div>
+                        </div>
                     </div>
-                    <div style="font-size:.75rem;color:var(--muted-foreground)">{chat.messages[chat.messages.length-1]?.timestamp.slice(11,16)}</div>
-                </div>
-            </button>
-        {/each}
+                </button>
+            {/each}
+        </div>
     </div>
 
     <div class="panel">
-        <div style="padding:1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-            <div>
-                {#if selectedChat}
-                    {@const cp = getCounterpart(selectedChat.participantIds)}
-                    <div style="font-weight:700">{cp?.name ?? 'Seleziona una conversazione'}</div>
-                    <div style="font-size:.875rem;color:var(--muted-foreground)">{cp ? (cp.role ?? '') : ''}</div>
-                {:else}
-                    <div style="font-weight:700">Seleziona una conversazione</div>
-                {/if}
+        {#if selectedChat}
+            {@const cp = getCounterpart(selectedChat.participantIds)}
+            <div style="padding:1rem 1.5rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background: white;">
+                <div style="display:flex; align-items:center; gap: 0.75rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--muted); display:flex; align-items:center; justify-content:center; font-weight: 600; color: var(--muted-foreground);">
+                        {cp?.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() ?? ''}
+                    </div>
+                    <div>
+                        <div style="font-weight:800; font-size: 1rem;">{cp?.name ?? ''}</div>
+                        <div style="font-size:.75rem; color:var(--muted-foreground); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">{cp?.role ?? ''}</div>
+                    </div>
+                </div>
             </div>
-            <div style="font-size:.875rem;color:var(--muted-foreground)">ID: {selectedChatId}</div>
-        </div>
 
-        <div class="messages" bind:this={messagesEl}>
-            {#if grouped.length === 0}
-                <div style="padding:1rem;color:var(--muted-foreground)">Nessuna attività.</div>
-            {/if}
-            {#each grouped as day (day.dayKey)}
-                <div class="day">{day.label}</div>
-                {#each day.events as ev}
-                    {#if ev.type === 'message'}
-                        <div class="msg"><strong>{ev.data.senderId === adminId ? 'Tu' : getUserById(ev.data.senderId)?.name}</strong>: {ev.data.text} <span style="color:var(--muted-foreground);font-size:.75rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    {:else if ev.type === 'ticket-event'}
-                        <div class="ev">[{ev.data.ticket.id}] {ev.data.event.kind} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    {:else if ev.type === 'payment'}
-                        <div class="ev">Pagamento: {ev.data.id} — {ev.data.amount.toFixed(2)} {ev.data.currency} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    {:else if ev.type === 'quote'}
-                        <div class="ev">Preventivo: {ev.data.id} — {ev.data.amount.toFixed(2)} {ev.data.currency} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    {:else if ev.type === 'invoice'}
-                        <div class="ev">Fattura: {ev.data.number} — {ev.data.amount.toFixed(2)} {ev.data.currency} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    {:else if ev.type === 'task'}
-                        <div class="ev">Intervento: {ev.data.id} — {ev.data.title} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    {/if}
+            <div class="messages" bind:this={messagesEl}>
+                {#if grouped.length === 0}
+                    <div style="padding:2rem; text-align: center; color:var(--muted-foreground);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">💬</div>
+                        <p>Nessun messaggio in questa conversazione.</p>
+                    </div>
+                {/if}
+                {#each grouped as day (day.dayKey)}
+                    <div class="day-divider"><span>{day.label}</span></div>
+                    {#each day.events as ev}
+                        {#if ev.type === 'message'}
+                            {@const isOwn = ev.data.senderId === adminId}
+                            <div class="bubble-wrapper" class:own={isOwn} class:other={!isOwn}>
+                                <div class="bubble">
+                                    {ev.data.text}
+                                </div>
+                                <div class="ts">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</div>
+                            </div>
+                        {:else if ev.type === 'ticket-event'}
+                            <div class="embed-card" style="align-self: flex-end;">
+                                <div class="embed-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/><path d="m10 12 2 2 4-4"/></svg>
+                                    Aggiornamento Ticket
+                                </div>
+                                <div class="embed-title">[{ev.data.ticket.id}] {ev.data.event.kind}</div>
+                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); display: flex; align-items: center; gap: 0.5rem;">
+                                    Stato: <span style="text-transform: capitalize; color: var(--primary)">{(ev.data.event.toStatus || 'Aperto').replace(/_/g, ' ')}</span>
+                                </div>
+                                <div class="embed-footer">
+                                    <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                    <span style="font-weight: 600; color: var(--primary)">Dettagli →</span>
+                                </div>
+                            </div>
+                        {:else if ev.type === 'payment'}
+                            <div class="embed-card" style="align-self: flex-end;">
+                                <div class="embed-header" style="color: #10b981">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                                    Pagamento
+                                </div>
+                                <div class="embed-title">Saldo Fattura {ev.data.id}</div>
+                                <div class="embed-amount">{ev.data.amount.toLocaleString('it-IT', { style: 'currency', currency: ev.data.currency })}</div>
+                                <div class="embed-footer">
+                                    <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                    <span style="padding: 0.25rem 0.5rem; background: #ecfdf5; color: #059669; border-radius: 0.5rem; font-weight: 700;">ESEGUITO</span>
+                                </div>
+                            </div>
+                        {:else if ev.type === 'quote'}
+                            <div class="embed-card" style="align-self: flex-start;">
+                                <div class="embed-header" style="color: #6366f1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                    Preventivo ricevuto
+                                </div>
+                                <div class="embed-title">Servizi di manutenzione</div>
+                                <div class="embed-amount">{ev.data.amount.toLocaleString('it-IT', { style: 'currency', currency: ev.data.currency })}</div>
+                                <div class="embed-footer">
+                                    <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                    <button style="border: none; background: var(--primary); color: white; padding: 0.4rem 0.8rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.75rem;">Approva</button>
+                                </div>
+                            </div>
+                        {:else if ev.type === 'report-event'}
+                             {@const statusColors: Record<string, string> = {
+                                'nuova': '#3b82f6',
+                                'presa_in_carico': '#f59e0b',
+                                'completata': '#10b981'
+                             }}
+                             <div class="embed-card" style="border-left: 4px solid {statusColors[ev.data.status] || '#f59e0b'}; align-self: flex-start;">
+                                <div class="embed-header" style="color: {statusColors[ev.data.status] || '#f59e0b'}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" x2="17" y1="17" y2="17.01"/></svg>
+                                    Stato Segnalazione
+                                </div>
+                                <div class="embed-title">{ev.data.report.title}</div>
+                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); display: flex; align-items: center; gap: 0.5rem;">
+                                    Nuovo stato: <span style="text-transform: capitalize; color: {statusColors[ev.data.status] || '#b45309'}">{ev.data.status.replace(/_/g, ' ')}</span>
+                                </div>
+                                <div class="embed-footer">
+                                    <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                        {/if}
+                    {/each}
                 {/each}
-            {/each}
-        </div>
+            </div>
 
-        <div class="composer">
-            <input bind:value={composerText} placeholder="Scrivi un messaggio..." style="flex:1;padding:.5rem;border:1px solid var(--border);border-radius:.375rem" />
-            <button type="button" onclick={send} class="btn">Invia</button>
-        </div>
+            <div class="composer">
+                <button type="button" style="border:none; background:none; color: var(--muted-foreground)" aria-label="Allega file">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </button>
+                <input bind:value={composerText} placeholder="Scrivi un messaggio..." onkeydown={(e) => e.key === 'Enter' && send()} />
+                <button type="button" onclick={send} class="btn-send" aria-label="Invia messaggio">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14-7-7 14-2-7-5-2Z"/></svg>
+                </button>
+            </div>
+        {:else}
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color: var(--muted-foreground); background: white;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🗨️</div>
+                <h3 style="font-weight: 700; color: var(--foreground);">Le tue conversazioni</h3>
+                <p>Seleziona una chat per visualizzare i messaggi e le attività.</p>
+            </div>
+        {/if}
     </div>
 </div>

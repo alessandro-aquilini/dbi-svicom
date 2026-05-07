@@ -14,6 +14,7 @@ export interface Report {
 	priority: ReportPriority;
 	propertyId: string;
 	reportedById: string; // References User.id
+	adminId: string; // Reference adm-giorgio-01
 	assignedToId?: string; // References User.id
 	createdAt: string;
 	updatedAt: string;
@@ -31,6 +32,7 @@ export const reports: Report[] = [
 		priority: 'alta',
 		propertyId: 'cnd-marconi-14',
 		reportedById: 'res-bianchi-01',
+		adminId: 'adm-giorgio-01',
 		createdAt: '2026-05-01T08:30:00Z',
 		updatedAt: '2026-05-01T10:00:00Z',
 		category: 'Idraulica',
@@ -47,6 +49,7 @@ export const reports: Report[] = [
 		status: 'completata',
 		priority: 'critica',
 		propertyId: 'cnd-marconi-14',
+		adminId: 'adm-giorgio-01',
 		reportedById: 'res-bellini-05',
 		createdAt: '2026-05-01T07:45:00Z',
 		updatedAt: '2026-05-01T10:00:00Z',
@@ -64,6 +67,7 @@ export const reports: Report[] = [
 		status: 'presa_in_carico',
 		priority: 'media',
 		propertyId: 'cnd-europa-7',
+		adminId: 'adm-giorgio-01',
 		reportedById: 'res-conti-02',
 		createdAt: '2026-05-03T14:20:00Z',
 		updatedAt: '2026-05-03T16:00:00Z',
@@ -81,6 +85,7 @@ export const reports: Report[] = [
 		priority: 'media',
 		propertyId: 'cnd-verdi-3',
 		reportedById: 'res-rossi-03',
+		adminId: 'adm-giorgio-01',
 		createdAt: '2026-05-05T11:00:00Z',
 		updatedAt: '2026-05-05T11:00:00Z',
 		category: 'Fabbro',
@@ -96,6 +101,7 @@ export const reports: Report[] = [
 		priority: 'bassa',
 		propertyId: 'cnd-marconi-14',
 		reportedById: 'res-bianchi-01',
+		adminId: 'adm-giorgio-01',
 		createdAt: '2026-05-07T09:00:00Z',
 		updatedAt: '2026-05-07T09:00:00Z',
 		category: 'Elettrico',

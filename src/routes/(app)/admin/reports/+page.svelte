@@ -5,10 +5,12 @@
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { PropertyScopeChip, EmptyState } from '$lib/components/shared';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { Search01Icon } from '@hugeicons/core-free-icons';
+	import { Search01Icon, Chat01Icon } from '@hugeicons/core-free-icons';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
+    import { chats } from '$lib/data/chats';
 
 	const statusLabels: Record<ReportStatus, string> = {
 		nuova: 'Nuova',
@@ -58,6 +60,10 @@
 	);
 
 	const hasLocalFilters = $derived(query !== '' || filterStatus !== '');
+
+    function getChatIdForReport(reportId: string) {
+        return chats.find(c => c.reportIds?.includes(reportId))?.id;
+    }
 </script>
 
 <div class="flex flex-col gap-6 p-6">
@@ -136,6 +142,28 @@
 									Inviata il {new Date(report.createdAt).toLocaleDateString('it-IT')}
 								</span>
 							</div>
+
+                            {#if getChatIdForReport(report.id)}
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    class="gap-2"
+                                    href="/admin/chat?id={getChatIdForReport(report.id)}"
+                                >
+                                    <HugeiconsIcon icon={Chat01Icon} class="h-4 w-4" />
+                                    Vai alla Chat
+                                </Button>
+                            {:else}
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    class="gap-2"
+                                    disabled
+                                >
+                                    <HugeiconsIcon icon={Chat01Icon} class="h-4 w-4" />
+                                    Nessuna Chat
+                                </Button>
+                            {/if}
 						</div>
 					</div>
 				{/each}
