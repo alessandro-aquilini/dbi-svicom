@@ -23,7 +23,7 @@
 	import { getQuoteById } from '$lib/data/embeds/quotes';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getPaymentById } from '$lib/data/embeds/payments';
-	import { getSupplierTasksByTicketId } from '$lib/data/events/supplierTasks';
+	import { getSupplierTasksByTicketId } from '$lib/data/embeds/supplierTasks';
 
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);

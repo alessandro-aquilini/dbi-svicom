@@ -135,6 +135,35 @@ export function getTicketById(id: string): Ticket | undefined {
 	return tickets.find((t) => t.id === id);
 }
 
+/**
+ * Returns the timeline events that are relevant to a specific supplier.
+ * This includes events from when they were assigned until they were reassigned or the ticket closed.
+ */
+export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string): TicketEvent[] {
+	let relevant = false;
+	const result: TicketEvent[] = [];
+
+	for (const ev of ticket.eventTimeline) {
+		if (ev.kind === 'assigned' || ev.kind === 'reassigned') {
+			if (ev.supplierId === supplierId) {
+				relevant = true;
+			} else if (relevant) {
+				// Reassigned to someone else
+				relevant = false;
+			}
+		}
+
+		if (relevant) {
+			result.push(ev);
+		}
+
+		if (ev.kind === 'closed') {
+			relevant = false;
+		}
+	}
+	return result;
+}
+
 export function getTicketsByPropertyId(propertyId: string): Ticket[] {
 	return tickets.filter((t) => t.propertyId === propertyId);
 }

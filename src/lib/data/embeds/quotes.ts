@@ -2,7 +2,7 @@
 
 export interface Quote {
 	id: string;
-	ticketId?: string; // References Ticket.id
+	ticketId: string; // References Ticket.id
 	supplierId: string; // References User.id
 	customerId: string; // References Admin or Resident User.id
 	propertyId: string;

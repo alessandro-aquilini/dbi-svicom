@@ -4,7 +4,7 @@ export interface Invoice {
 	supplierId: string; // References User.id
 	customerId: string; // References Admin or Resident User.id
 	propertyId: string;
-	ticketId?: string;
+	ticketId: string;
 	amount: number;
 	currency: string;
 	issueDate: string;

@@ -1,15 +1,8 @@
-export interface MessageAction {
-	type: 'ticket' | 'payment' | 'quote' | 'invoice';
-	referenceId: string;
-	label: string;
-}
-
 export interface Message {
 	id: string;
 	senderId: string; // References User.id
 	text: string;
 	timestamp: string;
-	action?: MessageAction;
 }
 
 export interface Chat {
@@ -17,6 +10,8 @@ export interface Chat {
 	participantIds: string[]; // References User.id
 	lastMessageAt: string;
 	messages: Message[];
+	/** Ticket IDs referenced/opened from this conversation */
+	ticketIds?: string[];
 }
 
 export const chats: Chat[] = [
@@ -30,7 +25,12 @@ export const chats: Chat[] = [
 				senderId: 'adm-giorgio-01',
 				text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B. Ti ho aperto un ticket.',
 				timestamp: '2026-05-01T10:05:00Z',
-				action: { type: 'ticket', referenceId: 'tkt-001', label: 'Vedi Ticket' }
+			},
+			{
+				id: 'msg-101-meta',
+				senderId: 'adm-giorgio-01',
+				text: 'Ticket aperto: tkt-001',
+				timestamp: '2026-05-01T10:05:00Z'
 			},
 			{
 				id: 'msg-102',
@@ -42,8 +42,7 @@ export const chats: Chat[] = [
 				id: 'msg-103',
 				senderId: 'frn-idroclima-nord',
 				text: 'Trovata la perdita. È il collettore principale, va sostituita anche una valvola. Ti ho caricato il preventivo.',
-				timestamp: '2026-05-01T11:45:00Z',
-				action: { type: 'quote', referenceId: 'quo-001', label: 'Dettagli Preventivo' }
+				timestamp: '2026-05-01T11:45:00Z'
 			},
 			{
 				id: 'msg-104',
@@ -51,7 +50,8 @@ export const chats: Chat[] = [
 				text: 'Procedi pure, è urgente. Fammi sapere appena l\'acqua calda è ripristinata.',
 				timestamp: '2026-05-01T12:05:00Z'
 			}
-		]
+		],
+		ticketIds: ['tkt-001']
 	},
 	{
 		id: 'chat-adm-secure',
@@ -62,8 +62,13 @@ export const chats: Chat[] = [
 				id: 'msg-201',
 				senderId: 'adm-giorgio-01',
 				text: 'Buongiorno, ci segnalano problemi al videocitofono in Corso Europa 7. Non arriva l\'immagine.',
-				timestamp: '2026-05-03T16:40:00Z',
-				action: { type: 'ticket', referenceId: 'tkt-002', label: 'Vedi Ticket' }
+				timestamp: '2026-05-03T16:40:00Z'
+			},
+			{
+				id: 'msg-201-meta',
+				senderId: 'adm-giorgio-01',
+				text: 'Ticket aperto: tkt-002',
+				timestamp: '2026-05-03T16:40:00Z'
 			},
 			{
 				id: 'msg-202',
@@ -75,10 +80,10 @@ export const chats: Chat[] = [
 				id: 'msg-203',
 				senderId: 'frn-secure-entry',
 				text: 'Telecamera guasta, va sostituito il modulo. Ti ho inviato il preventivo nel ticket.',
-				timestamp: '2026-05-04T09:05:00Z',
-				action: { type: 'quote', referenceId: 'quo-002', label: 'Vedi Preventivo' }
+				timestamp: '2026-05-04T09:05:00Z'
 			}
-		]
+		],
+		ticketIds: ['tkt-002']
 	}
 ];
 

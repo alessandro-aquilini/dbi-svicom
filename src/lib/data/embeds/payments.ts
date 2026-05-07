@@ -7,8 +7,8 @@ export interface Payment {
 	dueDate: string;
 	paidAt: string;
 	description: string;
+	ticketId: string;
 	propertyId?: string;
-	ticketId?: string;
 }
 
 export const payments: Payment[] = [
