@@ -63,6 +63,7 @@ export interface Ticket {
 	paymentIds: string[];  // References Payment.id  (payments.ts)
 	quoteIds: string[];    // References Quote.id    (quotes.ts)
 	invoiceIds: string[];  // References Invoice.id  (invoices.ts)
+	interventionIds: string[]; // References Intervento.id (intervento.ts)
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -90,7 +91,7 @@ export const tickets: Ticket[] = [
 		creatorId: 'adm-giorgio-01',
 		supplierId: 'frn-idroclima-nord',
 		propertyId: 'cnd-marconi-14',
-		cc: ['res-bianchi-01', 'res-ext-05'],
+		cc: ['res-bianchi-01', 'res-bellini-05'],
 		eventTimeline: [
 			{ id: 'ev-1', kind: 'created', at: '2026-05-01T10:00:00' },
 			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00', fromStatus: 'opened', toStatus: 'estimating' },
@@ -98,11 +99,13 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00', body: 'Idroclina Nord ha risposto subito ed è disponibile.' },
 			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:00:00', fromStatus: 'estimating', toStatus: 'approved' },
 			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00', fromStatus: 'approved', toStatus: 'in_progress' },
-			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00', fromStatus: 'in_progress', toStatus: 'completed' }
+			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00', fromStatus: 'in_progress', toStatus: 'completed' },
+			{ id: 'ev-8', kind: 'status', at: '2026-05-03T19:00:00', fromStatus: 'completed', toStatus: 'paid' }
 		],
 		paymentIds: ['pay-001'],
 		quoteIds: ['quo-001'],
-		invoiceIds: ['inv-001']
+		invoiceIds: ['inv-001'],
+		interventionIds: ['int-001', 'int-002']
 	},
 	{
 		id: 'tkt-002',
@@ -121,7 +124,8 @@ export const tickets: Ticket[] = [
 		],
 		paymentIds: [],
 		quoteIds: ['quo-002'],
-		invoiceIds: []
+		invoiceIds: [],
+		interventionIds: []
 	}
 ];
 

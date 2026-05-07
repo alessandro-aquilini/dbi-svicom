@@ -67,6 +67,41 @@ export const users: User[] = [
 		phone: '+39 347 4433 221'
 	},
 	{
+		id: 'res-bellini-05',
+		role: 'resident',
+		name: 'Giulia Bellini',
+		email: 'giulia.bellini@example.it',
+		phone: '+39 333 2211 334'
+	},
+	{
+		id: 'res-ext-06',
+		role: 'resident',
+		name: 'Marco Esposito',
+		email: 'marco.esposito@example.it',
+		phone: '+39 333 4455 667'
+	},
+	{
+		id: 'res-ext-07',
+		role: 'resident',
+		name: 'Anna Moretti',
+		email: 'anna.moretti@example.it',
+		phone: '+39 333 7788 990'
+	},
+	{
+		id: 'res-ext-08',
+		role: 'resident',
+		name: 'Davide Ricci',
+		email: 'davide.ricci@example.it',
+		phone: '+39 333 5566 221'
+	},
+	{
+		id: 'res-ext-09',
+		role: 'resident',
+		name: 'Elisa Bruno',
+		email: 'elisa.bruno@example.it',
+		phone: '+39 333 6677 889'
+	},
+	{
 		id: 'frn-idroclima-nord',
 		role: 'supplier',
 		name: 'Idroclima Nord',

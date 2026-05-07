@@ -47,7 +47,7 @@ export const reports: Report[] = [
 		status: 'completata',
 		priority: 'critica',
 		propertyId: 'cnd-marconi-14',
-		reportedById: 'res-ext-05',
+		reportedById: 'res-bellini-05',
 		createdAt: '2026-05-01T07:45:00Z',
 		updatedAt: '2026-05-01T10:00:00Z',
 		category: 'Idraulica',

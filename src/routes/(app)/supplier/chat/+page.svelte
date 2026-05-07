@@ -5,7 +5,7 @@
 	import { getPaymentsByUserId, type Payment } from '$lib/data/embeds/payments';
 	import { getQuotesBySupplierId, type Quote } from '$lib/data/embeds/quotes';
 	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/embeds/invoices';
-	import { getMaintenanceWorkById, type MaintenanceWork, maintenanceWorks } from '$lib/data/events/maintenance-work';
+	import { getInterventoById, type Intervento, interventi } from '$lib/data/events/intervento';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
@@ -24,7 +24,7 @@
 	const relatedQuotes = $derived(getQuotesBySupplierId(supplierId));
 	const relatedInvoices = $derived(getInvoicesBySupplierId(supplierId));
 	const relatedMaintenanceWorks = $derived(
-		maintenanceWorks.filter((m) => m.participantIds.includes(supplierId))
+		interventi.filter((m) => m.participantIds.includes(supplierId))
 	);
 
 	let actionsOpen = $state(true);
@@ -38,7 +38,7 @@
 		| { type: 'payment'; date: number; data: Payment }
 		| { type: 'quote'; date: number; data: Quote }
 		| { type: 'invoice'; date: number; data: Invoice }
-		| { type: 'maintenance'; date: number; data: MaintenanceWork };
+		| { type: 'maintenance'; date: number; data: Intervento };
 
 	const timeline = $derived(selectedChat ? buildTimeline(selectedChat) : []);
 

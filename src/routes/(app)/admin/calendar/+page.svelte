@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { maintenanceWorks } from '$lib/data/events/maintenance-work';
+	import { interventi } from '$lib/data/events/intervento';
 	import { meetings } from '$lib/data/events/meetings';
 	import { assemblies } from '$lib/data/events/assemblies';
 	import { users } from '$lib/data/users';
@@ -59,8 +59,8 @@
 	const allEvents = $derived.by(() => {
 		const evs: CalendarEvent[] = [];
 
-		// Maintenance Works -> Tone Amber
-		for (const m of maintenanceWorks) {
+		// Interventi -> Tone Amber
+		for (const m of interventi) {
 			evs.push({
 				id: m.id,
 				title: m.title,

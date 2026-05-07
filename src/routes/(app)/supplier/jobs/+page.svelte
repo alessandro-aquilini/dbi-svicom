@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { maintenanceWorks } from '$lib/data/events/maintenance-work';
+	import { interventi } from '$lib/data/events/intervento';
 	import { getCurrentUser } from '$lib/auth';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 	
 	// Filter for maintenance works matching the supplier ID
-	const myJobs = maintenanceWorks.filter((e) => e.participantIds.includes(supplierId));
+	const myJobs = interventi.filter((e) => e.participantIds.includes(supplierId));
 
 	// Date context
 	const TODAY = '2026-05-05';

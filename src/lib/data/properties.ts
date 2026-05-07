@@ -73,7 +73,7 @@ export const properties: Property[] = [
 		address: { street: 'Via Filippo Pacini 44', city: 'Milano', cap: '20131', province: 'MI' },
 		units: 28,
 		adminId: 'adm-giorgio-01',
-		residentIds: ['res-ext-05', 'res-ext-06'],
+		residentIds: ['res-bellini-05', 'res-ext-06'],
 		status: 'onboarding',
 		health: 'giallo',
 		tags: ['nuovo']

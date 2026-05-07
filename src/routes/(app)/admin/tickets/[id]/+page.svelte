@@ -23,6 +23,7 @@
 	import { getQuoteById } from '$lib/data/embeds/quotes';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getPaymentById } from '$lib/data/embeds/payments';
+	import { getInterventiByTicketId } from '$lib/data/events/intervento';
 
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);
@@ -40,7 +41,8 @@
 		| { type: 'ticket-event'; data: TicketEvent; at: string }
 		| { type: 'quote'; data: any; at: string }
 		| { type: 'invoice'; data: any; at: string }
-		| { type: 'payment'; data: any; at: string };
+		| { type: 'payment'; data: any; at: string }
+		| { type: 'intervention'; data: any; at: string };
 
 	const unifiedTimeline = $derived.by<UnifiedEvent[]>(() => {
 		if (!ticket) return [];
@@ -51,19 +53,30 @@
 			at: ev.at
 		}));
 
-		ticket.quoteIds.forEach(id => {
-			const q = getQuoteById(id);
-			if (q) items.push({ type: 'quote', data: q, at: q.sentAt });
-		});
+		if (ticket.quoteIds) {
+			ticket.quoteIds.forEach(id => {
+				const q = getQuoteById(id);
+				if (q) items.push({ type: 'quote', data: q, at: q.sentAt });
+			});
+		}
 
-		ticket.invoiceIds.forEach(id => {
-			const i = getInvoiceById(id);
-			if (i) items.push({ type: 'invoice', data: i, at: i.issueDate });
-		});
+		if (ticket.invoiceIds) {
+			ticket.invoiceIds.forEach(id => {
+				const i = getInvoiceById(id);
+				if (i) items.push({ type: 'invoice', data: i, at: i.issueDate });
+			});
+		}
 
-		ticket.paymentIds.forEach(id => {
-			const p = getPaymentById(id);
-			if (p) items.push({ type: 'payment', data: p, at: p.paidAt || p.dueDate });
+		if (ticket.paymentIds) {
+			ticket.paymentIds.forEach(id => {
+				const p = getPaymentById(id);
+				if (p) items.push({ type: 'payment', data: p, at: p.paidAt || p.dueDate });
+			});
+		}
+
+		const interventions = getInterventiByTicketId(ticket.id);
+		interventions.forEach(int => {
+			items.push({ type: 'intervention' as any, data: int, at: `${int.date}T${int.startTime}:00Z` });
 		});
 
 		return items.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
@@ -366,6 +379,27 @@
 											</div>
 										</div>
 									</li>
+								{:else if (item as any).type === 'intervention'}
+									{@const int = item.data}
+									<li class="tl-item tl-item--inline">
+										<span class="tl-node">
+											<span class="tl-dot" aria-hidden="true">
+												<HugeiconsIcon icon={Wrench01Icon} size={11} strokeWidth={2} />
+											</span>
+										</span>
+										<div class="tl-inline-group">
+											<p class="tl-inline">
+												<strong>Intervento sul posto</strong>
+												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
+											</p>
+											<div class="mt-2">
+												<div class="embed-pill embed-pill--intervention">
+													<span class="embed-pill__label">Appuntamento</span>
+													<span class="embed-pill__value">{int.title} ({int.startTime} - {int.endTime})</span>
+												</div>
+											</div>
+										</div>
+									</li>
 								{/if}
 							{/each}
 
@@ -410,26 +444,10 @@
 
 				<!-- Sidebar -->
 				<aside class="scheda__aside">
-					<!-- Assegnata a -->
+					<!-- Assegnata a (Fornitore) -->
 					<section class="block">
 						<h2 class="block__title">Assegnata a</h2>
-						<div class="mt-3 space-y-3">
-							{#if internalOwner}
-								<div class="party-row">
-									<span
-										class="avatar"
-										style:background-color={avatarColor(internalOwner)}
-										aria-hidden="true"
-									>
-										{initials(internalOwner.name)}
-									</span>
-									<div class="min-w-0 flex-1">
-										<p class="party-row__name">{internalOwner.name}</p>
-										<p class="party-row__role">Owner interno</p>
-									</div>
-								</div>
-							{/if}
-
+						<div class="mt-3">
 							{#if supplier}
 								<div class="party-row">
 									<span
@@ -456,6 +474,33 @@
 							{/if}
 						</div>
 					</section>
+
+					<!-- Residenti in CC -->
+					{#if ticket.cc.length > 0}
+						<section class="block">
+							<h2 class="block__title">Residenti in CC</h2>
+							<div class="mt-3 space-y-3">
+								{#each ticket.cc as rid}
+									{@const r = getUserById(rid)}
+									{#if r}
+										<div class="party-row">
+											<span
+												class="avatar"
+												style:background-color={avatarColor(r)}
+												aria-hidden="true"
+											>
+												{initials(r.name)}
+											</span>
+											<div class="min-w-0 flex-1">
+												<p class="party-row__name">{r.name}</p>
+												<p class="party-row__role">Osservatore</p>
+											</div>
+										</div>
+									{/if}
+								{/each}
+							</div>
+						</section>
+					{/if}
 
 					<!-- Dettagli -->
 					<section class="block">
@@ -894,6 +939,10 @@
 	}
 	.embed-pill--payment {
 		border-left: 3px solid #7b8c76;
+	}
+
+	.embed-pill--intervention {
+		border-left: 3px solid #7b6d8c;
 	}
 
 	.embed-pill__label {

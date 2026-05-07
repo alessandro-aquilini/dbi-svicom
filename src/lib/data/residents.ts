@@ -41,10 +41,11 @@ export const residents: Resident[] = [
 		preferences: { notifications: true, newsletter: true }
 	},
 	{
-		id: 'res-ext-05',
-		propertyId: 'cnd-pacini-44',
+		id: 'res-bellini-05',
+		propertyId: 'cnd-marconi-14',
 		apartment: 'Interno 1',
-		type: 'proprietario'
+		type: 'proprietario',
+		preferences: { notifications: true, newsletter: true }
 	},
 	{
 		id: 'res-ext-06',

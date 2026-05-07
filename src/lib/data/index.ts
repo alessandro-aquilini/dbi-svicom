@@ -22,6 +22,6 @@ export * as payments from './embeds/payments';
 export * as invoices from './embeds/invoices';
 export * as quotes from './embeds/quotes';
 
-export * as maintenanceWorks from './events/maintenance-work';
+export * as maintenanceWorks from './events/intervento';
 export * as meetings from './events/meetings';
 export * as assemblies from './events/assemblies';
