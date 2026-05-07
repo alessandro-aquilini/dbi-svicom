@@ -19,7 +19,6 @@ export interface Report {
 	updatedAt: string;
 	category: string;
 	location?: string;
-	metadata?: Record<string, any>;
 	statusHistory: StatusHistoryEntry[];
 }
 
@@ -36,7 +35,6 @@ export const reports: Report[] = [
 		updatedAt: '2024-04-29T10:52:00Z',
 		category: 'impianti',
 		location: 'Scala B - 3 Piano',
-		metadata: { channel: 'whatsapp' },
 		statusHistory: [
 			{ status: 'nuova', at: '2024-04-29T10:52:00Z' }
 		]

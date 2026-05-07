@@ -18,9 +18,9 @@ export * as announcements from './announcements';
 export * as documents from './documents';
 export * as chats from './chats';
 
-export * as payments from './ticket-embeds/payments';
-export * as invoices from './ticket-embeds/invoices';
-export * as quotes from './ticket-embeds/quotes';
+export * as payments from './embeds/payments';
+export * as invoices from './embeds/invoices';
+export * as quotes from './embeds/quotes';
 
 export * as maintenanceWorks from './events/maintenance-work';
 export * as meetings from './events/meetings';

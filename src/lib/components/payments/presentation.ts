@@ -1,4 +1,4 @@
-import type { Payment } from '$lib/data/ticket-embeds/payments';
+import type { Payment } from '$lib/data/embeds/payments';
 
 export type ResidentPaymentStatus = 'paid' | 'pending' | 'overdue';
 

@@ -3,7 +3,7 @@ import {
 	getPaymentsByPropertyId,
 	getPaymentsByUserId,
 	type Payment
-} from '$lib/data/ticket-embeds/payments';
+} from '$lib/data/embeds/payments';
 import { getPropertyById, type Property } from '$lib/data/properties';
 import { getResidentById, type Resident } from '$lib/data/residents';
 import { getUserById, type User } from '$lib/data/users';

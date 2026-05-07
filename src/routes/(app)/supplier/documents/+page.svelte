@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/ticket-embeds/invoices';
-	import { getQuotesBySupplierId, type Quote } from '$lib/data/ticket-embeds/quotes';
+	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/embeds/invoices';
+	import { getQuotesBySupplierId, type Quote } from '$lib/data/embeds/quotes';
 	import { getCurrentUser } from '$lib/auth';
 	import { getUserById } from '$lib/data/users';
 

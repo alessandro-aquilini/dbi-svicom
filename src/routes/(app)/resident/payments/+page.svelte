@@ -21,7 +21,7 @@ import {
 } from '$lib/components/ui/card';
 import { getCurrentUser } from '$lib/auth';
 import type { PropertyDocument } from '$lib/data/documents';
-import type { Payment } from '$lib/data/ticket-embeds/payments';
+import type { Payment } from '$lib/data/embeds/payments';
 import { getTicketById } from '$lib/data/ticket/tickets';
 import { getUserById } from '$lib/data/users';
 

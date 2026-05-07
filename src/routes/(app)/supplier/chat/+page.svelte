@@ -2,9 +2,9 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId, type Chat, type Message } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
-	import { getPaymentsByUserId, type Payment } from '$lib/data/ticket-embeds/payments';
-	import { getQuotesBySupplierId, type Quote } from '$lib/data/ticket-embeds/quotes';
-	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/ticket-embeds/invoices';
+	import { getPaymentsByUserId, type Payment } from '$lib/data/embeds/payments';
+	import { getQuotesBySupplierId, type Quote } from '$lib/data/embeds/quotes';
+	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/embeds/invoices';
 	import { getMaintenanceWorkById, type MaintenanceWork, maintenanceWorks } from '$lib/data/events/maintenance-work';
 
 	const currentUser = getCurrentUser();

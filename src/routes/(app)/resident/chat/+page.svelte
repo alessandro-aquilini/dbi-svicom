@@ -3,9 +3,9 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getChatsByUserId } from '$lib/data/chats';
 	import { getUserById } from '$lib/data/users';
-	import { getPaymentById } from '$lib/data/ticket-embeds/payments';
-	import { getQuoteById } from '$lib/data/ticket-embeds/quotes';
-	import { getInvoiceById } from '$lib/data/ticket-embeds/invoices';
+	import { getPaymentById } from '$lib/data/embeds/payments';
+	import { getQuoteById } from '$lib/data/embeds/quotes';
+	import { getInvoiceById } from '$lib/data/embeds/invoices';
 
 	const currentUser = getCurrentUser();
 	const residentId = currentUser?.id ?? 'res-bianchi-01';
