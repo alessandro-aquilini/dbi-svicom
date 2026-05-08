@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import {
+		ArrowRight01Icon,
+		DropletIcon,
+		LightbulbOffIcon,
+		SparklesIcon,
+		Wrench01Icon
+	} from '@hugeicons/core-free-icons';
 	import { ResidentEmptyCard } from '$lib/components/resident';
 	import {
 		buildResidentTicketAttachmentSummary,
+		buildResidentTicketAiDraft,
 		createResidentLocalTicketWithPresentation,
 		getResidentTicketCategoryOption,
 		getResidentTicketDynamicFields,
@@ -13,6 +22,7 @@
 		ticketStatusLabels,
 		type ResidentTicketFieldAnswer
 	} from '$lib/components/reports';
+	import { InfoTip } from '$lib/components/shared';
 	import { getCurrentUser } from '$lib/auth';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
@@ -43,6 +53,12 @@
 
 	type ReportFormErrors = Partial<Record<keyof ReportFormState, string>>;
 
+	type AiExample = {
+		icon: typeof SparklesIcon;
+		label: string;
+		text: string;
+	};
+
 	const currentUser = getCurrentUser();
 	const resident = $derived(currentUser ? getResidentById(currentUser.id) : undefined);
 	const property = $derived(resident ? getPropertyById(resident.propertyId) : undefined);
@@ -58,6 +74,28 @@
 	let dynamicFieldErrors = $state<Record<string, string>>({});
 	let attachmentSummaries = $state<ReturnType<typeof buildResidentTicketAttachmentSummary>>([]);
 	let isSubmitting = $state(false);
+	let aiPrompt = $state('');
+	let aiPanelOpen = $state(false);
+	let isAiApplying = $state(false);
+	let aiApplied = $state(false);
+
+	const aiExamples: AiExample[] = [
+		{
+			icon: DropletIcon,
+			label: "Perdita d'acqua",
+			text: "C'è una perdita d'acqua nel locale caldaia della scala B e da stamattina si sente odore di umido."
+		},
+		{
+			icon: LightbulbOffIcon,
+			label: 'Luce non funzionante',
+			text: 'La lampadina del pianerottolo al secondo piano e spenta da ieri sera e la zona resta buia.'
+		},
+		{
+			icon: Wrench01Icon,
+			label: 'Portone da sistemare',
+			text: "Il portone d'ingresso principale non chiude bene e rimane spesso socchiuso."
+		}
+	];
 
 	const selectedCategory = $derived(getResidentTicketCategoryOption(form.category));
 	const selectedPriority = $derived(getResidentTicketPriorityOption(form.priority));
@@ -92,6 +130,36 @@
 	function handleAttachmentsChange(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 		attachmentSummaries = input.files ? buildResidentTicketAttachmentSummary(input.files) : [];
+	}
+
+	function toggleAiPanel() {
+		aiPanelOpen = !aiPanelOpen;
+	}
+
+	function useAiExample(text: string) {
+		aiPrompt = text;
+		aiPanelOpen = true;
+	}
+
+	async function handleAiFill() {
+		if (!aiPrompt.trim()) return;
+
+		isAiApplying = true;
+		await new Promise((resolve) => setTimeout(resolve, 650));
+
+		const aiDraft = buildResidentTicketAiDraft(aiPrompt);
+		form = {
+			title: aiDraft.title,
+			category: aiDraft.category,
+			priority: aiDraft.priority,
+			description: aiDraft.description
+		};
+		dynamicAnswers = { ...aiDraft.dynamicAnswers };
+		errors = {};
+		dynamicFieldErrors = {};
+		aiApplied = true;
+		aiPanelOpen = false;
+		isAiApplying = false;
 	}
 
 	function validateForm(): boolean {
@@ -156,7 +224,7 @@
 			}
 		);
 
-		await goto(`/resident/reports/${ticket.id}?created=1`);
+		await goto(`/resident/reports?created=1&report=${ticket.id}`);
 	}
 </script>
 
@@ -203,14 +271,110 @@
 
 			<Card class="report-form-card">
 				<CardHeader class="report-section-card__header">
-					<CardTitle class="report-section-card__title">Dettagli della segnalazione</CardTitle>
-					<CardDescription class="report-section-card__copy">
-						Inserisci le informazioni che il residente puo valorizzare in fase di apertura ticket.
-					</CardDescription>
+					<div class="report-form-card__header-row">
+						<div>
+							<CardTitle class="report-section-card__title">Dettagli della segnalazione</CardTitle>
+							<CardDescription class="report-section-card__copy">
+								Inserisci le informazioni che il residente puo valorizzare in fase di apertura segnalazione.
+							</CardDescription>
+						</div>
+
+						<div class="report-ai-trigger">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								class="report-ai-trigger__button"
+								onclick={toggleAiPanel}
+							>
+								<HugeiconsIcon icon={SparklesIcon} size={15} strokeWidth={2} />
+								<span>Compila con AI</span>
+							</Button>
+							<InfoTip text="Scrivi liberamente il problema: il sistema compila titolo, categoria, priorita, descrizione e campi specifici da rivedere prima dell invio." />
+						</div>
+					</div>
 				</CardHeader>
 
 				<CardContent class="report-form-card__content">
 					<form class="report-form" onsubmit={handleSubmit}>
+						{#if aiPanelOpen}
+							<div class="report-ai-panel">
+								<div class="report-ai-panel__header">
+									<div>
+										<p class="report-ai-panel__eyebrow">Assistente compilazione</p>
+										<p class="report-ai-panel__title">Racconta il problema in linguaggio naturale</p>
+									</div>
+									<p class="report-ai-panel__copy">
+										Descrivi liberamente cosa succede, dove succede e da quando: i campi sotto verranno precompilati.
+									</p>
+								</div>
+
+								<div class="report-ai-examples">
+									<p class="report-ai-examples__label">Esempi rapidi</p>
+									<div class="report-ai-examples__list">
+										{#each aiExamples as example}
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												class="report-ai-examples__button"
+												onclick={() => useAiExample(example.text)}
+											>
+												<span class="report-ai-examples__icon" aria-hidden="true">
+													<HugeiconsIcon icon={example.icon} size={14} strokeWidth={1.85} />
+												</span>
+												<span class="report-ai-examples__text">{example.label}</span>
+											</Button>
+										{/each}
+									</div>
+								</div>
+
+								<Textarea
+									rows={5}
+									placeholder="Es. C'è una perdita nel locale caldaia della scala B, da stamattina si vede acqua a terra e manca acqua calda in alcuni appartamenti."
+									value={aiPrompt}
+									oninput={(event: Event) => (aiPrompt = (event.currentTarget as HTMLTextAreaElement).value)}
+									class="report-ai-panel__textarea"
+								/>
+
+								<div class="report-ai-panel__actions">
+									<Button
+										type="button"
+										size="lg"
+										class="report-ai-panel__submit"
+										disabled={isAiApplying || !aiPrompt.trim()}
+										onclick={handleAiFill}
+									>
+										{#if isAiApplying}
+											Compilazione in corso...
+										{:else}
+											<HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2.2} />
+											<span>Compila i campi</span>
+										{/if}
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="lg"
+										class="report-ai-panel__dismiss"
+										disabled={isAiApplying}
+										onclick={() => (aiPanelOpen = false)}
+									>
+										Chiudi
+									</Button>
+								</div>
+							</div>
+						{/if}
+
+						{#if aiApplied}
+							<div class="report-ai-result">
+								<p class="report-ai-result__title">Campi precompilati</p>
+								<p class="report-ai-result__copy">
+									I campi sono stati riempiti. Ora controlla il contenuto, fai eventuali correzioni e invia la segnalazione.
+								</p>
+							</div>
+						{/if}
+
 						<div class="report-form__field">
 							<Label for="report-title">Titolo</Label>
 							<Input

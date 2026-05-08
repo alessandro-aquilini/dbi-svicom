@@ -11,13 +11,19 @@
 		href,
 		propertyName,
 		apartment,
-		updatedAtLabel
+		updatedAtLabel,
+		operationalTicketId,
+		operationalStatusLabel,
+		operationalSupplierLabel
 	}: {
 		ticket: Report;
 		href: string;
 		propertyName?: string;
 		apartment?: string;
 		updatedAtLabel: string;
+		operationalTicketId?: string;
+		operationalStatusLabel?: string;
+		operationalSupplierLabel?: string;
 	} = $props();
 
 	const latestStatus = $derived(getCurrentStatus(ticket));
@@ -40,14 +46,8 @@
 		<p class="report-card-shell__description">{ticket.description}</p>
 
 		<div class="report-card-shell__glance">
-			<div class="report-card-shell__glance-item">
-				<p class="report-card-shell__glance-label">Condominio</p>
-				<p class="report-card-shell__glance-value">{propertyName ?? 'N/D'}</p>
-			</div>
-			<div class="report-card-shell__glance-item">
-				<p class="report-card-shell__glance-label">Unita</p>
-				<p class="report-card-shell__glance-value">{apartment ?? 'N/D'}</p>
-			</div>
+			<span class="report-card-shell__glance-item">{propertyName ?? 'Condominio non disponibile'}</span>
+			<span class="report-card-shell__glance-item">{apartment ?? 'Unita non disponibile'}</span>
 		</div>
 
 		<div class="report-card-shell__meta">
@@ -55,6 +55,16 @@
 			<TicketPriorityBadge priority={ticket.priority} />
 			<span class="report-chip">{ticket.statusHistory.length} step</span>
 		</div>
+
+		{#if operationalTicketId}
+			<div class="report-card-shell__operational">
+				<p class="report-card-shell__operational-label">Pratica operativa</p>
+				<p class="report-card-shell__operational-value">{operationalTicketId}</p>
+				<p class="report-card-shell__operational-copy">
+					{operationalStatusLabel ?? 'Operativa'}{#if operationalSupplierLabel} · {operationalSupplierLabel}{/if}
+				</p>
+			</div>
+		{/if}
 	</CardContent>
 
 	<CardFooter class="report-card-shell__footer">
