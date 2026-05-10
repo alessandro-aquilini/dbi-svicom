@@ -1,11 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { tick } from 'svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
-		ArrowRight01Icon,
+		ArrowUp01Icon,
+		BubbleChatIcon,
+		Building03Icon,
 		DropletIcon,
+		File01Icon,
+		Flag03Icon,
 		LightbulbOffIcon,
+		Location01Icon,
+		Note01Icon,
 		SparklesIcon,
+		Tag01Icon,
 		Wrench01Icon
 	} from '@hugeicons/core-free-icons';
 	import { ResidentEmptyCard } from '$lib/components/resident';
@@ -22,7 +30,7 @@
 		ticketStatusLabels,
 		type ResidentTicketFieldAnswer
 	} from '$lib/components/reports';
-	import { InfoTip } from '$lib/components/shared';
+	import { DemoDialog, InfoTip } from '$lib/components/shared';
 	import { getCurrentUser } from '$lib/auth';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
@@ -52,11 +60,20 @@
 	};
 
 	type ReportFormErrors = Partial<Record<keyof ReportFormState, string>>;
+	type ComposeMode = 'manual' | 'ai';
+	type AiStage = 'idle' | 'thinking' | 'building' | 'done';
 
 	type AiExample = {
 		icon: typeof SparklesIcon;
 		label: string;
+		hint: string;
 		text: string;
+	};
+
+	type AiFact = {
+		icon: typeof Tag01Icon;
+		label: string;
+		value: string;
 	};
 
 	const currentUser = getCurrentUser();
@@ -74,25 +91,33 @@
 	let dynamicFieldErrors = $state<Record<string, string>>({});
 	let attachmentSummaries = $state<ReturnType<typeof buildResidentTicketAttachmentSummary>>([]);
 	let isSubmitting = $state(false);
+	let composeMode = $state<ComposeMode>('manual');
 	let aiPrompt = $state('');
-	let aiPanelOpen = $state(false);
-	let isAiApplying = $state(false);
+	let aiStage = $state<AiStage>('idle');
+	let aiFacts = $state<AiFact[]>([]);
+	let aiRevealedFacts = $state(0);
 	let aiApplied = $state(false);
+	let aiLastPrompt = $state('');
+	let demoOpen = $state(false);
+	let aiThreadEndEl: HTMLDivElement | null = $state(null);
 
 	const aiExamples: AiExample[] = [
 		{
 			icon: DropletIcon,
 			label: "Perdita d'acqua",
+			hint: 'Locale caldaia · da stamattina',
 			text: "C'è una perdita d'acqua nel locale caldaia della scala B e da stamattina si sente odore di umido."
 		},
 		{
 			icon: LightbulbOffIcon,
 			label: 'Luce non funzionante',
+			hint: 'Secondo piano · area buia',
 			text: 'La lampadina del pianerottolo al secondo piano e spenta da ieri sera e la zona resta buia.'
 		},
 		{
 			icon: Wrench01Icon,
 			label: 'Portone da sistemare',
+			hint: 'Ingresso principale',
 			text: "Il portone d'ingresso principale non chiude bene e rimane spesso socchiuso."
 		}
 	];
@@ -100,16 +125,6 @@
 	const selectedCategory = $derived(getResidentTicketCategoryOption(form.category));
 	const selectedPriority = $derived(getResidentTicketPriorityOption(form.priority));
 	const dynamicFields = $derived(getResidentTicketDynamicFields(form.category));
-	const prefilledFacts = $derived(
-		currentUser && resident && property
-			? [
-					{ label: 'Residente', value: currentUser.name, copy: 'Profilo che inviera la segnalazione.' },
-					{ label: 'Condominio', value: property.name, copy: property.address.street },
-					{ label: 'Unita abitativa', value: resident.apartment, copy: 'Dato collegato al profilo residente.' },
-					{ label: 'Stato iniziale', value: ticketStatusLabels['nuova'], copy: 'La pratica parte come nuova segnalazione.' }
-				]
-			: []
-	);
 
 	function setField<K extends keyof ReportFormState>(field: K, value: ReportFormState[K]) {
 		form[field] = value;
@@ -132,34 +147,107 @@
 		attachmentSummaries = input.files ? buildResidentTicketAttachmentSummary(input.files) : [];
 	}
 
-	function toggleAiPanel() {
-		aiPanelOpen = !aiPanelOpen;
-	}
-
 	function useAiExample(text: string) {
 		aiPrompt = text;
-		aiPanelOpen = true;
 	}
 
-	async function handleAiFill() {
+	function resetAiFeedback() {
+		aiStage = 'idle';
+		aiFacts = [];
+		aiRevealedFacts = 0;
+		aiApplied = false;
+		aiLastPrompt = '';
+	}
+
+	function scrollAiThreadIntoView() {
+		setTimeout(() => {
+			aiThreadEndEl?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+		}, 0);
+	}
+
+	function buildAiFacts(): AiFact[] {
+		const categoryLabel = getResidentTicketCategoryOption(form.category)?.label ?? form.category;
+		const priorityLabel = getResidentTicketPriorityOption(form.priority)?.label ?? form.priority;
+		const facts: AiFact[] = [
+			{ icon: File01Icon, label: 'Titolo', value: form.title },
+			{ icon: Tag01Icon, label: 'Categoria', value: categoryLabel },
+			{ icon: Flag03Icon, label: 'Priorita', value: priorityLabel },
+			{ icon: Note01Icon, label: 'Descrizione', value: form.description }
+		];
+
+		if (property) {
+			facts.push({ icon: Building03Icon, label: 'Condominio', value: property.name });
+		}
+
+		const firstFilledDynamicField = dynamicFields.find((field) => dynamicAnswers[field.id]?.trim());
+		if (firstFilledDynamicField) {
+			facts.push({
+				icon: Location01Icon,
+				label: firstFilledDynamicField.label,
+				value: dynamicAnswers[firstFilledDynamicField.id]
+			});
+		}
+
+		return facts;
+	}
+
+	async function runAiCompilation() {
 		if (!aiPrompt.trim()) return;
 
-		isAiApplying = true;
-		await new Promise((resolve) => setTimeout(resolve, 650));
+		const prompt = aiPrompt.trim();
+		const draft = buildResidentTicketAiDraft(prompt);
+		const nextDynamicAnswers = { ...draft.dynamicAnswers };
 
-		const aiDraft = buildResidentTicketAiDraft(aiPrompt);
-		form = {
-			title: aiDraft.title,
-			category: aiDraft.category,
-			priority: aiDraft.priority,
-			description: aiDraft.description
-		};
-		dynamicAnswers = { ...aiDraft.dynamicAnswers };
 		errors = {};
 		dynamicFieldErrors = {};
+		aiStage = 'thinking';
+		aiApplied = false;
+		aiLastPrompt = prompt;
+		aiFacts = [];
+		aiRevealedFacts = 0;
+		isSubmitting = false;
+		await tick();
+		scrollAiThreadIntoView();
+
+		await new Promise((resolve) => setTimeout(resolve, 900));
+
+		aiStage = 'building';
+		form.title = '';
+		form.category = residentTicketCategoryOptions[0]?.value ?? draft.category;
+		form.priority = 'media';
+		form.description = '';
+		dynamicAnswers = {};
+		await tick();
+
+		const steps: Array<() => Promise<void> | void> = [
+			() => setField('title', draft.title),
+			async () => {
+				setField('category', draft.category);
+				await tick();
+			},
+			() => setField('priority', draft.priority),
+			() => setField('description', draft.description),
+			...Object.entries(nextDynamicAnswers).map(
+				([fieldId, value]) => () => setDynamicAnswer(fieldId, value)
+			)
+		];
+
+		for (const [index, step] of steps.entries()) {
+			step();
+			await tick();
+			aiFacts = buildAiFacts();
+			aiRevealedFacts = Math.min(index + 1, aiFacts.length);
+			scrollAiThreadIntoView();
+			const stepDelay = index < 4 ? 620 : 340;
+			await new Promise((resolve) => setTimeout(resolve, stepDelay));
+		}
+
+		aiStage = 'done';
+		aiFacts = buildAiFacts();
+		aiRevealedFacts = aiFacts.length;
 		aiApplied = true;
-		aiPanelOpen = false;
-		isAiApplying = false;
+		await tick();
+		scrollAiThreadIntoView();
 	}
 
 	function validateForm(): boolean {
@@ -193,15 +281,22 @@
 		return Object.keys(nextErrors).length === 0 && Object.keys(nextDynamicFieldErrors).length === 0;
 	}
 
-	async function handleSubmit(event: SubmitEvent) {
+	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
 		if (!currentUser || !resident || !property || !validateForm()) {
 			return;
 		}
 
+		demoOpen = true;
+	}
+
+	async function handleDemoConfirm() {
+		if (!currentUser || !resident || !property || isSubmitting) {
+			return;
+		}
+
 		isSubmitting = true;
-		await new Promise((resolve) => setTimeout(resolve, 650));
 
 		const fieldAnswers: ResidentTicketFieldAnswer[] = dynamicFields.map((field) => ({
 			id: field.id,
@@ -226,6 +321,13 @@
 
 		await goto(`/resident/reports?created=1&report=${ticket.id}`);
 	}
+
+	function handleAiPromptKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+			event.preventDefault();
+			runAiCompilation();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -244,27 +346,26 @@
 		/>
 	{:else}
 		<div class="report-detail-stack">
-			<Card class="report-hero-card">
+			<Card class="report-hero-card report-hero-card--compact">
 				<CardHeader class="report-hero-card__header">
 					<div class="report-hero-card__heading">
 						<p class="report-hero-card__eyebrow">Nuova pratica</p>
-						<CardTitle class="report-hero-card__title">Crea una segnalazione</CardTitle>
+						<CardTitle class="report-hero-card__title">Apri una segnalazione</CardTitle>
 					</div>
 				</CardHeader>
 
 				<CardContent class="report-hero-card__content">
-					<p class="report-hero-card__copy">
-						Compila i campi richiesti, aggiungi eventuali foto e invia una nuova segnalazione dal tuo profilo residente.
-					</p>
-
-					<div class="report-create-prefill">
-						{#each prefilledFacts as fact}
-							<div class="report-create-prefill__item">
-								<p class="report-create-prefill__label">{fact.label}</p>
-								<p class="report-create-prefill__value">{fact.value}</p>
-								<p class="report-create-prefill__copy">{fact.copy}</p>
-							</div>
-						{/each}
+					<div class="report-create-brief">
+						<div class="report-create-brief__item">
+							<p class="report-create-brief__label">Cos e</p>
+							<p class="report-create-brief__value">Una richiesta inviata all amministrazione</p>
+							<p class="report-create-brief__copy">Serve per guasti, anomalie o richieste operative sul tuo stabile.</p>
+						</div>
+						<div class="report-create-brief__item">
+							<p class="report-create-brief__label">Come si crea</p>
+							<p class="report-create-brief__value">Compila i campi oppure racconta il problema</p>
+							<p class="report-create-brief__copy">Puoi partire da zero oppure farti aiutare nella precompilazione.</p>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
@@ -275,103 +376,141 @@
 						<div>
 							<CardTitle class="report-section-card__title">Dettagli della segnalazione</CardTitle>
 							<CardDescription class="report-section-card__copy">
-								Inserisci le informazioni che il residente puo valorizzare in fase di apertura segnalazione.
+								Scegli come vuoi compilare la segnalazione, poi controlla i campi e invia.
 							</CardDescription>
-						</div>
-
-						<div class="report-ai-trigger">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								class="report-ai-trigger__button"
-								onclick={toggleAiPanel}
-							>
-								<HugeiconsIcon icon={SparklesIcon} size={15} strokeWidth={2} />
-								<span>Compila con AI</span>
-							</Button>
-							<InfoTip text="Scrivi liberamente il problema: il sistema compila titolo, categoria, priorita, descrizione e campi specifici da rivedere prima dell invio." />
 						</div>
 					</div>
 				</CardHeader>
 
 				<CardContent class="report-form-card__content">
 					<form class="report-form" onsubmit={handleSubmit}>
-						{#if aiPanelOpen}
-							<div class="report-ai-panel">
-								<div class="report-ai-panel__header">
-									<div>
-										<p class="report-ai-panel__eyebrow">Assistente compilazione</p>
-										<p class="report-ai-panel__title">Racconta il problema in linguaggio naturale</p>
-									</div>
-									<p class="report-ai-panel__copy">
-										Descrivi liberamente cosa succede, dove succede e da quando: i campi sotto verranno precompilati.
-									</p>
-								</div>
+						<div class="report-mode-segmented-wrap">
+							<div class="resident-heading-with-tip resident-heading-with-tip--compact">
+								<p class="report-mode-segmented__label">Modalita di compilazione</p>
+								<InfoTip text="Compila i campi a mano oppure racconta il problema e lascia che la segnalazione venga precompilata." />
+							</div>
 
-								<div class="report-ai-examples">
-									<p class="report-ai-examples__label">Esempi rapidi</p>
-									<div class="report-ai-examples__list">
+							<div class="report-mode-segmented" role="tablist" aria-label="Modalita di compilazione">
+								<button
+									type="button"
+									role="tab"
+									aria-selected={composeMode === 'manual'}
+									class="report-mode-segmented__option"
+									class:is-active={composeMode === 'manual'}
+									onclick={() => {
+										composeMode = 'manual';
+										resetAiFeedback();
+									}}
+								>
+									<HugeiconsIcon icon={File01Icon} size={14} strokeWidth={2} />
+									<span>Compila</span>
+								</button>
+								<button
+									type="button"
+									role="tab"
+									aria-selected={composeMode === 'ai'}
+									class="report-mode-segmented__option"
+									class:is-active={composeMode === 'ai'}
+									onclick={() => (composeMode = 'ai')}
+								>
+									<HugeiconsIcon icon={BubbleChatIcon} size={14} strokeWidth={2} />
+									<span>Racconta</span>
+								</button>
+							</div>
+						</div>
+
+						{#if composeMode === 'ai'}
+							<div class="report-ai-composer">
+								<div class="report-ai-composer__examples">
+									<p class="report-ai-composer__label">Suggerimenti rapidi</p>
+									<div class="report-ai-composer__chips">
 										{#each aiExamples as example}
-											<Button
+											<button
 												type="button"
-												variant="outline"
-												size="sm"
-												class="report-ai-examples__button"
+												class="report-ai-composer__chip"
 												onclick={() => useAiExample(example.text)}
 											>
-												<span class="report-ai-examples__icon" aria-hidden="true">
+												<span class="report-ai-composer__chip-icon" aria-hidden="true">
 													<HugeiconsIcon icon={example.icon} size={14} strokeWidth={1.85} />
 												</span>
-												<span class="report-ai-examples__text">{example.label}</span>
-											</Button>
+												<span class="report-ai-composer__chip-text">
+													<span class="report-ai-composer__chip-title">{example.label}</span>
+													<span class="report-ai-composer__chip-copy">{example.hint}</span>
+												</span>
+											</button>
 										{/each}
 									</div>
 								</div>
 
-								<Textarea
-									rows={5}
-									placeholder="Es. C'è una perdita nel locale caldaia della scala B, da stamattina si vede acqua a terra e manca acqua calda in alcuni appartamenti."
-									value={aiPrompt}
-									oninput={(event: Event) => (aiPrompt = (event.currentTarget as HTMLTextAreaElement).value)}
-									class="report-ai-panel__textarea"
-								/>
+								<div class="report-ai-chat">
+									<div class="report-ai-prompt-card">
+										<textarea
+											rows="5"
+											value={aiPrompt}
+											oninput={(event: Event) => (aiPrompt = (event.currentTarget as HTMLTextAreaElement).value)}
+											onkeydown={handleAiPromptKeydown}
+											placeholder="Es. C'e una perdita nel locale caldaia della scala B, da stamattina si vede acqua a terra e manca acqua calda in alcuni appartamenti."
+											class="report-ai-prompt-card__input"
+										></textarea>
+										<div class="report-ai-prompt-card__footer">
+											<span class="report-ai-prompt-card__hint">Ctrl/Cmd + Invio per inviare</span>
+											<button
+												type="button"
+												class="report-ai-prompt-card__send"
+												disabled={!aiPrompt.trim()}
+												aria-label="Invia prompt"
+												onclick={runAiCompilation}
+											>
+												<HugeiconsIcon icon={ArrowUp01Icon} size={16} strokeWidth={2.4} />
+											</button>
+										</div>
+									</div>
 
-								<div class="report-ai-panel__actions">
-									<Button
-										type="button"
-										size="lg"
-										class="report-ai-panel__submit"
-										disabled={isAiApplying || !aiPrompt.trim()}
-										onclick={handleAiFill}
-									>
-										{#if isAiApplying}
-											Compilazione in corso...
-										{:else}
-											<HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2.2} />
-											<span>Compila i campi</span>
-										{/if}
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="lg"
-										class="report-ai-panel__dismiss"
-										disabled={isAiApplying}
-										onclick={() => (aiPanelOpen = false)}
-									>
-										Chiudi
-									</Button>
+									{#if aiStage !== 'idle'}
+										<div class="report-ai-thread">
+											<div class="report-ai-thread__bubble-wrap">
+												<div class="report-ai-thread__user-bubble">{aiLastPrompt}</div>
+											</div>
+
+											<div class="report-ai-thread__assistant">
+												<div class="report-ai-thread__avatar" aria-hidden="true">
+													<HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={2} />
+												</div>
+
+												<div class="report-ai-thread__content">
+													{#if aiStage === 'thinking'}
+														<div class="report-ai-thinking" aria-label="Sto leggendo">
+															<span></span><span></span><span></span>
+														</div>
+													{:else}
+														<p class="report-ai-thread__intro">
+															Sto compilando automaticamente la segnalazione con questi dati:
+														</p>
+														<div class="report-ai-fact-list">
+															{#each aiFacts.slice(0, aiRevealedFacts) as fact}
+																<div class="report-ai-fact-row">
+																	<span class="report-ai-fact-row__icon" aria-hidden="true">
+																		<HugeiconsIcon icon={fact.icon} size={14} strokeWidth={1.8} />
+																	</span>
+																	<div class="report-ai-fact-row__main">
+																		<p class="report-ai-fact-row__label">{fact.label}</p>
+																		<p class="report-ai-fact-row__value">{fact.value}</p>
+																	</div>
+																</div>
+															{/each}
+														</div>
+														{#if aiStage === 'done'}
+															<p class="report-ai-thread__done">
+																Controlla qui sotto i campi compilati e invia la segnalazione quando vuoi.
+															</p>
+														{/if}
+													{/if}
+												</div>
+											</div>
+											<div bind:this={aiThreadEndEl}></div>
+										</div>
+									{/if}
 								</div>
-							</div>
-						{/if}
-
-						{#if aiApplied}
-							<div class="report-ai-result">
-								<p class="report-ai-result__title">Campi precompilati</p>
-								<p class="report-ai-result__copy">
-									I campi sono stati riempiti. Ora controlla il contenuto, fai eventuali correzioni e invia la segnalazione.
-								</p>
 							</div>
 						{/if}
 
@@ -524,7 +663,7 @@
 								class="report-form__submit"
 								disabled={isSubmitting}
 							>
-								{isSubmitting ? 'Invio in corso...' : 'Invia segnalazione'}
+								Invia segnalazione
 							</Button>
 							<Button
 								href="/resident/reports"
@@ -542,3 +681,12 @@
 		</div>
 	{/if}
 </div>
+
+<DemoDialog
+	bind:open={demoOpen}
+	title="Sei in un ambiente demo"
+	description="La segnalazione verra aggiunta solo alla demo corrente: non viene inviata ad alcun backend reale e scomparira al refresh."
+	cancelLabel="Torna ai campi"
+	confirmLabel="Invia comunque"
+	onConfirm={handleDemoConfirm}
+/>
