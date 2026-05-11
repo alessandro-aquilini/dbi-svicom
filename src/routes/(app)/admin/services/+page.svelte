@@ -4,6 +4,7 @@
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { getUserById } from '$lib/data/users';
 	import { PropertyScopeChip, Dialog } from '$lib/components/shared';
+	import ServiceDetailView from '$lib/components/admin/ServiceDetailView.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		Search01Icon,
@@ -293,170 +294,20 @@
 </div>
 
 {#if selectedService}
-	{@const s = selectedService}
-	{@const supplier = getUserById(s.supplierId)}
 	<Dialog 
 		bind:open={dialogOpen}
-		title={s.name}
+		title=""
+		confirmLabel="Chiudi"
+		hideCancel
+		onConfirm={() => { selectedService = null; dialogOpen = false }}
 		onCancel={() => { selectedService = null; dialogOpen = false }}
 	>
-		<div class="space-y-6 flex flex-col pt-2">
-			<!-- Brand & Core Info -->
-			<div class="flex flex-col gap-4 rounded-xl bg-card border border-border/60 p-4 shadow-sm">
-				<div class="flex items-start justify-between gap-4">
-					<div class="space-y-1.5 flex-1">
-						<div class="flex items-center gap-2">
-							<span class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase border shadow-sm ${getStatusClass(s.status)}`}>
-								{s.status}
-							</span>
-							<span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full border border-border/40">
-								{getCategoryLabel(s.category)}
-							</span>
-						</div>
-						<div class="text-2xl font-black tracking-tight text-foreground pt-1">{s.pricing}</div>
-					</div>
-					<div class="flex flex-col items-end gap-2 text-right">
-						<div class="text-sm font-bold bg-amber-500/10 text-amber-600 px-2.5 py-1 rounded-lg border border-amber-500/20 shadow-sm">
-							{s.rating.toFixed(1)}
-						</div>
-						<span class="text-[10px] text-muted-foreground font-semibold">{s.comments.length} recensioni</span>
-					</div>
-				</div>
-
-				<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground pt-3 border-t border-border/40">
-					<div class="flex items-center gap-1.5 px-2.5 py-1 bg-muted/40 rounded-md border border-border/40 text-[11px] font-semibold text-foreground/80">
-						<HugeiconsIcon icon={s.workflowType === 'instant' ? FlashIcon : Invoice01Icon} size={14} class="text-primary" />
-						{s.workflowType === 'instant' ? 'Prenotazione Istantanea' : 'Su Preventivo'}
-					</div>
-					{#if s.isPublicMarketplace}
-						<div class="flex items-center gap-1.5 px-2.5 py-1 bg-muted/40 rounded-md border border-border/40 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-							<HugeiconsIcon icon={AiChat01Icon} size={14} class="text-emerald-500" />
-							Marketplace Pubblico
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Management Section -->
-			<div class="space-y-3">
-				<h4 class="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-					<HugeiconsIcon icon={Settings01Icon} size={14} class="text-primary/70" />
-					Configurazione Condomini
-				</h4>
-				
-				{#if !propertySelection.isAll && propertySelection.selected}
-					{@const prop = propertySelection.selected}
-					{@const isActive = s.availableAtPropertyIds.includes(prop.id)}
-					<div class="group flex items-center justify-between p-4 rounded-xl border border-border bg-linear-to-br from-card to-muted/20 shadow-sm transition-all hover:border-primary/30">
-						<div class="space-y-1">
-							<div class="text-sm font-bold text-foreground">{prop.name}</div>
-							<div class="text-xs text-muted-foreground font-medium">Abilita questo servizio per i residenti</div>
-						</div>
-						<button
-							type="button"
-							class={isActive
-								? 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 bg-emerald-500'
-								: 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
-							}
-							onclick={() => toggleServiceForProperty(s, prop.id)}
-							aria-pressed={isActive}
-							title={isActive ? 'Disattiva servizio per questa proprietà' : 'Attiva servizio per questa proprietà'}
-						>
-							<span 
-								class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-								class:translate-x-5={isActive}
-								class:translate-x-0={!isActive}
-							></span>
-						</button>
-					</div>
-				{:else}
-					<div class="max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-							{#each properties as prop}
-								{@const isActive = s.availableAtPropertyIds.includes(prop.id)}
-								<button 
-									type="button"
-									class={`flex items-center justify-between p-3 rounded-lg border text-left transition-all ${
-										isActive 
-											? 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10' 
-											: 'border-border/60 bg-card hover:border-border hover:bg-muted/30'
-									}`}
-									onclick={() => toggleServiceForProperty(s, prop.id)}
-									title={isActive ? 'Disattiva ' + prop.name : 'Attiva ' + prop.name}
-								>
-									<span class={`text-[11px] font-bold truncate flex-1 pr-2 ${isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'}`}>
-										{prop.name}
-									</span>
-									<div class={isActive
-										? 'relative inline-flex h-4 w-7 shrink-0 rounded-full border border-transparent bg-emerald-500 transition-colors'
-										: 'relative inline-flex h-4 w-7 shrink-0 rounded-full border border-transparent bg-muted-foreground/30 transition-colors'
-									}>
-										<span class={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${isActive ? 'translate-x-3' : 'translate-x-0'}`}></span>
-									</div>
-								</button>
-							{/each}
-						</div>
-					</div>
-				{/if}
-			</div>
-
-			<div class="grid grid-cols-1 gap-4">
-				<!-- Descrizione -->
-				<div class="space-y-2 p-4 rounded-xl bg-card border border-border/60 shadow-sm">
-					<h4 class="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">Descrizione</h4>
-					<p class="text-sm text-foreground/80 leading-relaxed font-medium">
-						{s.description}
-					</p>
-				</div>
-                
-				<!-- Contact info -->
-				<div class="space-y-2 p-4 rounded-xl bg-card border border-border/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-					<div class="flex items-center gap-3">
-						<div class="h-10 w-10 py-1 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-							<HugeiconsIcon icon={Contact01Icon} size={20} />
-						</div>
-						<div>
-							<h4 class="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-0.5">Fornitore</h4>
-							<span class="font-bold text-sm text-foreground">{supplier?.name ?? 'Fornitore'}</span>
-						</div>
-					</div>
-					<div class="flex flex-col gap-1.5 sm:items-end">
-						{#if s.contactEmail}
-							<a href="mailto:{s.contactEmail}" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/40 px-2.5 py-1 rounded-md border border-border/30">
-								<HugeiconsIcon icon={Mail01Icon} size={14} />
-								{s.contactEmail}
-							</a>
-						{/if}
-						{#if s.contactPhone}
-							<a href="tel:{s.contactPhone}" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/40 px-2.5 py-1 rounded-md border border-border/30">
-								<HugeiconsIcon icon={Contact01Icon} size={14} />
-								{s.contactPhone}
-							</a>
-						{/if}
-					</div>
-				</div>
-			</div>
-
-			<!-- Recent Feedback -->
-			{#if s.comments.length > 0}
-				<div class="space-y-3 pt-2">
-					<h4 class="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">Feedback Residenti</h4>
-					<div class="grid grid-cols-1 gap-2.5">
-						{#each s.comments as comment}
-							{@const author = getUserById(comment.authorId)}
-							<div class="p-3.5 rounded-xl bg-card/50 border border-border/60 shadow-sm relative overflow-hidden">
-								<div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500/40"></div>
-								<p class="text-[13px] text-foreground/90 font-medium pl-2 leading-relaxed">"{comment.text}"</p>
-								<div class="mt-3 flex items-center justify-between text-[11px] text-muted-foreground pl-2 border-t border-border/40 pt-2">
-									<span class="font-bold text-foreground/70">{author?.name ?? 'Residente'}</span>
-									<span class="px-2 py-0.5 bg-muted rounded-md font-medium border border-border/30">{new Date(comment.date).toLocaleDateString('it-IT')}</span>
-								</div>
-							</div>
-						{/each}
-					</div>
-				</div>
-			{/if}
-		</div>
+		<ServiceDetailView 
+			service={selectedService} 
+			onToggleProperty={toggleServiceForProperty}
+			selectedPropertyId={propertySelection.selected?.id}
+			isAllProperties={propertySelection.isAll}
+		/>
 	</Dialog>
 {/if}
 
