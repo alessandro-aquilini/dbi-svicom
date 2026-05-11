@@ -22,6 +22,8 @@
 		Invoice01Icon
 	} from '@hugeicons/core-free-icons';
 
+	let allServices = $state(services);
+
 	type ViewMode = 'grid' | 'table';
 	let view = $state<ViewMode>('grid');
 
@@ -37,14 +39,15 @@
 	// Services filtered by current property selection
 	const scopedServices = $derived.by(() => {
 		const property = propertySelection.selected;
-		if (!property) return services;
-		return services.filter((s) => s.availableAtPropertyIds.includes(property.id));
+		if (!property) return allServices;
+		// Use availableAtPropertyIds so the service stays visible even if disabled
+		return allServices.filter((s) => s.availableAtPropertyIds.includes(property.id));
 	});
 
 	// Services after local filters
 	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
-		const list = propertySelection.isAll ? services : scopedServices;
+		const list = propertySelection.isAll ? allServices : scopedServices;
 		
 		return list.filter((s) => {
 			if (filterCategory && s.category !== filterCategory) return false;
@@ -80,12 +83,32 @@
 		return 'bg-blue-500/10 text-blue-600 border-blue-200';
 	}
 
-	function toggleServiceForProperty(service: Service, propertyId: string) {
-		// In a real app, this would be an API call
-		if (service.availableAtPropertyIds.includes(propertyId)) {
-			service.availableAtPropertyIds = service.availableAtPropertyIds.filter(id => id !== propertyId);
+	function toggleServiceForProperty(_service: Service, propertyId: string) {
+		// Ensure we operate on the provided service (not necessarily the selected dialog)
+		const index = allServices.findIndex((s) => s.id === _service.id);
+		if (index === -1) return;
+
+		// Only allow toggling if the property is part of availableAtPropertyIds
+		const available = allServices[index].availableAtPropertyIds;
+		if (!available.includes(propertyId)) return;
+
+		// Toggle presence while ensuring enabled list never contains unavailable ids
+		let updatedEnabled = allServices[index].enabledAtPropertyIds.filter((id) => available.includes(id));
+		if (updatedEnabled.includes(propertyId)) {
+			updatedEnabled = updatedEnabled.filter((id) => id !== propertyId);
 		} else {
-			service.availableAtPropertyIds = [...service.availableAtPropertyIds, propertyId];
+			updatedEnabled = [...updatedEnabled, propertyId];
+		}
+
+		// Reassign to trigger Svelte 5 reactivity for the whole list
+		allServices[index] = {
+			...allServices[index],
+			enabledAtPropertyIds: updatedEnabled
+		};
+
+		// Keep the dialog in sync if it shows the same service
+		if (selectedService && selectedService.id === _service.id) {
+			selectedService = allServices[index];
 		}
 	}
 </script>
@@ -100,11 +123,11 @@
 			<h1 class="text-2xl font-semibold tracking-tight">Servizi Residenziali</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
 				{#if hasLocalFilters}
-					{filtered.length} di {propertySelection.isAll ? services.length : scopedServices.length} servizi
+					{filtered.length} di {propertySelection.isAll ? allServices.length : scopedServices.length} servizi
 				{:else if !propertySelection.isAll && propertySelection.selected}
 					{scopedServices.length} servizi attivi su {propertySelection.selected.name}
 				{:else}
-					{services.length} servizi totali a catalogo
+					{allServices.length} servizi totali a catalogo
 				{/if}
 			</p>
 		</div>
@@ -196,8 +219,8 @@
 							</div>
 							<div class="flex items-center gap-2">
 								{#if !propertySelection.isAll && propertySelection.selected}
-									{@const isActive = service.availableAtPropertyIds.includes(propertySelection.selected.id)}
-									<span class={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-muted-foreground/30'}`}></span>
+									{@const isEnabled = service.enabledAtPropertyIds.includes(propertySelection.selected.id)}
+									<span class={`h-2 w-2 rounded-full ${isEnabled ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-muted-foreground/30'}`}></span>
 								{/if}
 								<span class={`text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border ${getStatusClass(service.status)}`}>
 									{service.status}
@@ -271,9 +294,15 @@
 									</div>
 								</td>
 								<td class="px-4 py-3 whitespace-nowrap">
-									<span class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase border ${getStatusClass(service.status)}`}>
-										{service.status}
-									</span>
+									<div class="flex items-center gap-2">
+										{#if !propertySelection.isAll && propertySelection.selected}
+											{@const isEnabled = service.enabledAtPropertyIds.includes(propertySelection.selected.id)}
+											<span class={`h-2 w-2 rounded-full ${isEnabled ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-muted-foreground/30'}`} title={isEnabled ? 'Servizio attivo' : 'Servizio disattivato'}></span>
+										{/if}
+										<span class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase border ${getStatusClass(service.status)}`}>
+											{service.status}
+										</span>
+									</div>
 								</td>
 								<td class="px-4 py-3 text-right">
 									<button 
@@ -302,12 +331,14 @@
 		onConfirm={() => { selectedService = null; dialogOpen = false }}
 		onCancel={() => { selectedService = null; dialogOpen = false }}
 	>
-		<ServiceDetailView 
-			service={selectedService} 
-			onToggleProperty={toggleServiceForProperty}
-			selectedPropertyId={propertySelection.selected?.id}
-			isAllProperties={propertySelection.isAll}
-		/>
+		{#if selectedService}
+			<ServiceDetailView 
+				service={selectedService} 
+				onToggleProperty={toggleServiceForProperty}
+				selectedPropertyId={propertySelection.selected?.id}
+				isAllProperties={propertySelection.isAll}
+			/>
+		{/if}
 	</Dialog>
 {/if}
 

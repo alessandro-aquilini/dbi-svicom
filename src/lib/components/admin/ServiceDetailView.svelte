@@ -21,7 +21,7 @@
 		isAllProperties?: boolean;
 	}
 
-	let { service: s, onToggleProperty, selectedPropertyId, isAllProperties }: Props = $props();
+	let { service: s = $bindable(), onToggleProperty, selectedPropertyId, isAllProperties }: Props = $props();
 	
 	const supplier = $derived(getUserById(s.supplierId));
 
@@ -39,6 +39,14 @@
 		if (status === 'attivo') return 'bg-emerald-500/10 text-emerald-600 border-emerald-200';
 		if (status === 'beta') return 'bg-amber-500/10 text-amber-600 border-amber-200';
 		return 'bg-blue-500/10 text-blue-600 border-blue-200';
+	}
+
+	function toggleProperty(service: Service, propertyId: string) {
+		// Do not mutate the local `s` here. Let the parent handle state changes so
+		// reactivity and the single source of truth remain consistent.
+		if (typeof onToggleProperty === 'function') {
+			onToggleProperty(s, propertyId);
+		}
 	}
 </script>
 
@@ -78,17 +86,17 @@
 	<div class="grid gap-8 lg:grid-cols-2">
 		<!-- Left Column: Settings -->
 		<section>
-			<h3 class="text-[13px] font-extrabold uppercase tracking-widest text-muted-foreground mb-4 px-1 flex items-center justify-between">
+			<h4 class="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground mb-4 px-1 flex items-center justify-between">
 				<span>Abilitazione Condomini</span>
 				<HugeiconsIcon icon={Settings01Icon} size={14} class="text-primary/70" />
-			</h3>
+			</h4>
 			
 			<div class="bg-muted/30 rounded-2xl border border-border/50 overflow-hidden">
 				<div class="max-h-75 overflow-y-auto pr-1 small-scrollbar">
 					{#if !isAllProperties && selectedPropertyId}
 						{@const prop = properties.find(p => p.id === selectedPropertyId)}
 						{#if prop && s.availableAtPropertyIds.includes(prop.id)}
-							{@const isActive = s.availableAtPropertyIds.includes(prop.id)}
+							{@const isActive = s.enabledAtPropertyIds.includes(prop.id)}
 							<div class="flex items-center justify-between p-4 bg-muted/20">
 								<div class="min-w-0">
 									<p class="text-sm font-bold text-foreground truncate">{prop.name}</p>
@@ -97,7 +105,7 @@
 								<button
 									type="button"
 									class={`h-6 w-11 rounded-full transition-all relative ${isActive ? 'bg-primary shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]' : 'bg-muted-foreground/30'}`}
-									onclick={() => onToggleProperty(s, prop.id)}
+									onclick={() => toggleProperty(s, prop.id)}
 									aria-label={isActive ? 'Disattiva servizio' : 'Attiva servizio'}
 									title={isActive ? 'Disattiva servizio' : 'Attiva servizio'}
 								>
@@ -112,13 +120,13 @@
 					{:else}
 						<div class="divide-y divide-border/40">
 							{#each properties.filter(p => s.availableAtPropertyIds.includes(p.id)) as prop}
-								{@const isActive = s.availableAtPropertyIds.includes(prop.id)}
+								{@const isActive = s.enabledAtPropertyIds.includes(prop.id)}
 								<div class="flex items-center justify-between p-4 transition-colors hover:bg-muted/40">
 									<p class="text-sm font-semibold text-foreground truncate mr-4">{prop.name}</p>
 									<button
 										type="button"
 										class={`h-6 w-11 rounded-full transition-all relative shrink-0 ${isActive ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-										onclick={() => onToggleProperty(s, prop.id)}
+										onclick={() => toggleProperty(s, prop.id)}
 										aria-label={isActive ? 'Disattiva' : 'Attiva'}
 									>
 										<span class={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0'}`}></span>

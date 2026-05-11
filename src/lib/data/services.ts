@@ -15,6 +15,7 @@ export interface Service {
 	requiresQuote: boolean;
 	workflowType: 'instant' | 'quote_based';
 	availableAtPropertyIds: string[];
+	enabledAtPropertyIds: string[]; // The admin can enable disable stuff. 
 	isPublicMarketplace: boolean;
 	// NOTE: The contact email / phone for the get service, is different from the general one. 
 	contactEmail?: string; 
@@ -35,6 +36,7 @@ export const services: Service[] = [
 		requiresQuote: false,
 		workflowType: 'instant',
 		availableAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7'],
+		enabledAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7'],
 		isPublicMarketplace: true,
 		contactEmail: 'reservations@petcareh24.it',
 		contactPhone: '+39 02 999 889',
@@ -58,6 +60,7 @@ export const services: Service[] = [
 		requiresQuote: false,
 		workflowType: 'instant',
 		availableAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7', 'cnd-verdi-3'],
+		enabledAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7', 'cnd-verdi-3'],
 		isPublicMarketplace: false,
 		contactEmail: 'booking@cleangreen.it',
 		contactPhone: '+39 02 777 667',
@@ -81,6 +84,7 @@ export const services: Service[] = [
 		requiresQuote: false,
 		workflowType: 'instant',
 		availableAtPropertyIds: ['cnd-verdi-3', 'cnd-carducci-21'],
+		enabledAtPropertyIds: ['cnd-verdi-3'],
 		isPublicMarketplace: true,
 		contactEmail: 'info@wellnessstudio.it',
 		contactPhone: '+39 02 555 445',
@@ -98,6 +102,7 @@ export const services: Service[] = [
 		requiresQuote: true,
 		workflowType: 'quote_based',
 		availableAtPropertyIds: ['cnd-marconi-14'],
+		enabledAtPropertyIds: ['cnd-marconi-14'],
 		isPublicMarketplace: false,
 		contactEmail: 'assistenza@tecnicocaldaie.it',
 		contactPhone: '+39 02 111 222',
@@ -115,6 +120,7 @@ export const services: Service[] = [
 		requiresQuote: true,
 		workflowType: 'quote_based',
 		availableAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7', 'cnd-solari-30'],
+		enabledAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7'],
 		isPublicMarketplace: false,
 		contactEmail: 'installazioni@idroclima.it',
 		contactPhone: '+39 02 333 444',
@@ -132,6 +138,7 @@ export const services: Service[] = [
 		requiresQuote: false,
 		workflowType: 'instant',
 		availableAtPropertyIds: ['cnd-pacini-44', 'cnd-solari-30'],
+		enabledAtPropertyIds: ['cnd-pacini-44', 'cnd-solari-30'],
 		isPublicMarketplace: false,
 		contactEmail: 'info@spurghiveloci.it',
 		contactPhone: '+39 02 444 555',
@@ -149,6 +156,7 @@ export const services: Service[] = [
 		requiresQuote: false,
 		workflowType: 'instant',
 		availableAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7', 'cnd-solari-30'],
+		enabledAtPropertyIds: ['cnd-marconi-14', 'cnd-europa-7', 'cnd-solari-30'],
 		isPublicMarketplace: false,
 		contactEmail: 'support@secureentry.it',
 		contactPhone: '+39 02 222 333',
@@ -166,6 +174,7 @@ export const services: Service[] = [
 		requiresQuote: false,
 		workflowType: 'instant',
 		availableAtPropertyIds: ['cnd-marconi-14', 'cnd-verdi-3', 'cnd-carducci-21'],
+		enabledAtPropertyIds: ['cnd-marconi-14', 'cnd-verdi-3', 'cnd-carducci-21'],
 		isPublicMarketplace: true,
 		contactEmail: 'assistenza@idroclima.it',
 		contactPhone: '+39 02 333 444',
