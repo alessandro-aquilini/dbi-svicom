@@ -24,6 +24,31 @@ export const payments: Payment[] = [
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
 	}
+	,
+	{
+		id: 'pay-002',
+		fromId: 'res-bianchi-01',
+		toId: 'frn-clean-green',
+		amount: 80.00,
+		currency: 'EUR',
+		dueDate: '2026-05-20T00:00:00Z',
+		paidAt: '2026-04-20T16:00:00Z',
+		description: 'Pagamento pulizie extra - bkg-002',
+		propertyId: 'cnd-marconi-14',
+		ticketId: 'bkg-002'
+	},
+	{
+		id: 'pay-003',
+		fromId: 'res-bianchi-01',
+		toId: 'frn-idroclima-nord',
+		amount: 1200.00,
+		currency: 'EUR',
+		dueDate: '2026-06-03T00:00:00Z',
+		paidAt: '2026-05-04T11:00:00Z',
+		description: 'Acconto + saldo per installazione climatizzatore - bkg-003',
+		propertyId: 'cnd-marconi-14',
+		ticketId: 'bkg-003'
+	}
 ];
 
 export function getPaymentById(id: string): Payment | undefined {
