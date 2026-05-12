@@ -156,43 +156,6 @@ export const chats: Chat[] = [
 		],
 		ticketIds: ['tkt-002']
 	}
-	,
-	{
-		id: 'chat-res-bianchi-pet',
-		participantIds: ['res-bianchi-01', 'frn-pet-care-h24'],
-		lastMessageAt: '2026-05-06T10:00:00Z',
-		messages: [
-			{ id: 'msg-bkg-001-1', senderId: 'res-bianchi-01', text: 'Vorrei prenotare un pet sitter per il 6 maggio, mattina.', timestamp: '2026-05-06T08:00:00Z' },
-			{ id: 'msg-bkg-001-2', senderId: 'frn-pet-care-h24', text: 'Ricevuto, confermiamo alle 09:30.', timestamp: '2026-05-06T09:00:00Z' },
-			{ id: 'msg-bkg-001-3', senderId: 'frn-pet-care-h24', text: 'Purtroppo dobbiamo cancellare per indisponibilità del personale. Ci scusiamo.', timestamp: '2026-05-06T10:00:00Z' }
-		],
-		ticketIds: ['bkg-001']
-	},
-	{
-		id: 'chat-res-bianchi-clean',
-		participantIds: ['res-bianchi-01', 'frn-clean-green'],
-		lastMessageAt: '2026-04-20T16:00:00Z',
-		messages: [
-			{ id: 'msg-bkg-002-1', senderId: 'res-bianchi-01', text: 'Richiedo pulizia extra per interno 5, possibile il 20 aprile?', timestamp: '2026-04-20T09:00:00Z' },
-			{ id: 'msg-bkg-002-2', senderId: 'frn-clean-green', text: 'Confermato per le 10:00. A dopo!', timestamp: '2026-04-20T10:00:00Z' },
-			{ id: 'msg-bkg-002-3', senderId: 'frn-clean-green', text: 'Intervento completato alle 13:00. Grazie!', timestamp: '2026-04-20T13:00:00Z' },
-			{ id: 'msg-bkg-002-4', senderId: 'res-bianchi-01', text: 'Perfetto, grazie. Effettuato il pagamento.', timestamp: '2026-04-20T16:00:00Z' }
-		],
-		ticketIds: ['bkg-002']
-	},
-	{
-		id: 'chat-res-bianchi-idroclima',
-		participantIds: ['res-bianchi-01', 'frn-idroclima-nord'],
-		lastMessageAt: '2026-05-04T11:00:00Z',
-		messages: [
-			{ id: 'msg-bkg-003-1', senderId: 'res-bianchi-01', text: 'Vorrei un preventivo per installare un climatizzatore.', timestamp: '2026-05-01T09:00:00Z' },
-			{ id: 'msg-bkg-003-2', senderId: 'frn-idroclima-nord', text: 'Ti invio un preventivo, controllo materiali e costi.', timestamp: '2026-05-01T11:30:00Z' },
-			{ id: 'msg-bkg-003-3', senderId: 'res-bianchi-01', text: 'Accetto il preventivo, procedete con l\'intervento.', timestamp: '2026-05-02T09:00:00Z' },
-			{ id: 'msg-bkg-003-4', senderId: 'frn-idroclima-nord', text: 'Intervento completato. Abbiamo emesso la fattura.', timestamp: '2026-05-03T10:00:00Z' },
-			{ id: 'msg-bkg-003-5', senderId: 'res-bianchi-01', text: 'Pagamento eseguito.', timestamp: '2026-05-04T11:00:00Z' }
-		],
-		ticketIds: ['bkg-003']
-	}
 ];
 
 export function getChatById(id: string): Chat | undefined {

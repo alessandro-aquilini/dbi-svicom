@@ -25,6 +25,14 @@ export interface BookingEvent {
     slot?: BookingSlot;
 }
 
+// Lightweight message type for booking-related conversations.
+export interface BookingMessage {
+    id: string;
+    senderId: string; // References User.id
+    text: string;
+    timestamp: string; // ISO datetime
+}
+
 // Booking status (derived from the last event in the timeline)
 export type BookingStatus = 'requested' | 'confirmed' | 'performed' | 'cancelled' | 'closed' | 'declined' | 'unknown';
 
@@ -34,6 +42,11 @@ export interface Booking {
     id: string;
     residentId: string;
     serviceId: string; // The supplier ID can be inferred from the service metadata.
+
+    // Optional embedded message timeline for chat messages related to this booking.
+    // This keeps booking-related conversation together with the booking record
+    // instead of keeping it only in the generic chats dataset.
+    messageTimeline?: BookingMessage[];
 
     // Timeline of events. Optional to allow minimal hardcoded records in the frontend.
     timeline?: BookingEvent[];
@@ -101,6 +114,11 @@ export const bookings: Booking[] = [
             { id: 'bkg-001-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-06T08:00:00Z', slot: { start: '2026-05-06T09:30:00Z', end: '2026-05-06T11:00:00Z' } },
             { id: 'bkg-001-e2', kind: 'confirmed', authorId: 'frn-pet-care-h24', at: '2026-05-06T09:00:00Z' },
             { id: 'bkg-001-e3', kind: 'cancelled', authorId: 'frn-pet-care-h24', at: '2026-05-06T10:00:00Z' }
+    ],
+        messageTimeline: [
+            { id: 'msg-bkg-001-1', senderId: 'res-bianchi-01', text: 'Vorrei prenotare un pet sitter per il 6 maggio, mattina.', timestamp: '2026-05-06T08:00:00Z' },
+            { id: 'msg-bkg-001-2', senderId: 'frn-pet-care-h24', text: 'Ricevuto, confermiamo alle 09:30.', timestamp: '2026-05-06T09:00:00Z' },
+            { id: 'msg-bkg-001-3', senderId: 'frn-pet-care-h24', text: 'Purtroppo dobbiamo cancellare per indisponibilità del personale. Ci scusiamo.', timestamp: '2026-05-06T10:00:00Z' }
         ]
     },
 
@@ -114,9 +132,15 @@ export const bookings: Booking[] = [
             { id: 'bkg-002-e2', kind: 'confirmed', authorId: 'frn-clean-green', at: '2026-04-20T10:00:00Z' },
             { id: 'bkg-002-e3', kind: 'performed', authorId: 'frn-clean-green', at: '2026-04-20T13:00:00Z' },
             { id: 'bkg-002-e4', kind: 'closed', authorId: 'adm-giorgio-01', at: '2026-04-20T15:00:00Z' }
-        ],
+    ],
         invoiceIds: ['inv-002'],
-        paymentIds: ['pay-002']
+    paymentIds: ['pay-002'],
+    messageTimeline: [
+            { id: 'msg-bkg-002-1', senderId: 'res-bianchi-01', text: 'Richiedo pulizia extra per interno 5, possibile il 20 aprile?', timestamp: '2026-04-20T09:00:00Z' },
+            { id: 'msg-bkg-002-2', senderId: 'frn-clean-green', text: 'Confermato per le 10:00. A dopo!', timestamp: '2026-04-20T10:00:00Z' },
+            { id: 'msg-bkg-002-3', senderId: 'frn-clean-green', text: 'Intervento completato alle 13:00. Grazie!', timestamp: '2026-04-20T13:00:00Z' },
+            { id: 'msg-bkg-002-4', senderId: 'res-bianchi-01', text: 'Perfetto, grazie. Effettuato il pagamento.', timestamp: '2026-04-20T16:00:00Z' }
+        ]
     },
 
     // 3) Installazione climatizzatore: has a preventivo (quote) -> accepted -> invoiced
@@ -133,7 +157,14 @@ export const bookings: Booking[] = [
         ],
         quoteIds: ['quo-003'],
         invoiceIds: ['inv-003'],
-        paymentIds: ['pay-003']
+        paymentIds: ['pay-003'],
+        messageTimeline: [
+            { id: 'msg-bkg-003-1', senderId: 'res-bianchi-01', text: 'Vorrei un preventivo per installare un climatizzatore.', timestamp: '2026-05-01T09:00:00Z' },
+            { id: 'msg-bkg-003-2', senderId: 'frn-idroclima-nord', text: 'Ti invio un preventivo, controllo materiali e costi.', timestamp: '2026-05-01T11:30:00Z' },
+            { id: 'msg-bkg-003-3', senderId: 'res-bianchi-01', text: 'Accetto il preventivo, procedete con l\'intervento.', timestamp: '2026-05-02T09:00:00Z' },
+            { id: 'msg-bkg-003-4', senderId: 'frn-idroclima-nord', text: 'Intervento completato. Abbiamo emesso la fattura.', timestamp: '2026-05-03T10:00:00Z' },
+            { id: 'msg-bkg-003-5', senderId: 'res-bianchi-01', text: 'Pagamento eseguito.', timestamp: '2026-05-04T11:00:00Z' }
+        ]
     },
 
     // 4) Citofono: resident requested, waiting for supplier (demonstrates 'requested' state)
