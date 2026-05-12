@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { services, type Service, type ServiceCategory, type ServiceStatus } from '$lib/data/services';
+	import { services, type Service, type ServiceCategory } from '$lib/data/services';
 	import { properties } from '$lib/data/properties';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { getUserById } from '$lib/data/users';
 	import { PropertyScopeChip, Dialog } from '$lib/components/shared';
-	import ServiceDetailView from '$lib/components/admin/ServiceDetailView.svelte';
+	import ServiceCard from '$lib/components/services/ServiceCard.svelte';
+	import ServiceDetailView from '$lib/components/services/ServiceDetailView.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		Search01Icon,
@@ -29,7 +30,7 @@
 
 	let query = $state('');
 	let filterCategory = $state<ServiceCategory | ''>('');
-	let filterStatus = $state<ServiceStatus | ''>('');
+	let filterStatus = $state('');
 
 	let selectedService = $state<Service | null>(null);
 	let dialogOpen = $state(false);
@@ -51,7 +52,6 @@
 		
 		return list.filter((s) => {
 			if (filterCategory && s.category !== filterCategory) return false;
-			if (filterStatus && s.status !== filterStatus) return false;
 			if (q) {
 				const supplier = getUserById(s.supplierId);
 				const haystack = `${s.name} ${s.description} ${supplier?.name ?? ''} ${s.category}`.toLowerCase();
@@ -77,7 +77,8 @@
 		return labels[cat] || cat;
 	}
 
-	function getStatusClass(status: ServiceStatus) {
+	function getStatusClass(status: string) {
+		// Deprecated - kept for compatibility if some services still have a status string
 		if (status === 'attivo') return 'bg-emerald-500/10 text-emerald-600 border-emerald-200';
 		if (status === 'beta') return 'bg-amber-500/10 text-amber-600 border-amber-200';
 		return 'bg-blue-500/10 text-blue-600 border-blue-200';
@@ -181,12 +182,7 @@
 			<option value="mobilita">Mobilità</option>
 		</select>
 
-		<select bind:value={filterStatus} class="filter-select" class:is-active={filterStatus !== ''}>
-			<option value="">Tutti gli stati</option>
-			<option value="attivo">Attivo</option>
-			<option value="beta">Beta</option>
-			<option value="in-richiesta">In richiesta</option>
-		</select>
+		<!-- Status filter removed; availability is now expressed with `availabilityText` on each service -->
 
 		{#if hasLocalFilters}
 			<button type="button" onclick={clearFilters} class="clear-link">
@@ -206,51 +202,10 @@
 	{:else if view === 'grid'}
 		<div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each filtered as service (service.id)}
-				{@const supplier = getUserById(service.supplierId)}
-				<button 
-					type="button"
-					class="group relative flex flex-col justify-between p-4 rounded-2xl border border-border bg-card transition-all hover:bg-muted/20 hover:shadow-xl hover:-translate-y-1 text-left"
+				<ServiceCard 
+					{service} 
 					onclick={() => { selectedService = service; dialogOpen = true }}
-				>
-					<div class="space-y-4">
-						<div class="flex items-center justify-between">
-							<div class="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-								<HugeiconsIcon icon={service.workflowType === 'instant' ? FlashIcon : Invoice01Icon} size={20} />
-							</div>
-							<div class="flex items-center gap-2">
-								{#if !propertySelection.isAll && propertySelection.selected}
-									{@const isEnabled = service.enabledAtPropertyIds.includes(propertySelection.selected.id)}
-									<span class={`h-2 w-2 rounded-full ${isEnabled ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-muted-foreground/30'}`}></span>
-								{/if}
-								<span class={`text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border ${getStatusClass(service.status)}`}>
-									{service.status}
-								</span>
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<h3 class="text-sm font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
-								{service.name}
-							</h3>
-							<div class="flex items-center gap-1.5 text-[10px]">
-								<span class="font-bold text-primary/70 uppercase tracking-tight">{getCategoryLabel(service.category)}</span>
-								<span class="opacity-20">|</span>
-								<span class="font-medium text-muted-foreground truncate">{supplier?.name}</span>
-							</div>
-						</div>
-					</div>
-
-					<div class="mt-8 flex items-end justify-between border-t border-border/40 pt-4">
-						<div class="space-y-0.5">
-							<p class="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">Prezzo base</p>
-							<p class="text-base font-black text-foreground">{service.pricing}</p>
-						</div>
-						
-						<div class="h-8 w-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-all">
-							<HugeiconsIcon icon={InformationCircleIcon} size={14} />
-						</div>
-					</div>
-				</button>
+				/>
 			{/each}
 		</div>
 	{:else}
@@ -299,9 +254,9 @@
 											{@const isEnabled = service.enabledAtPropertyIds.includes(propertySelection.selected.id)}
 											<span class={`h-2 w-2 rounded-full ${isEnabled ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-muted-foreground/30'}`} title={isEnabled ? 'Servizio attivo' : 'Servizio disattivato'}></span>
 										{/if}
-										<span class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase border ${getStatusClass(service.status)}`}>
-											{service.status}
-										</span>
+										{#if service.availabilityText}
+											<span class="text-xs text-muted-foreground truncate max-w-64">{service.availabilityText}</span>
+										{/if}
 									</div>
 								</td>
 								<td class="px-4 py-3 text-right">
@@ -334,6 +289,7 @@
 		{#if selectedService}
 			<ServiceDetailView 
 				service={selectedService} 
+				isAdmin={true}
 				onToggleProperty={toggleServiceForProperty}
 				selectedPropertyId={propertySelection.selected?.id}
 				isAllProperties={propertySelection.isAll}

@@ -6,7 +6,7 @@
 	const navItems = [
 		{ label: 'Home', href: '/resident', icon: '🏠' },
 		{ label: 'Chat', href: '/resident/chat', icon: '💬' },
-		{ label: 'Segnalazioni', href: '/resident/reports', icon: '📢' },
+		{ label: 'Servizi', href: '/resident/services', icon: '✨' },
 		{ label: 'Pagamenti', href: '/resident/payments', icon: '💳' },
 		{ label: 'Profilo', href: '/resident/profile', icon: '👤' }
 	];
