@@ -5,6 +5,7 @@
 	import { Dialog } from '$lib/components/shared';
 	import ServiceCard from '$lib/components/services/ServiceCard.svelte';
 	import ServiceDetailView from '$lib/components/services/ServiceDetailView.svelte';
+	import ServiceBookingForm from '$lib/components/services/ServiceBookingForm.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		Search01Icon,
@@ -29,6 +30,7 @@
 
 	let selectedService = $state<Service | null>(null);
 	let dialogOpen = $state(false);
+	let isBooking = $state(false);
 
 	const hasLocalFilters = $derived(query.trim().length > 0 || filterCategory !== '');
 
@@ -55,6 +57,13 @@
 	function clearFilters() {
 		query = '';
 		filterCategory = '';
+	}
+
+	function handleBook(bookingData: any) {
+		console.log('Booking request:', bookingData);
+		// In a real app, we would save the booking here
+		// For now, we redirect to the chat
+		window.location.href = `/resident/services/chat?serviceId=${selectedService?.id}&booking=new`;
 	}
 
 	function getCategoryLabel(cat: ServiceCategory) {
@@ -212,16 +221,34 @@
 	<Dialog 
 		bind:open={dialogOpen}
 		title=""
-		confirmLabel="Chiudi"
+		confirmLabel={isBooking ? undefined : "Chiudi"}
 		hideCancel
-		onConfirm={() => { selectedService = null; dialogOpen = false }}
-		onCancel={() => { selectedService = null; dialogOpen = false }}
+		onConfirm={() => { selectedService = null; dialogOpen = false; isBooking = false; }}
+		onCancel={() => { selectedService = null; dialogOpen = false; isBooking = false; }}
 	>
 		{#if selectedService}
-			<ServiceDetailView 
-				service={selectedService} 
-				isAdmin={false}
-			/>
+			{#if isBooking}
+				<ServiceBookingForm 
+					service={selectedService} 
+					onBook={handleBook}
+					onCancel={() => (isBooking = false)}
+				/>
+			{:else}
+				<div class="flex flex-col gap-4">
+					<ServiceDetailView 
+						service={selectedService} 
+						isAdmin={false}
+					/>
+					<div class="flex gap-3 px-1 mt-2">
+						<button 
+							class="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
+							onclick={() => (isBooking = true)}
+						>
+							Prenota Servizio
+						</button>
+					</div>
+				</div>
+			{/if}
 		{/if}
 	</Dialog>
 {/if}
