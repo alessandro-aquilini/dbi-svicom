@@ -1,132 +1,80 @@
-import { services } from '../services';
+// ─── booking-types.ts ────────────────────────────────────────────────────────
 
-export type BookingStatus = 
-    | 'richiesto' 
-    | 'preventivato' 
-    | 'confermato' 
-    | 'completato' 
-    | 'cancellato';
+export type BookingEventKind =
+    | 'request_created'
+    | 'confirmed'
+    | 'performed'
+    | 'cancelled'
+    | 'closed';
 
-export type BookingEventKind = 
-    | 'created'
-    | 'status_change'
-    | 'quote_added'
-    | 'note'
-    | 'payment_confirmed';
+// ─── Embeds ──────────────────────────────────────────────────────────────────
+
+export interface BookingSlot {
+    start: string; // ISO datetime
+    end: string; // ISO datetime
+}
 
 export interface BookingEvent {
     id: string;
     kind: BookingEventKind;
-    at: string; // ISO 8601
-    fromStatus?: BookingStatus;
-    toStatus?: BookingStatus;
     authorId: string;
-    body?: string;
+    at: string; // ISO datetime
 }
+
+// Booking status (derived from the last event in the timeline)
+export type BookingStatus = 'requested' | 'confirmed' | 'performed' | 'cancelled' | 'closed' | 'unknown';
+
+// ─── Main Booking ─────────────────────────────────────────────────────────────
 
 export interface Booking {
     id: string;
-    serviceId: string;
     residentId: string;
-    supplierId: string;
-    propertyId: string;
-    status: BookingStatus;
-    workflow: 'instant' | 'quote_based';
-    financials?: {
-        quoteAmount?: number;
-        invoiceId?: string;
-        isPaid: boolean;
-    };
-    eventTimeline: BookingEvent[];
+    serviceId: string; // The supplier ID can be inferred from the service metadata.
+
+    // Timeline of events. Optional to allow minimal hardcoded records in the frontend.
+    timeline?: BookingEvent[];
+
+    // Optional embeds (frontend-driven, not enforced by the data layer)
+    slot?: BookingSlot;
+    paymentIds?: string[];
+    quoteIds?: string[];
+    invoiceIds?: string[];
+    interventionIds?: string[];
 }
 
 /**
- * Deriva lo stato attuale dall'ultimo evento di stato nella timeline.
+ * Returns the last (most recent) event from a booking's timeline.
+ * Handles empty or missing timelines gracefully (returns undefined).
  */
-export function getCurrentBookingStatus(booking: Booking): BookingStatus {
-    for (let i = booking.eventTimeline.length - 1; i >= 0; i--) {
-        const ev = booking.eventTimeline[i];
-        if (ev.toStatus) return ev.toStatus;
-    }
-    return 'richiesto';
+export function lastBookingEvent(booking: Booking): BookingEvent | undefined {
+    const timeline = booking.timeline;
+    if (!timeline || timeline.length === 0) return undefined;
+    // Pick the event with the latest `at` value (ISO strings are safe to compare via Date)
+    return timeline.reduce((last, ev) => {
+        if (!last) return ev;
+        return new Date(ev.at) > new Date(last.at) ? ev : last;
+    }, timeline[0]);
 }
 
 /**
- * Crea un nuovo booking inizializzando lo stato in base al workflow.
- * Include validazione sulla disponibilità del servizio per il condominio.
+ * Infers a lightweight BookingStatus from the last event kind.
+ * This is intentionally simple and frontend-driven; business rules may be applied elsewhere.
  */
-export function createBooking(
-    id: string,
-    params: Omit<Booking, 'id' | 'status' | 'eventTimeline'>,
-    authorId: string
-): Booking {
-    const service = services.find(s => s.id === params.serviceId);
-    
-    if (!service) {
-        throw new Error(`Servizio ${params.serviceId} non trovato.`);
-    }
-
-    // Validazione: Il servizio deve essere abilitato per il condominio (propertyId) 
-    // a meno che non sia un servizio pubblico garantito a tutti (se previsto in futuro)
-    if (!service.availableAtPropertyIds.includes(params.propertyId)) {
-        throw new Error(`Il servizio ${service.name} non è disponibile per il condominio selezionato.`);
-    }
-
-    const initialStatus: BookingStatus = params.workflow === 'instant' ? 'confermato' : 'richiesto';
-    
-    const creationEvent: BookingEvent = {
-        id: `ev-${id}-1`,
-        kind: 'created',
-        at: new Date().toISOString(),
-        toStatus: initialStatus,
-        authorId: authorId,
-        body: params.workflow === 'instant' ? 'Servizio istantaneo confermato.' : 'Richiesta di preventivo inviata.'
-    };
-
-    return {
-        id,
-        ...params,
-        status: initialStatus,
-        eventTimeline: [creationEvent]
-    };
-}
-
-/**
- * Helper per indicare al residente il prossimo passo necessario.
- */
-export function getBookingNextStep(booking: Booking): { label: string; description: string } {
-    const status = getCurrentBookingStatus(booking);
-
-    switch (status) {
-        case 'richiesto':
-            return {
-                label: 'In attesa di preventivo',
-                description: "Il fornitore sta valutando la tua richiesta. Riceverai una notifica con il prezzo a breve."
-            };
-        case 'preventivato':
-            return {
-                label: 'Accetta preventivo',
-                description: "Il preventivo è pronto. Conferma l'intervento per procedere."
-            };
-        case 'confermato':
-            return {
-                label: 'Intervento in programma',
-                description: "Il servizio è stato confermato. Il fornitore ti contatterà per i dettagli finali."
-            };
-        case 'completato':
-            return {
-                label: 'Servizio terminato',
-                description: "L'intervento è concluso. Puoi procedere al pagamento o lasciare una recensione."
-            };
-        case 'cancellato':
-            return {
-                label: 'Booking annullato',
-                description: "Questa richiesta è stata chiusa o cancellata."
-            };
+export function inferBookingStatus(booking: Booking): BookingStatus {
+    const last = lastBookingEvent(booking);
+    if (!last) return 'unknown';
+    switch (last.kind) {
+        case 'request_created':
+            return 'requested';
+        case 'confirmed':
+            return 'confirmed';
+        case 'performed':
+            return 'performed';
+        case 'cancelled':
+            return 'cancelled';
+        case 'closed':
+            return 'closed';
         default:
-            return {
-                label: 'Stato sconosciuto',
-                description: "Contatta l'amministratore per maggiori informazioni."
-            };
+            return 'unknown';
     }
 }
