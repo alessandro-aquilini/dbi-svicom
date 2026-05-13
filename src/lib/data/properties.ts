@@ -10,10 +10,16 @@ export interface PropertyAddress {
 	province: string;
 }
 
+export interface PropertyCoordinates {
+	lat: number;
+	lng: number;
+}
+
 export interface Property {
 	id: string;
 	name: string;
 	address: PropertyAddress;
+	coordinates: PropertyCoordinates;
 	units: number;
 	adminId: string;
 	residentIds: string[];
@@ -27,6 +33,7 @@ export const properties: Property[] = [
 		id: 'cnd-marconi-14',
 		name: 'Via Marconi 14',
 		address: { street: 'Via Guglielmo Marconi 14', city: 'Milano', cap: '20121', province: 'MI' },
+		coordinates: { lat: 45.4615, lng: 9.1893 },
 		units: 24,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-bianchi-01'],
@@ -38,6 +45,7 @@ export const properties: Property[] = [
 		id: 'cnd-europa-7',
 		name: 'Corso Europa 7',
 		address: { street: 'Corso Europa 7', city: 'Milano', cap: '20122', province: 'MI' },
+		coordinates: { lat: 45.4651, lng: 9.1956 },
 		units: 32,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-conti-02'],
@@ -49,6 +57,7 @@ export const properties: Property[] = [
 		id: 'cnd-verdi-3',
 		name: 'Piazza Verdi 3',
 		address: { street: 'Piazza Giuseppe Verdi 3', city: 'Milano', cap: '20131', province: 'MI' },
+		coordinates: { lat: 45.4849, lng: 9.2228 },
 		units: 18,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-rossi-03'],
@@ -60,6 +69,7 @@ export const properties: Property[] = [
 		id: 'cnd-carducci-21',
 		name: 'Via Carducci 21',
 		address: { street: 'Via Giosuè Carducci 21', city: 'Milano', cap: '20123', province: 'MI' },
+		coordinates: { lat: 45.4651, lng: 9.1738 },
 		units: 12,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-greco-04'],
@@ -71,6 +81,7 @@ export const properties: Property[] = [
 		id: 'cnd-pacini-44',
 		name: 'Via Pacini 44',
 		address: { street: 'Via Filippo Pacini 44', city: 'Milano', cap: '20131', province: 'MI' },
+		coordinates: { lat: 45.4886, lng: 9.2305 },
 		units: 28,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-bellini-05', 'res-esposito-06'],
@@ -82,6 +93,7 @@ export const properties: Property[] = [
 		id: 'cnd-solari-30',
 		name: 'Via Solari 30',
 		address: { street: 'Via Andrea Solari 30', city: 'Milano', cap: '20144', province: 'MI' },
+		coordinates: { lat: 45.4548, lng: 9.1672 },
 		units: 40,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-moretti-07', 'res-ricci-08'],
@@ -93,6 +105,7 @@ export const properties: Property[] = [
 		id: 'cnd-tortona-12',
 		name: 'Via Tortona 12',
 		address: { street: 'Via Tortona 12', city: 'Milano', cap: '20144', province: 'MI' },
+		coordinates: { lat: 45.4506, lng: 9.1701 },
 		units: 22,
 		adminId: 'adm-giorgio-01',
 		residentIds: ['res-bruno-08'],

@@ -3,6 +3,7 @@
 	import { tickets, type TicketPriority, getCurrentStatus, type Ticket } from '$lib/data/ticket/tickets';
 	import { suppliers } from '$lib/data/suppliers';
 	import { getPropertyById } from '$lib/data/properties';
+	import { PropertiesMap } from '$lib/components/shared';
 
 	type Stat = {
 		label: string;
@@ -138,6 +139,13 @@
 		<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
 			<h2 class="text-base font-medium text-foreground">Attività in scadenza</h2>
 			<p class="mt-2 text-sm text-muted-foreground">Scadenze, SLA e interventi programmati.</p>
+		</div>
+	</div>
+
+	<!-- Map card -->
+	<div class="mt-6 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+		<div class="h-[360px] w-full">
+			<PropertiesMap {properties} />
 		</div>
 	</div>
 </div>
