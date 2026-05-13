@@ -2,8 +2,6 @@
 	import { page } from '$app/state';
 	import { getCurrentUser } from '$lib/auth';
 	import { getUserById } from '$lib/data/users';
-	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { DashboardSquare01Icon, BubbleChatIcon, Wrench01Icon, CreditCardIcon, File01Icon, Contact01Icon } from '@hugeicons/core-free-icons';
 
 	let { children } = $props();
 
@@ -12,11 +10,11 @@
 	const user = getUserById(supplierId);
 
 	const navItems = [
-		{ label: 'Home', href: '/supplier', icon: DashboardSquare01Icon },
-		{ label: 'Chat', href: '/supplier/chat', icon: BubbleChatIcon },
-		{ label: 'Interventi', href: '/supplier/jobs', icon: Wrench01Icon },
-		{ label: 'Pagamenti', href: '/supplier/payments', icon: CreditCardIcon },
-		{ label: 'Documenti', href: '/supplier/documents', icon: File01Icon }
+		{ label: 'Home', href: '/supplier', icon: '📊' },
+		{ label: 'Chat', href: '/supplier/chat', icon: '💬' },
+		{ label: 'Interventi', href: '/supplier/jobs', icon: '🔧' },
+		{ label: 'Pagamenti', href: '/supplier/payments', icon: '💳' },
+		{ label: 'Documenti', href: '/supplier/documents', icon: '🗎' }
 	];
 
 	function isActive(href: string): boolean {
@@ -46,8 +44,7 @@
 						? 'bg-accent text-accent-foreground font-medium'
 						: 'text-muted-foreground hover:text-foreground'}"
 				>
-					<HugeiconsIcon icon={item.icon} size={18} strokeWidth={1.5} class="mr-2" />
-					<span>{item.label}</span>
+					{item.label}
 				</a>
 			{/each}
 		</nav>
@@ -61,7 +58,7 @@
 				}}
 				aria-label="Profile menu"
 			>
-				<HugeiconsIcon icon={Contact01Icon} size={18} strokeWidth={1.5} />
+				👤
 			</button>
 
 			<div id="profile-menu" class="hidden absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50">
@@ -102,7 +99,7 @@
 					href={item.href}
 					class="flex flex-1 flex-col items-center gap-0.5 py-2 text-xs {isActive(item.href) ? 'text-primary font-medium' : 'text-muted-foreground'}"
 				>
-					<HugeiconsIcon icon={item.icon} size={18} strokeWidth={1.5} />
+					<span class="text-lg">{item.icon}</span>
 					<span>{item.label}</span>
 				</a>
 			{/each}

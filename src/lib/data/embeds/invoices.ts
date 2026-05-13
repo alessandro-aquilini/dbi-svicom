@@ -26,33 +26,6 @@ export const invoices: Invoice[] = [
 		description: 'Intervento di riparazione idraulica presso Via Marconi 14.',
 		attachments: ['fattura_idroclima_154.pdf']
 	}
-	,
-	{
-		id: 'inv-002',
-		number: '2026/FT/200',
-		supplierId: 'frn-clean-green',
-		customerId: 'res-bianchi-01',
-		propertyId: 'cnd-marconi-14',
-		ticketId: 'bkg-002',
-		amount: 80.00,
-		currency: 'EUR',
-		issueDate: '2026-04-20T15:30:00Z',
-		description: 'Pulizia appartamento - servizio extra',
-		attachments: []
-	},
-	{
-		id: 'inv-003',
-		number: '2026/FT/210',
-		supplierId: 'frn-idroclima-nord',
-		customerId: 'res-bianchi-01',
-		propertyId: 'cnd-marconi-14',
-		ticketId: 'bkg-003',
-		amount: 1200.00,
-		currency: 'EUR',
-		issueDate: '2026-05-03T10:00:00Z',
-		description: 'Installazione climatizzatore - materiali e manodopera',
-		attachments: ['fattura_idroclima_210.pdf']
-	}
 ];
 
 export function getInvoiceById(id: string): Invoice | undefined {

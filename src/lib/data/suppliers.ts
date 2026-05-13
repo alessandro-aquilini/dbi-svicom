@@ -112,18 +112,7 @@ export const suppliers: Supplier[] = [
 				text: 'Intervento risolutivo in brevissimo tempo.'
 			}
 		]
-	},
-	{
-		id: 'frn-tecnico-caldaie',
-		type: 'Both',
-		category: 'Termoidraulica',
-		description: 'Specialista in caldaie e sistemi di riscaldamento privati.',
-		rating: 4.9,
-		availability: 'disponibile',
-		propertyIds: ['cnd-marconi-14'],
-		serviceIds: ['srv-riparazione-caldaia'],
-		comments: []
-	},
+	}
 ];
 
 export function getSupplierById(id: string): Supplier | undefined {

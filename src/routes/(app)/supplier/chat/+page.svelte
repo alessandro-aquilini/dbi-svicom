@@ -1,223 +1,211 @@
 <script lang="ts">
-	import { bookings, inferBookingStatus, getBookingById } from '$lib/data/ticket/booking';
-	import { services } from '$lib/data/services';
-	import { residents } from '$lib/data/residents';
-	import { users } from '$lib/data/users';
-	import { getQuoteById } from '$lib/data/embeds/quotes';
-	import { getInvoiceById } from '$lib/data/embeds/invoices';
-	import { getPaymentById } from '$lib/data/embeds/payments';
-	import { getCurrentUser } from '$lib/auth';
-	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { 
-		ArrowLeft01Icon, 
-		InformationCircleIcon,
-		Search01Icon,
-		Message01Icon,
-		UserCircleIcon
-	} from '@hugeicons/core-free-icons';
-	import { format } from 'date-fns';
-	import { it } from 'date-fns/locale';
-	import ChatBubble from '$lib/components/chat-cards/ChatBubble.svelte';
-	import ChatQuoteCard from '$lib/components/chat-cards/ChatQuoteCard.svelte';
-	import ChatInvoiceCard from '$lib/components/chat-cards/ChatInvoiceCard.svelte';
-	import ChatPaymentCard from '$lib/components/chat-cards/ChatPaymentCard.svelte';
-	import ChatTimelineEvent from '$lib/components/chat-cards/ChatTimelineEvent.svelte';
+    import { tick } from 'svelte';
+    import { getCurrentUser } from '$lib/auth';
+    import { chats, type Chat, type Message } from '$lib/data/chats';
+    import { getTicketById, getSupplierRelevantTimeline, type Ticket, type TicketEvent } from '$lib/data/ticket/tickets';
+    import { getPaymentById, type Payment } from '$lib/data/embeds/payments';
+    import { getQuoteById, type Quote } from '$lib/data/embeds/quotes';
+    import { getInvoiceById, type Invoice } from '$lib/data/embeds/invoices';
+    import { getSupplierTaskById, type supplierTask } from '$lib/data/embeds/supplierTasks';
+    import { getUserById, type User } from '$lib/data/users';
+    import { propertySelection } from '$lib/state/property-selection.svelte';
+    import { PropertyScopeChip } from '$lib/components/shared';
 
-	const currentUser = getCurrentUser();
-	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
+    const currentUser = getCurrentUser();
+    const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 
-	// Filter bookings for this supplier
-	const supplierBookings = bookings.filter(b => {
-		const service = services.find(s => s.id === b.serviceId);
-		return service?.supplierId === supplierId;
-	});
+    let selectedChatId = $state(chats.find((c) => c.participantIds.includes(supplierId))?.id ?? '');
+    let composerText = $state('');
+    let messagesEl: HTMLDivElement | undefined = $state();
+    let localMessages = $state<Record<string, Message[]>>({});
 
-	let selectedBookingId = $state<string | null>(null);
-	const selectedBooking = $derived(selectedBookingId ? getBookingById(selectedBookingId) : null);
-	
-	const timelineItems = $derived.by(() => {
-		if (!selectedBooking) return [];
-		const items: any[] = [];
-		if (selectedBooking.messageTimeline) {
-			selectedBooking.messageTimeline.forEach(msg => {
-				items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
-			});
-		}
-		if (selectedBooking.timeline) {
-			selectedBooking.timeline.forEach(event => {
-				items.push({ type: 'event', date: new Date(event.at), data: event });
-			});
-		}
-		if (selectedBooking.quoteIds) {
-			selectedBooking.quoteIds.forEach(id => {
-				const quote = getQuoteById(id);
-				if (quote) {
-					items.push({ type: 'quote', date: new Date(quote.sentAt), data: quote });
-				}
-			});
-		}
-		if (selectedBooking.invoiceIds) {
-			selectedBooking.invoiceIds.forEach(id => {
-				const invoice = getInvoiceById(id);
-				if (invoice) {
-					items.push({ type: 'invoice', date: new Date(invoice.issueDate), data: invoice });
-				}
-			});
-		}
-		if (selectedBooking.paymentIds) {
-			selectedBooking.paymentIds.forEach(id => {
-				const payment = getPaymentById(id);
-				if (payment) {
-					items.push({ type: 'payment', date: new Date(payment.paidAt), data: payment });
-				}
-			});
-		}
-		return items.sort((a, b) => a.date.getTime() - b.date.getTime());
-	});
+    function getCounterpart(participantIds: string[]): User | undefined {
+        const otherId = participantIds.find((id) => id !== supplierId);
+        return otherId ? getUserById(otherId) : undefined;
+    }
 
-	function getResidentInfo(residentId: string) {
-		const user = users.find(u => u.id === residentId);
-		return user;
-	}
+    function isoDayKey(ts: number) {
+        return new Date(ts).toISOString().slice(0, 10);
+    }
 
-	const statusColors = {
-		requested: 'bg-amber-100 text-amber-700',
-		confirmed: 'bg-emerald-100 text-emerald-700',
-		timeslot_updated: 'bg-blue-100 text-blue-700',
-		performed: 'bg-slate-100 text-slate-700',
-		cancelled: 'bg-red-100 text-red-700',
-		closed: 'bg-slate-100 text-slate-500',
-		declined: 'bg-red-100 text-red-700',
-		unknown: 'bg-slate-100 text-slate-400'
-	};
+    function formatDayLabel(iso: string) {
+        const d = new Date(iso);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        if (sameDay(d, today)) return 'Oggi';
+        if (sameDay(d, yesterday)) return 'Ieri';
+        return new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+    }
+
+    const selectedChat = $derived(chats.find((c) => c.id === selectedChatId));
+
+    type TimelineEvent =
+        | { type: 'message'; date: number; data: Message }
+        | { type: 'ticket-event'; date: number; data: { ticket: Ticket; event: TicketEvent } }
+        | { type: 'payment'; date: number; data: Payment }
+        | { type: 'quote'; date: number; data: Quote }
+        | { type: 'invoice'; date: number; data: Invoice }
+        | { type: 'task'; date: number; data: supplierTask };
+
+    function buildTimelineForChat(chat?: Chat): TimelineEvent[] {
+        if (!chat) return [];
+        const events: TimelineEvent[] = [];
+        const otherId = chat.participantIds.find((id) => id !== supplierId);
+
+        for (const m of chat.messages) events.push({ type: 'message', date: new Date(m.timestamp).getTime(), data: m });
+        for (const m of (localMessages[chat.id] ?? [])) events.push({ type: 'message', date: new Date(m.timestamp).getTime(), data: m });
+
+        for (const tid of chat.ticketIds ?? []) {
+            const ticket = getTicketById(tid);
+            if (!ticket) continue;
+
+            // supplier-scoped timeline only
+            const timeline = getSupplierRelevantTimeline(ticket, supplierId);
+            for (const ev of timeline) events.push({ type: 'ticket-event', date: new Date(ev.at).getTime(), data: { ticket, event: ev } });
+
+            for (const pid of ticket.paymentIds ?? []) {
+                const p = getPaymentById(pid);
+                if (!p) continue;
+                if (p.fromId !== supplierId && p.toId !== supplierId) continue;
+                events.push({ type: 'payment', date: new Date(p.paidAt || p.dueDate).getTime(), data: p });
+            }
+
+            for (const qid of ticket.quoteIds ?? []) {
+                const q = getQuoteById(qid);
+                if (!q) continue;
+                if (q.supplierId !== supplierId) continue;
+                events.push({ type: 'quote', date: new Date(q.sentAt).getTime(), data: q });
+            }
+
+            for (const iid of ticket.invoiceIds ?? []) {
+                const inv = getInvoiceById(iid);
+                if (!inv) continue;
+                if (inv.supplierId !== supplierId) continue;
+                events.push({ type: 'invoice', date: new Date(inv.issueDate).getTime(), data: inv });
+            }
+
+            for (const intId of ticket.interventionIds ?? []) {
+                const t = getSupplierTaskById(intId);
+                if (!t) continue;
+                if (t.supplierId !== supplierId) continue;
+                // ensure the task relates to the chat counterpart if present
+                if (otherId && t.customerId !== otherId) continue;
+                events.push({ type: 'task', date: new Date(`${t.date}T${t.startTime}:00`).getTime(), data: t });
+            }
+        }
+
+        return events.sort((a, b) => a.date - b.date);
+    }
+
+    const grouped = $derived.by(() => {
+        const tl = buildTimelineForChat(selectedChat);
+        const map = new Map<string, { label: string; events: TimelineEvent[] }>();
+        for (const ev of tl) {
+            const key = isoDayKey(ev.date);
+            if (!map.has(key)) map.set(key, { label: formatDayLabel(new Date(ev.date).toISOString()), events: [] });
+            map.get(key)!.events.push(ev);
+        }
+        return Array.from(map.entries()).map(([dayKey, v]) => ({ dayKey, label: v.label, events: v.events }));
+    });
+
+    const supplierChats = $derived.by(() => chats.filter((c) => c.participantIds.includes(supplierId)));
+
+    function selectChat(id: string) {
+        selectedChatId = id;
+        composerText = '';
+        queueMicrotask(scrollToBottom);
+    }
+
+    async function scrollToBottom() {
+        await tick();
+        if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function send() {
+        const text = composerText.trim();
+        if (!text || !selectedChat) return;
+        const msg: Message = { id: `local-${Date.now()}`, senderId: supplierId, text, timestamp: new Date().toISOString() };
+        localMessages = { ...localMessages, [selectedChat.id]: [...(localMessages[selectedChat.id] ?? []), msg] };
+        composerText = '';
+        queueMicrotask(scrollToBottom);
+    }
 </script>
 
-<div class="flex h-[calc(100vh-64px)] bg-white overflow-hidden">
-	<!-- Sidebar: Chat List -->
-	<aside class="w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-slate-50/30 {selectedBookingId ? 'hidden md:flex' : 'flex'}">
-		<div class="p-4 bg-white border-b border-border">
-			<h1 class="text-xl font-bold text-slate-900">Messaggi</h1>
-			<div class="mt-3 relative">
-				<HugeiconsIcon icon={Search01Icon} size={18} class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-				<input 
-					type="text" 
-					placeholder="Cerca conversazioni..." 
-					class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 placeholder:text-slate-400"
-				/>
-			</div>
-		</div>
+<style>
+    .chat-shell { display: grid; grid-template-columns: 320px 1fr; gap: 1rem; padding: 1rem; }
+    .list { border: 1px solid var(--border); border-radius: .5rem; background: var(--card); overflow: auto; }
+    .list button { width: 100%; text-align: left; padding: .75rem; border: 0; background: transparent; }
+    .panel { border: 1px solid var(--border); border-radius: .5rem; background: var(--card); display:flex; flex-direction: column; }
+    .messages { padding: 1rem; overflow:auto; flex:1; }
+    .composer { border-top: 1px solid var(--border); padding: .5rem; display:flex; gap:.5rem; }
+    .day { font-size:.875rem; color:var(--muted-foreground); margin: .75rem 0 .5rem; }
+    .msg { margin: .25rem 0; }
+    .ev { margin: .35rem 0; font-size:.9rem; color:var(--foreground); }
+</style>
 
-		<div class="flex-1 overflow-y-auto">
-			{#each supplierBookings as b}
-				{@const resident = getResidentInfo(b.residentId)}
-				{@const service = services.find(s => s.id === b.serviceId)}
-				{@const lastMsg = b.messageTimeline?.[b.messageTimeline.length - 1]}
-				<button 
-					onclick={() => selectedBookingId = b.id}
-					class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedBookingId === b.id ? 'bg-white shadow-sm' : ''}"
-				>
-					<div class="w-12 h-12 rounded-full bg-[#5D7D94]/10 flex items-center justify-center text-[#5D7D94] shrink-0 border border-[#5D7D94]/5">
-						<HugeiconsIcon icon={UserCircleIcon} size={28} />
-					</div>
-					<div class="flex-1 min-w-0">
-						<div class="flex justify-between items-baseline mb-0.5">
-							<span class="font-bold text-slate-900 truncate">{resident?.name || 'Residente'}</span>
-							{#if lastMsg}
-								<span class="text-[10px] text-slate-400">{format(new Date(lastMsg.timestamp), "HH:mm")}</span>
-							{/if}
-						</div>
-						<div class="text-xs font-semibold text-[#5D7D94] mb-1">{service?.name}</div>
-						<p class="text-xs text-slate-500 line-clamp-1">
-							{lastMsg?.text || 'Inizia la conversazione...'}
-						</p>
-					</div>
-				</button>
-			{/each}
-		</div>
-	</aside>
+<div class="chat-shell">
+    <div class="list">
+        <div style="padding:.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <strong>Conversazioni</strong>
+            <PropertyScopeChip gap="0.5rem" />
+        </div>
+        {#each supplierChats as chat (chat.id)}
+            {@const cp = getCounterpart(chat.participantIds)}
+            <button type="button" onclick={() => selectChat(chat.id)} class:is-active={chat.id === selectedChatId}>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-weight:600">{cp?.name ?? '—'}</div>
+                        <div style="font-size:.875rem;color:var(--muted-foreground)">{chat.messages[chat.messages.length-1]?.text ?? ''}</div>
+                    </div>
+                    <div style="font-size:.75rem;color:var(--muted-foreground)">{chat.messages[chat.messages.length-1]?.timestamp.slice(11,16)}</div>
+                </div>
+            </button>
+        {/each}
+    </div>
 
-	<!-- Main: Chat Conversation -->
-	<main class="flex-1 flex flex-col bg-slate-50/50 {selectedBookingId ? 'flex' : 'hidden md:flex'}">
-		{#if selectedBooking}
-			{@const resident = getResidentInfo(selectedBooking.residentId)}
-			{@const service = services.find(s => s.id === selectedBooking.serviceId)}
-			
-			<header class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10 transition-shadow">
-				<button 
-					onclick={() => selectedBookingId = null}
-					class="p-2 -ml-2 rounded-full hover:bg-slate-100 md:hidden transition-colors"
-				>
-					<HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
-				</button>
-				
-				<div class="w-10 h-10 rounded-full bg-[#5D7D94]/10 flex items-center justify-center text-[#5D7D94] border border-[#5D7D94]/5 shrink-0 ml-1">
-					<HugeiconsIcon icon={UserCircleIcon} size={24} />
-				</div>
-				
-				<div class="flex-1 min-w-0">
-					<div class="flex items-center gap-2">
-						<h2 class="font-bold text-slate-900 text-sm truncate">{resident?.name}</h2>
-						<span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded {statusColors[inferBookingStatus(selectedBooking)]}">
-							{inferBookingStatus(selectedBooking)}
-						</span>
-					</div>
-					<p class="text-[11px] text-[#5D7D94] font-medium">{service?.name}</p>
-				</div>
+    <div class="panel">
+        <div style="padding:1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            {#if selectedChat}
+                {@const cp = getCounterpart(selectedChat.participantIds)}
+                <div>
+                    <div style="font-weight:700">{cp?.name ?? 'Seleziona una conversazione'}</div>
+                    <div style="font-size:.875rem;color:var(--muted-foreground)">{cp ? (cp.role ?? '') : ''}</div>
+                </div>
+            {:else}
+                <div style="font-weight:700">Seleziona una conversazione</div>
+            {/if}
+            <div style="font-size:.875rem;color:var(--muted-foreground)">ID: {selectedChatId}</div>
+        </div>
 
-				<div class="flex items-center gap-1">
-					<button class="p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
-						<HugeiconsIcon icon={InformationCircleIcon} size={20} />
-					</button>
-				</div>
-			</header>
+        <div class="messages" bind:this={messagesEl}>
+            {#if grouped.length === 0}
+                <div style="padding:1rem;color:var(--muted-foreground)">Nessuna attività rilevante per te.</div>
+            {/if}
+            {#each grouped as day (day.dayKey)}
+                <div class="day">{day.label}</div>
+                {#each day.events as ev}
+                    {#if ev.type === 'message'}
+                        <div class="msg"><strong>{ev.data.senderId === supplierId ? 'Tu' : getUserById(ev.data.senderId)?.name}</strong>: {ev.data.text} <span style="color:var(--muted-foreground);font-size:.75rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    {:else if ev.type === 'ticket-event'}
+                        <div class="ev">[{ev.data.ticket.id}] {ev.data.event.kind} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    {:else if ev.type === 'payment'}
+                        <div class="ev">Pagamento: {ev.data.id} — {ev.data.amount.toFixed(2)} {ev.data.currency} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    {:else if ev.type === 'quote'}
+                        <div class="ev">Preventivo: {ev.data.id} — {ev.data.amount.toFixed(2)} {ev.data.currency} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    {:else if ev.type === 'invoice'}
+                        <div class="ev">Fattura: {ev.data.number} — {ev.data.amount.toFixed(2)} {ev.data.currency} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    {:else if ev.type === 'task'}
+                        <div class="ev">Intervento: {ev.data.id} — {ev.data.title} <span style="color:var(--muted-foreground);font-size:.8rem">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    {/if}
+                {/each}
+            {/each}
+        </div>
 
-			<div class="flex-1 overflow-y-auto p-4 space-y-6">
-				{#each timelineItems as item}
-					{#if item.type === 'message'}
-						<ChatBubble 
-							message={item.data} 
-							isOwn={item.data.senderId === supplierId}
-						/>
-					{:else if item.type === 'event'}
-						<ChatTimelineEvent event={item.data} />
-					{:else if item.type === 'quote'}
-						<ChatQuoteCard 
-							quote={item.data} 
-							isOwn={item.data.supplierId === supplierId} 
-						/>
-					{:else if item.type === 'invoice'}
-						<ChatInvoiceCard 
-							invoice={item.data} 
-							isOwn={item.data.supplierId === supplierId} 
-						/>
-					{:else if item.type === 'payment'}
-						<ChatPaymentCard payment={item.data} />
-					{/if}
-				{/each}
-			</div>
-
-			<footer class="p-4 bg-white border-t border-border sticky bottom-0">
-				<div class="flex gap-3 max-w-4xl mx-auto items-center">
-					<div class="bg-slate-50 flex items-center gap-2 border border-slate-200 rounded-2xl p-1.5 w-full">
-						<input 
-							type="text" 
-							placeholder="Scrivi un messaggio..." 
-							class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
-						/>
-						<button class="bg-[#5D7D94] text-white p-2 rounded-xl hover:opacity-90 transition-opacity">
-							<HugeiconsIcon icon={Message01Icon} size={18} />
-						</button>
-					</div>
-				</div>
-			</footer>
-		{:else}
-			<div class="flex-1 flex flex-col items-center justify-center text-center p-8">
-				<div class="w-16 h-16 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-300 mb-4">
-					<HugeiconsIcon icon={Message01Icon} size={32} />
-				</div>
-				<h3 class="text-lg font-bold text-slate-900">Seleziona una conversazione</h3>
-				<p class="text-sm text-slate-500 max-w-xs mt-1">Scegli una pratica dalla lista a sinistra per visualizzare la cronologia e rispondere.</p>
-			</div>
-		{/if}
-	</main>
+        <div class="composer">
+            <input bind:value={composerText} placeholder="Scrivi un messaggio..." style="flex:1;padding:.5rem;border:1px solid var(--border);border-radius:.375rem" />
+            <button type="button" onclick={send} class="btn">Invia</button>
+        </div>
+    </div>
 </div>
