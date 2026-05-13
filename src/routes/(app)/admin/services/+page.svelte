@@ -1,34 +1,61 @@
 <script lang="ts">
-	import { services, type Service } from '$lib/data/services';
-	import { getUserById } from '$lib/data/users';
-	import { getSupplierById } from '$lib/data/suppliers';
+	import { services, type Service, type ServiceCategory } from '$lib/data/services';
+	import { properties } from '$lib/data/properties';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
-	import { PropertyScopeChip } from '$lib/components/shared';
+	import { getUserById } from '$lib/data/users';
+	import { PropertyScopeChip, Dialog } from '$lib/components/shared';
+	import ServiceCard from '$lib/components/services/ServiceCard.svelte';
+	import ServiceDetailView from '$lib/components/services/ServiceDetailView.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { Search01Icon, GridIcon, MenuSquareIcon, Mail01Icon, Contact01Icon, StarIcon } from '@hugeicons/core-free-icons';
+	import {
+		Search01Icon,
+		GridIcon,
+		MenuSquareIcon,
+		StarIcon,
+		Mail01Icon,
+		Contact01Icon,
+		Settings01Icon,
+		Tick01Icon,
+		Cancel01Icon,
+		InformationCircleIcon,
+		AiChat01Icon,
+		FlashIcon,
+		Invoice01Icon
+	} from '@hugeicons/core-free-icons';
+
+	let allServices = $state(services);
 
 	type ViewMode = 'grid' | 'table';
 	let view = $state<ViewMode>('grid');
 
 	let query = $state('');
+	let filterCategory = $state<ServiceCategory | ''>('');
+	let filterStatus = $state('');
 
+	let selectedService = $state<Service | null>(null);
+	let dialogOpen = $state(false);
+
+	const hasLocalFilters = $derived(query.trim().length > 0 || filterCategory !== '' || filterStatus !== '');
+
+	// Services filtered by current property selection
 	const scopedServices = $derived.by(() => {
 		const property = propertySelection.selected;
-		if (!property) return services;
-		// keep services whose supplier has at least one matching property
-		return services.filter((s) => {
-			const supplier = getSupplierById(s.supplierId);
-			if (!supplier) return false;
-			return supplier.propertyIds.includes(property.id);
-		});
+		if (!property) return allServices;
+		// Use availableAtPropertyIds so the service stays visible even if disabled
+		return allServices.filter((s) => s.availableAtPropertyIds.includes(property.id));
 	});
 
+	// Services after local filters
 	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
-		return scopedServices.filter((s) => {
+		const list = propertySelection.isAll ? allServices : scopedServices;
+		
+		return list.filter((s) => {
+			if (filterCategory && s.category !== filterCategory) return false;
 			if (q) {
-				const hay = `${s.name} ${s.category} ${s.description} ${s.pricing}`.toLowerCase();
-				if (!hay.includes(q)) return false;
+				const supplier = getUserById(s.supplierId);
+				const haystack = `${s.name} ${s.description} ${supplier?.name ?? ''} ${s.category}`.toLowerCase();
+				if (!haystack.includes(q)) return false;
 			}
 			return true;
 		});
@@ -36,26 +63,96 @@
 
 	function clearFilters() {
 		query = '';
+		filterCategory = '';
+		filterStatus = '';
+	}
+
+	function getCategoryLabel(cat: ServiceCategory) {
+		const labels: Record<ServiceCategory, string> = {
+			'cura-animali': 'Cura Animali',
+			'benessere': 'Benessere',
+			'pulizie': 'Pulizie',
+			'mobilita': 'Mobilità'
+		};
+		return labels[cat] || cat;
+	}
+
+	function getStatusClass(status: string) {
+		// Deprecated - kept for compatibility if some services still have a status string
+		if (status === 'attivo') return 'bg-emerald-500/10 text-emerald-600 border-emerald-200';
+		if (status === 'beta') return 'bg-amber-500/10 text-amber-600 border-amber-200';
+		return 'bg-blue-500/10 text-blue-600 border-blue-200';
+	}
+
+	function toggleServiceForProperty(_service: Service, propertyId: string) {
+		// Ensure we operate on the provided service (not necessarily the selected dialog)
+		const index = allServices.findIndex((s) => s.id === _service.id);
+		if (index === -1) return;
+
+		// Only allow toggling if the property is part of availableAtPropertyIds
+		const available = allServices[index].availableAtPropertyIds;
+		if (!available.includes(propertyId)) return;
+
+		// Toggle presence while ensuring enabled list never contains unavailable ids
+		let updatedEnabled = allServices[index].enabledAtPropertyIds.filter((id) => available.includes(id));
+		if (updatedEnabled.includes(propertyId)) {
+			updatedEnabled = updatedEnabled.filter((id) => id !== propertyId);
+		} else {
+			updatedEnabled = [...updatedEnabled, propertyId];
+		}
+
+		// Reassign to trigger Svelte 5 reactivity for the whole list
+		allServices[index] = {
+			...allServices[index],
+			enabledAtPropertyIds: updatedEnabled
+		};
+
+		// Keep the dialog in sync if it shows the same service
+		if (selectedService && selectedService.id === _service.id) {
+			selectedService = allServices[index];
+		}
 	}
 </script>
 
 <svelte:head>
-	<title>Servizi residenziali — Admin — Svicom Living Hub</title>
+	<title>Servizi Residenziali — Admin — Svicom Living Hub</title>
 </svelte:head>
 
 <div class="p-6 lg:p-8">
 	<div class="mb-6 flex items-start justify-between gap-4">
 		<div>
-			<h1 class="text-2xl font-semibold tracking-tight">Servizi residenziali</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{services.length} servizi registrati</p>
+			<h1 class="text-2xl font-semibold tracking-tight">Servizi Residenziali</h1>
+			<p class="mt-1 text-sm text-muted-foreground">
+				{#if hasLocalFilters}
+					{filtered.length} di {propertySelection.isAll ? allServices.length : scopedServices.length} servizi
+				{:else if !propertySelection.isAll && propertySelection.selected}
+					{scopedServices.length} servizi attivi su {propertySelection.selected.name}
+				{:else}
+					{allServices.length} servizi totali a catalogo
+				{/if}
+			</p>
 		</div>
 
 		<div class="view-switch" role="tablist" aria-label="Modalità di visualizzazione">
-			<button type="button" class="view-switch__btn" class:is-active={view === 'grid'} onclick={() => (view = 'grid')}>
+			<button
+				type="button"
+				role="tab"
+				class="view-switch__btn"
+				class:is-active={view === 'grid'}
+				aria-selected={view === 'grid'}
+				onclick={() => (view = 'grid')}
+			>
 				<HugeiconsIcon icon={GridIcon} size={14} strokeWidth={2} />
 				Schede
 			</button>
-			<button type="button" class="view-switch__btn" class:is-active={view === 'table'} onclick={() => (view = 'table')}>
+			<button
+				type="button"
+				role="tab"
+				class="view-switch__btn"
+				class:is-active={view === 'table'}
+				aria-selected={view === 'table'}
+				onclick={() => (view = 'table')}
+			>
 				<HugeiconsIcon icon={MenuSquareIcon} size={14} strokeWidth={2} />
 				Tabella
 			</button>
@@ -64,85 +161,113 @@
 
 	<PropertyScopeChip />
 
+	<!-- Toolbar -->
 	<div class="mb-4 flex flex-wrap items-center gap-2">
 		<div class="search-field">
 			<HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={2} class="search-field__icon" />
-			<input type="search" bind:value={query} placeholder="Cerca per nome, categoria o descrizione…" class="search-field__input" />
+			<input
+				type="search"
+				bind:value={query}
+				placeholder="Cerca per nome, categoria o fornitore…"
+				class="search-field__input"
+				aria-label="Cerca servizi"
+			/>
 		</div>
 
-		{#if query.trim().length > 0}
-			<button type="button" onclick={clearFilters} class="clear-link">Cancella filtri</button>
+		<select bind:value={filterCategory} class="filter-select" class:is-active={filterCategory !== ''}>
+			<option value="">Tutte le categorie</option>
+			<option value="cura-animali">Cura Animali</option>
+			<option value="benessere">Benessere</option>
+			<option value="pulizie">Pulizie</option>
+			<option value="mobilita">Mobilità</option>
+		</select>
+
+		<!-- Status filter removed; availability is now expressed with `availabilityText` on each service -->
+
+		{#if hasLocalFilters}
+			<button type="button" onclick={clearFilters} class="clear-link">
+				Cancella filtri
+			</button>
 		{/if}
 	</div>
 
 	{#if filtered.length === 0}
-		<div class="rounded-lg border border-dashed border-border bg-muted/30 px-6 py-16 text-center">
-			<p class="mt-3 text-sm font-medium text-foreground">Nessun servizio</p>
-			<p class="mt-1 text-xs text-muted-foreground">Prova a cambiare i criteri di ricerca.</p>
+		<div class="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-6 py-16 text-center">
+			<div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+				<HugeiconsIcon icon={Search01Icon} size={18} strokeWidth={1.75} class="text-muted-foreground" />
+			</div>
+			<p class="mt-3 text-sm font-medium text-foreground">Nessun servizio trovato</p>
+			<p class="mt-1 text-xs text-muted-foreground">Prova a cambiare i criteri di ricerca o seleziona un altro condominio.</p>
 		</div>
 	{:else if view === 'grid'}
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{#each filtered as svc}
-				{@const supplier = getUserById(svc.supplierId)}
-				<div class="rounded-lg border border-border bg-card p-5 shadow-sm">
-					<div class="flex items-start justify-between">
-						<div>
-							<h3 class="text-sm font-semibold text-foreground">{svc.name}</h3>
-							<p class="text-xs text-muted-foreground">{svc.category} • {svc.pricing}</p>
-						</div>
-						<div class="text-right text-xs text-muted-foreground">
-							<p>{supplier?.name ?? svc.supplierId}</p>
-							{#if svc.contactEmail}
-								<p class="truncate">{svc.contactEmail}</p>
-							{/if}
-							{#if svc.contactPhone}
-								<p>{svc.contactPhone}</p>
-							{/if}
-						</div>
-					</div>
-
-					<div class="mt-3 text-xs text-muted-foreground">{svc.description}</div>
-
-					<div class="mt-4 space-y-2 border-t border-border/50 pt-3">
-						<p class="text-[11px] font-semibold text-muted-foreground/80">Feedback</p>
-						{#each svc.comments as c}
-							{@const author = getUserById(c.authorId)}
-							<div class="text-[12px] text-foreground/90 italic">"{c.text}"</div>
-							<div class="text-[11px] text-muted-foreground">{author?.name ?? c.authorId} — {new Date(c.date).toLocaleDateString()}</div>
-						{/each}
-					</div>
-				</div>
+		<div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			{#each filtered as service (service.id)}
+				<ServiceCard 
+					{service} 
+					onclick={() => { selectedService = service; dialogOpen = true }}
+				/>
 			{/each}
 		</div>
 	{:else}
-		<div class="rounded-lg border border-border bg-card shadow-sm">
+		<div class="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
 			<div class="overflow-x-auto">
 				<table class="w-full text-sm">
 					<thead>
-						<tr class="border-b border-border text-left">
+						<tr class="border-b border-border bg-muted/30 text-left">
 							<th class="px-4 py-3 font-medium text-muted-foreground">Servizio</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Categoria</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Fornitore</th>
-							<th class="px-4 py-3 font-medium text-muted-foreground">Contatti</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Prezzo</th>
 							<th class="px-4 py-3 font-medium text-muted-foreground">Rating</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground">Stato</th>
+							<th class="px-4 py-3 font-medium text-muted-foreground text-right">Azioni</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-border">
-						{#each filtered as svc}
-							{@const supplier = getUserById(svc.supplierId)}
-							<tr class="hover:bg-muted/50">
-								<td class="px-4 py-3 font-medium text-foreground">{svc.name}</td>
-								<td class="px-4 py-3 text-muted-foreground">{svc.category}</td>
-								<td class="px-4 py-3">{supplier?.name ?? svc.supplierId}</td>
-								<td class="px-4 py-3 text-[11px] text-muted-foreground">
-									{#if svc.contactEmail}
-										<div>{svc.contactEmail}</div>
-									{/if}
-									{#if svc.contactPhone}
-										<div>{svc.contactPhone}</div>
-									{/if}
+						{#each filtered as service (service.id)}
+							{@const supplier = getUserById(service.supplierId)}
+							<tr class="hover:bg-muted/50 group transition-colors">
+								<td class="px-4 py-3 min-w-50">
+									<div class="font-medium text-foreground">{service.name}</div>
+									<div class="text-[11px] text-muted-foreground truncate max-w-xs">{service.description}</div>
 								</td>
-								<td class="px-4 py-3">{svc.rating.toFixed(1)}</td>
+								<td class="px-4 py-3 whitespace-nowrap">
+									<span class="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+										{getCategoryLabel(service.category)}
+									</span>
+								</td>
+								<td class="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+									{supplier?.name ?? '-'}
+								</td>
+								<td class="px-4 py-3 whitespace-nowrap text-xs font-medium text-primary">
+									{service.pricing}
+								</td>
+								<td class="px-4 py-3 whitespace-nowrap">
+									<div class="flex items-center gap-1 text-amber-500">
+										<HugeiconsIcon icon={StarIcon} size={12} strokeWidth={2} class="fill-current" />
+										<span class="text-xs font-bold">{service.rating.toFixed(1)}</span>
+									</div>
+								</td>
+								<td class="px-4 py-3 whitespace-nowrap">
+									<div class="flex items-center gap-2">
+										{#if !propertySelection.isAll && propertySelection.selected}
+											{@const isEnabled = service.enabledAtPropertyIds.includes(propertySelection.selected.id)}
+											<span class={`h-2 w-2 rounded-full ${isEnabled ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-muted-foreground/30'}`} title={isEnabled ? 'Servizio attivo' : 'Servizio disattivato'}></span>
+										{/if}
+										{#if service.availabilityText}
+											<span class="text-xs text-muted-foreground truncate max-w-64">{service.availabilityText}</span>
+										{/if}
+									</div>
+								</td>
+								<td class="px-4 py-3 text-right">
+									<button 
+										class="p-1.5 hover:bg-primary/10 rounded-md text-muted-foreground hover:text-primary transition-all"
+										onclick={() => { selectedService = service; dialogOpen = true }}
+										title="Vedi dettagli"
+									>
+										<HugeiconsIcon icon={InformationCircleIcon} size={18} />
+									</button>
+								</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -152,7 +277,29 @@
 	{/if}
 </div>
 
+{#if selectedService}
+	<Dialog 
+		bind:open={dialogOpen}
+		title=""
+		confirmLabel="Chiudi"
+		hideCancel
+		onConfirm={() => { selectedService = null; dialogOpen = false }}
+		onCancel={() => { selectedService = null; dialogOpen = false }}
+	>
+		{#if selectedService}
+			<ServiceDetailView 
+				service={selectedService} 
+				isAdmin={true}
+				onToggleProperty={toggleServiceForProperty}
+				selectedPropertyId={propertySelection.selected?.id}
+				isAllProperties={propertySelection.isAll}
+			/>
+		{/if}
+	</Dialog>
+{/if}
+
 <style>
+	/* Toolbar fields */
 	.search-field {
 		position: relative;
 		flex: 1 1 16rem;
@@ -177,5 +324,75 @@
 		background: var(--card);
 		font-size: 0.875rem;
 		color: var(--foreground);
+	}
+
+	.filter-select {
+		height: 2.25rem;
+		padding: 0 2rem 0 0.75rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--input);
+		background: var(--card);
+		font-size: 0.8125rem;
+		color: var(--foreground);
+		cursor: pointer;
+	}
+
+	.filter-select.is-active {
+		border-color: color-mix(in oklch, var(--primary) 50%, var(--input));
+		background: color-mix(in oklch, var(--primary) 4%, var(--card));
+	}
+
+	.clear-link {
+		height: 2.25rem;
+		padding: 0 0.5rem;
+		border: 0;
+		background: transparent;
+		color: var(--muted-foreground);
+		font-size: 0.8125rem;
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* View switch */
+	.view-switch {
+		display: inline-flex;
+		padding: 0.1875rem;
+		background: var(--muted);
+		border-radius: 0.5rem;
+		gap: 0.125rem;
+	}
+
+	.view-switch__btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		height: 1.875rem;
+		padding: 0 0.625rem;
+		border: 0;
+		background: transparent;
+		border-radius: 0.375rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--muted-foreground);
+		cursor: pointer;
+		transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+	}
+
+	.view-switch__btn.is-active {
+		background: var(--card);
+		color: var(--foreground);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--border);
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 4px;
+	}
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: var(--border);
+		border-radius: 10px;
 	}
 </style>

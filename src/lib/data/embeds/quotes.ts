@@ -44,6 +44,21 @@ export const quotes: Quote[] = [
 		description: 'Fornitura e posa in opera di nuovo modulo telecamera compatibile con sistema esistente.',
 		attachments: ['preventivo_secure_entry_04.pdf']
 	}
+	,
+	{
+		id: 'quo-003',
+		ticketId: 'bkg-003',
+		supplierId: 'frn-idroclima-nord',
+		customerId: 'res-bianchi-01',
+		propertyId: 'cnd-marconi-14',
+		title: 'Installazione climatizzatore - preventivo completo',
+		amount: 1200.00,
+		currency: 'EUR',
+		sentAt: '2026-05-01T11:30:00Z',
+		expiresAt: '2026-05-15T11:30:00Z',
+		description: 'Preventivo per fornitura e installazione di climatizzatore monosplit (materiali + manodopera).',
+		attachments: ['preventivo_idroclima_003.pdf']
+	}
 ];
 
 export function getQuotesByTicketId(ticketId: string): Quote[] {

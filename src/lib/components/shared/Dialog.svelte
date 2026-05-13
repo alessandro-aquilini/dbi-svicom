@@ -55,11 +55,10 @@
 <dialog bind:this={dialog} onclose={close} onclick={handleBackdrop} class="dialog">
 	<div class="dialog__inner">
 		<div class="dialog__head">
-			<div class="dialog__icon" aria-hidden="true">
-				<HugeiconsIcon {icon} size={18} strokeWidth={2} />
-			</div>
 			<div class="min-w-0 flex-1">
-				<h2 class="dialog__title">{title}</h2>
+				{#if title}
+					<h2 class="dialog__title">{title}</h2>
+				{/if}
 				{#if description}
 					<p class="dialog__desc">{description}</p>
 				{/if}
@@ -95,9 +94,10 @@
 		background: var(--card);
 		color: var(--foreground);
 		border-radius: var(--radius);
-		max-width: 26rem;
-		width: calc(100% - 2rem);
+		max-width: min(55rem, calc(100% - 2rem));
+		width: min(100%, 55rem);
 		max-height: calc(100dvh - 2rem);
+		overflow-y: auto;
 		box-shadow:
 			0 1px 2px oklch(0 0 0 / 0.06),
 			0 16px 40px -12px oklch(0 0 0 / 0.22);
@@ -149,24 +149,14 @@
 	.dialog__inner {
 		display: flex;
 		flex-direction: column;
+		min-height: 0;
+		max-height: 100%;
 	}
 
 	.dialog__head {
 		display: flex;
 		gap: 0.875rem;
 		padding: 1.25rem 1.25rem 1rem;
-	}
-
-	.dialog__icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.25rem;
-		height: 2.25rem;
-		border-radius: 9999px;
-		background: color-mix(in oklch, var(--primary) 10%, var(--card));
-		color: var(--primary);
-		flex-shrink: 0;
 	}
 
 	.dialog__title {
@@ -187,6 +177,7 @@
 		font-size: 0.8125rem;
 		color: var(--muted-foreground);
 		margin-top: 0.5rem;
+		padding-top: 0.25rem;
 	}
 
 	.dialog__actions {
@@ -236,6 +227,12 @@
 		.dialog,
 		.dialog::backdrop {
 			transition-duration: 0ms !important;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.dialog {
+			max-width: min(68rem, calc(100% - 2rem));
 		}
 	}
 </style>

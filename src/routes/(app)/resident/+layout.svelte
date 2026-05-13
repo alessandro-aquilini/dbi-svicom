@@ -21,6 +21,11 @@
 	const resident = currentUser ? getResidentById(currentUser.id) : undefined;
 
 	const navItems = [
+		{ label: 'Home', href: '/resident', icon: '🏠' },
+		{ label: 'Chat', href: '/resident/chat', icon: '💬' },
+		{ label: 'Servizi', href: '/resident/services', icon: '✨' },
+		{ label: 'Pagamenti', href: '/resident/payments', icon: '💳' },
+		{ label: 'Profilo', href: '/resident/profile', icon: '👤' }
 		{ label: 'Home', href: '/resident', icon: Home01Icon },
 		{ label: 'Chat', href: '/resident/chat', icon: Chat01Icon },
 		{ label: 'Segnalazioni', href: '/resident/reports', icon: Megaphone01Icon },
