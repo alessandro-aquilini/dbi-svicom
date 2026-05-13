@@ -126,8 +126,119 @@ export const tickets: Ticket[] = [
 		quoteIds: ['quo-002'],
 		invoiceIds: [],
 		interventionIds: []
+	},
+	{
+		id: 'tkt-003',
+		title: 'Ascensore fuori uso',
+		description: 'Cabina ascensore principale bloccata al piano terra dopo intervento manutentivo programmato.',
+		priority: 'alta',
+		category: 'Ascensori',
+		creatorId: 'adm-giorgio-01',
+		propertyId: 'cnd-europa-7',
+		cc: ['res-conti-02'],
+		eventTimeline: [
+			{ id: 'ev-301', kind: 'created', at: '2026-05-11T08:15:00' }
+		],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: [],
+		interventionIds: []
+	},
+	{
+		id: 'tkt-004',
+		title: 'Sostituzione luci scale e pianerottoli',
+		description: 'Quattro plafoniere fulminate nelle scale B; necessario sostituirle e verificare i sensori di presenza.',
+		priority: 'media',
+		category: 'Elettrico',
+		creatorId: 'adm-giorgio-01',
+		propertyId: 'cnd-solari-30',
+		cc: ['res-moretti-07'],
+		eventTimeline: [
+			{ id: 'ev-401', kind: 'created', at: '2026-05-08T11:20:00' }
+		],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: [],
+		interventionIds: []
+	},
+	{
+		id: 'tkt-005',
+		title: 'Revisione annuale impianto antincendio',
+		description: 'Scadenza prevista entro fine maggio. Necessario coordinarsi con il fornitore certificato.',
+		priority: 'media',
+		category: 'Sicurezza',
+		creatorId: 'adm-giorgio-01',
+		propertyId: 'cnd-pacini-44',
+		cc: ['res-esposito-06'],
+		eventTimeline: [
+			{ id: 'ev-501', kind: 'created', at: '2026-05-06T09:00:00' }
+		],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: [],
+		interventionIds: []
+	},
+	{
+		id: 'tkt-006',
+		title: 'Ripristino citofono interno 3',
+		description: 'Citofono non riceve chiamate dall\'esterno. Da verificare integrazione con videocitofonia centralizzata.',
+		priority: 'media',
+		category: 'Elettrico',
+		creatorId: 'adm-giorgio-01',
+		propertyId: 'cnd-verdi-3',
+		cc: ['res-rossi-03'],
+		eventTimeline: [
+			{ id: 'ev-601', kind: 'created', at: '2026-05-09T14:00:00' }
+		],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: [],
+		interventionIds: []
+	},
+	{
+		id: 'tkt-007',
+		title: 'Pulizia straordinaria parti comuni',
+		description: 'Richiesta intervento di pulizia per garage e vano scale dopo lavori condominiali.',
+		priority: 'bassa',
+		category: 'Pulizie',
+		creatorId: 'adm-giorgio-01',
+		propertyId: 'cnd-tortona-12',
+		cc: ['res-bruno-08'],
+		eventTimeline: [
+			{ id: 'ev-701', kind: 'created', at: '2026-05-10T07:30:00' }
+		],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: [],
+		interventionIds: []
+	},
+	{
+		id: 'tkt-008',
+		title: 'Richiesta informazioni polizza globale fabbricato',
+		description: 'Un condomino chiede dettagli sulla copertura per danni da acqua. Da girare al broker.',
+		priority: 'bassa',
+		category: 'Amministrativo',
+		creatorId: 'adm-giorgio-01',
+		propertyId: 'cnd-carducci-21',
+		cc: ['res-greco-04'],
+		eventTimeline: [
+			{ id: 'ev-801', kind: 'created', at: '2026-05-12T10:15:00' }
+		],
+		paymentIds: [],
+		quoteIds: [],
+		invoiceIds: [],
+		interventionIds: []
 	}
 ];
+
+/** Tickets that are still active (not paid, completed or closed). */
+export function getOpenTickets(propertyId?: string | null): Ticket[] {
+	return tickets.filter((t) => {
+		if (propertyId && t.propertyId !== propertyId) return false;
+		const status = getCurrentStatus(t);
+		return status !== 'closed' && status !== 'completed' && status !== 'paid';
+	});
+}
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
