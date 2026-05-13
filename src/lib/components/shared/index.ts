@@ -7,3 +7,4 @@ export { default as Dialog } from './Dialog.svelte';
 export { default as DemoDialog } from './DemoDialog.svelte';
 export { default as PropertySelector } from './PropertySelector.svelte';
 export { default as PropertyScopeChip } from './PropertyScopeChip.svelte';
+export { default as PropertiesMap } from './PropertiesMap.svelte';

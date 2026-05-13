@@ -13,8 +13,13 @@
 		getResidentTicketPresentationMetaById,
 		getResidentVisibleTicketById,
 		getCurrentStatus,
+		getReportOperationalContext,
 		ticketProgressValues
 	} from '$lib/components/reports';
+	import { getInvoiceById } from '$lib/data/embeds/invoices';
+	import { getPaymentById } from '$lib/data/embeds/payments';
+	import { getQuoteById } from '$lib/data/embeds/quotes';
+	import { getSupplierTaskById } from '$lib/data/embeds/supplierTasks';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
 	import { getUserById } from '$lib/data/users';
@@ -30,6 +35,35 @@
 	const latestUpdateAt = $derived(ticket?.updatedAt ?? ticket?.statusHistory.at(-1)?.at);
 	const progressValue = $derived(latestStatus ? ticketProgressValues[latestStatus] : 0);
 	const isJustCreated = $derived(page.url.searchParams.get('created') === '1');
+	const operationalContext = $derived(ticket ? getReportOperationalContext(ticket) : undefined);
+	const operationalQuotes = $derived(
+		operationalContext
+			? operationalContext.ticket.quoteIds
+					.map((id) => getQuoteById(id))
+					.filter((quote) => quote !== undefined)
+			: []
+	);
+	const operationalInvoices = $derived(
+		operationalContext
+			? operationalContext.ticket.invoiceIds
+					.map((id) => getInvoiceById(id))
+					.filter((invoice) => invoice !== undefined)
+			: []
+	);
+	const operationalPayments = $derived(
+		operationalContext
+			? operationalContext.ticket.paymentIds
+					.map((id) => getPaymentById(id))
+					.filter((payment) => payment !== undefined)
+			: []
+	);
+	const operationalTasks = $derived(
+		operationalContext
+			? operationalContext.ticket.interventionIds
+					.map((id) => getSupplierTaskById(id))
+					.filter((task) => task !== undefined)
+			: []
+	);
 
 	function getAuthorLabel(authorId?: string): string {
 		return authorId ? (getUserById(authorId)?.name ?? 'Operatore Svicom') : 'Operatore Svicom';
@@ -130,7 +164,7 @@
 						<div class="report-hero-card__meta-block">
 							<p class="report-hero-card__meta-label">Fornitore assegnato</p>
 							<p class="report-hero-card__meta-value">
-									{ticket.assignedToId ? (getUserById(ticket.assignedToId)?.name ?? 'Da assegnare') : 'Da assegnare'}
+									{operationalContext?.supplierLabel ?? 'Da assegnare'}
 							</p>
 							<p class="report-hero-card__meta-copy">{property.address.street}, {property.address.city}</p>
 						</div>
@@ -216,14 +250,132 @@
 				</CardContent>
 			</Card>
 
+			{#if operationalContext}
+				<Card class="report-section-card">
+					<CardHeader class="report-section-card__header">
+						<CardTitle class="report-section-card__title">Gestione tecnica della segnalazione</CardTitle>
+						<p class="report-section-card__copy">
+							Questa segnalazione e gia stata presa in gestione dall amministrazione e inoltrata al fornitore incaricato.
+						</p>
+					</CardHeader>
+
+					<CardContent class="report-section-card__content">
+						<div class="report-operational-summary">
+							<div class="report-operational-summary__main">
+								<p class="report-operational-summary__eyebrow">Pratica tecnica {operationalContext.ticket.id}</p>
+								<p class="report-operational-summary__title">{operationalContext.ticket.title}</p>
+								<p class="report-operational-summary__copy">
+									{operationalContext.ticket.description}
+								</p>
+								<p class="report-operational-summary__message">
+									Il tuo aggiornamento principale e questo: la segnalazione non e piu solo in attesa,
+									ma e gia dentro un flusso tecnico operativo.
+								</p>
+							</div>
+							<div class="report-operational-summary__meta">
+								<TicketStatusBadge status={operationalContext.status} />
+								<p class="report-operational-summary__meta-copy">
+									Fornitore incaricato: {operationalContext.supplierLabel}
+								</p>
+							</div>
+						</div>
+
+						<div class="report-facts-grid">
+							<div class="report-fact-card">
+								<p class="report-fact-card__label">Stato della gestione tecnica</p>
+								<p class="report-fact-card__value">
+									{operationalContext.status ? ticketProgressValues[operationalContext.status] : 0}% completato
+								</p>
+							</div>
+							<div class="report-fact-card">
+								<p class="report-fact-card__label">Fornitore incaricato</p>
+								<p class="report-fact-card__value">{operationalContext.supplierLabel}</p>
+							</div>
+							<div class="report-fact-card">
+								<p class="report-fact-card__label">Interventi registrati</p>
+								<p class="report-fact-card__value">{operationalTasks.length}</p>
+							</div>
+							<div class="report-fact-card">
+								<p class="report-fact-card__label">Documenti amministrativi</p>
+								<p class="report-fact-card__value">
+									{operationalQuotes.length + operationalInvoices.length + operationalPayments.length}
+								</p>
+							</div>
+						</div>
+
+						{#if operationalQuotes.length > 0 || operationalInvoices.length > 0 || operationalTasks.length > 0}
+							<div class="report-operational-grid">
+								{#if operationalQuotes.length > 0}
+									<div class="report-operational-panel">
+										<p class="report-operational-panel__title">Preventivi registrati</p>
+										<div class="report-operational-panel__list">
+											{#each operationalQuotes as quote}
+												<div class="report-operational-panel__item">
+													<p class="report-operational-panel__label">{quote.title}</p>
+													<p class="report-operational-panel__value">
+														{quote.amount.toFixed(2)} {quote.currency} · inviato {formatTicketDate(quote.sentAt)}
+													</p>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+
+								{#if operationalInvoices.length > 0}
+									<div class="report-operational-panel">
+										<p class="report-operational-panel__title">Fatture registrate</p>
+										<div class="report-operational-panel__list">
+											{#each operationalInvoices as invoice}
+												<div class="report-operational-panel__item">
+													<p class="report-operational-panel__label">{invoice.number}</p>
+													<p class="report-operational-panel__value">
+														{invoice.amount.toFixed(2)} {invoice.currency} · emessa {formatTicketDate(invoice.issueDate)}
+													</p>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+
+								{#if operationalTasks.length > 0}
+									<div class="report-operational-panel">
+										<p class="report-operational-panel__title">Sopralluoghi e interventi registrati</p>
+										<div class="report-operational-panel__list">
+											{#each operationalTasks as task}
+												<div class="report-operational-panel__item">
+													<p class="report-operational-panel__label">{task.title}</p>
+													<p class="report-operational-panel__value">
+														{task.type} · {task.date} · {task.startTime}-{task.endTime}
+													</p>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+						{/if}
+
+						{#if operationalPayments.length > 0}
+							<div class="report-operational-actions">
+								{#each operationalPayments as payment}
+									<Button href={`/resident/payments/${payment.id}`} variant="outline" size="lg">
+										Apri dettaglio pagamento {payment.id}
+									</Button>
+								{/each}
+							</div>
+						{/if}
+					</CardContent>
+				</Card>
+			{/if}
+
 			<Card class="report-chat-card">
 				<CardContent class="report-chat-card__content">
 					<div>
 						<p class="report-chat-card__title">Hai bisogno di un aggiornamento?</p>
-						<p class="report-chat-card__copy">Apri la chat residente per contattare Svicom dal flusso operativo.</p>
+						<p class="report-chat-card__copy">Apri l assistenza residente per contattare l amministrazione.</p>
 					</div>
 					<Button href="/resident/chat" size="lg" class="report-chat-card__button">
-						Vai alla chat
+						Apri assistenza
 					</Button>
 				</CardContent>
 			</Card>

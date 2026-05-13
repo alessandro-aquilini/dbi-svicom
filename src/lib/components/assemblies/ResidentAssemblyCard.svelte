@@ -9,7 +9,6 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Separator } from '$lib/components/ui/separator';
 	import type { Assembly } from '$lib/data/events/assemblies';
 	import { formatAssemblyDate, formatAssemblySchedule, normalizeAssemblyText } from './presentation';
 	import AssemblyStatusBadge from './AssemblyStatusBadge.svelte';
@@ -63,34 +62,21 @@
 		<div class="assembly-card-shell__section">
 			<p class="assembly-card-shell__section-label">Ordine del giorno</p>
 			<ul class="assembly-card-shell__agenda-list">
-				{#each assembly.agenda as agendaItem}
+				{#each assembly.agenda.slice(0, 2) as agendaItem}
 					<li class="assembly-card-shell__agenda-item">{normalizeAssemblyText(agendaItem)}</li>
 				{/each}
 			</ul>
+			{#if assembly.agenda.length > 2}
+				<p class="assembly-card-shell__section-note">Altri {assembly.agenda.length - 2} punti nella scheda completa.</p>
+			{/if}
 		</div>
 
 		{#if assembly.minutes}
-			<Separator class="assembly-card-shell__separator" />
-
 			<div class="assembly-card-shell__section">
 				<p class="assembly-card-shell__section-label">Verbale disponibile</p>
 				<p class="assembly-card-shell__minutes-copy">{normalizeAssemblyText(assembly.minutes.text)}</p>
-
-				<div class="assembly-card-shell__facts">
-					<div class="assembly-card-shell__fact">
-						<p class="assembly-card-shell__fact-label">Presenti</p>
-						<p class="assembly-card-shell__fact-value">
-							{assembly.minutes.attendeesCount} condomini
-						</p>
-					</div>
-					<div class="assembly-card-shell__fact">
-						<p class="assembly-card-shell__fact-label">Millesimi</p>
-						<p class="assembly-card-shell__fact-value">{assembly.minutes.millesimalPresent}</p>
-					</div>
-				</div>
-
 				<div class="assembly-card-shell__resolution-list">
-					{#each assembly.minutes.resolutions as resolution}
+					{#each assembly.minutes.resolutions.slice(0, 2) as resolution}
 						<div class="assembly-card-shell__resolution">
 							<div class="assembly-card-shell__resolution-main">
 								<p class="assembly-card-shell__resolution-title">
@@ -105,6 +91,11 @@
 							<ResolutionOutcomeBadge outcome={resolution.outcome} />
 						</div>
 					{/each}
+				</div>
+				<div class="assembly-card-shell__minutes-meta">
+					<span>{assembly.minutes.attendeesCount} presenti</span>
+					<span>{assembly.minutes.millesimalPresent} millesimi</span>
+					<span>{assembly.minutes.resolutions.length} delibere</span>
 				</div>
 			</div>
 		{/if}

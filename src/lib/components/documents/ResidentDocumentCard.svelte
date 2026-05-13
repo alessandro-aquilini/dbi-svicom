@@ -9,7 +9,6 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Separator } from '$lib/components/ui/separator';
 	import type { PropertyDocument } from '$lib/data/documents';
 	import { documentCategoryLabels } from './presentation';
 	import DocumentStatusBadge from './DocumentStatusBadge.svelte';
@@ -48,26 +47,24 @@
 			<span class="document-card-shell__chip">Aggiornato {updatedAtLabel}</span>
 		</div>
 
-		<div class="document-card-shell__facts">
+		<dl class="document-card-shell__facts">
 			<div class="document-card-shell__fact">
-				<p class="document-card-shell__fact-label">Caricato da</p>
-				<p class="document-card-shell__fact-value">{uploadedByLabel}</p>
+				<dt class="document-card-shell__fact-label">Caricato da</dt>
+				<dd class="document-card-shell__fact-value">{uploadedByLabel}</dd>
 			</div>
 			<div class="document-card-shell__fact">
-				<p class="document-card-shell__fact-label">Formato</p>
-				<p class="document-card-shell__fact-value">{document.type.toUpperCase()}</p>
+				<dt class="document-card-shell__fact-label">Formato</dt>
+				<dd class="document-card-shell__fact-value">{document.type.toUpperCase()}</dd>
 			</div>
-		</div>
-	</CardContent>
+		</dl>
 
-	<Separator class="document-card-shell__separator" />
-
-	<CardFooter class="document-card-shell__footer">
 		<div class="document-card-shell__path">
 			<p class="document-card-shell__path-label">Riferimento file</p>
 			<p class="document-card-shell__path-value">{document.url}</p>
 		</div>
+	</CardContent>
 
+	<CardFooter class="document-card-shell__footer">
 		<div class="document-card-shell__actions">
 			{#if assistantHref}
 				<Button href={assistantHref} variant="outline" size="lg" class="document-card-shell__button">

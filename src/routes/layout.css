@@ -152,6 +152,351 @@
 }
 
 @layer components {
+	.resident-calendar-page {
+		@apply mx-auto w-full max-w-3xl px-4 pb-8 pt-4;
+	}
+	.resident-calendar-empty {
+		@apply flex min-h-[18rem] flex-col items-center justify-center gap-3 text-center;
+	}
+	.resident-calendar-empty__icon,
+	.resident-calendar-agenda__empty-icon {
+		@apply inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground;
+	}
+	.resident-calendar-empty__title,
+	.resident-calendar-agenda__empty-title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.resident-calendar-empty__copy,
+	.resident-calendar-agenda__empty-copy {
+		@apply max-w-sm text-sm leading-6 text-muted-foreground;
+	}
+	.resident-calendar-header {
+		@apply flex flex-col gap-4 pb-5;
+	}
+	.resident-calendar-header__main {
+		@apply space-y-1;
+	}
+	.resident-calendar-header__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.resident-calendar-header__title {
+		@apply text-[1.7rem] font-semibold tracking-tight text-foreground;
+	}
+	.resident-calendar-header__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-calendar-header__actions {
+		@apply flex flex-col gap-3;
+	}
+	.resident-calendar-header__meta {
+		@apply flex flex-col gap-1;
+	}
+	.resident-calendar-header__property {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-calendar-header__apartment {
+		@apply text-xs text-muted-foreground;
+	}
+	.resident-calendar-header__buttons {
+		@apply flex items-center gap-2;
+	}
+	.resident-calendar-header__button {
+		@apply min-h-10 gap-2 rounded-full px-4;
+	}
+	.resident-calendar-overview {
+		@apply flex flex-col gap-3 border-y border-border py-4;
+	}
+	.resident-calendar-overview__item {
+		@apply flex flex-col gap-2;
+	}
+	.resident-calendar-overview__label {
+		@apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.resident-calendar-overview__value {
+		@apply text-sm font-medium text-foreground;
+	}
+	.resident-calendar-overview__chips {
+		@apply flex flex-wrap gap-2;
+	}
+	.resident-calendar-overview__chip {
+		@apply inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.resident-calendar-surface {
+		@apply mt-5 overflow-hidden border-y border-border bg-background;
+	}
+	.resident-calendar-monthbar {
+		@apply flex items-center justify-between gap-3 border-b border-border px-1 py-4;
+	}
+	.resident-calendar-monthbar__nav {
+		@apply flex items-center gap-3;
+	}
+	.resident-calendar-monthbar__nav-button {
+		@apply inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground;
+	}
+	.resident-calendar-monthbar__title {
+		@apply text-base font-semibold capitalize text-foreground;
+	}
+	.resident-calendar-monthbar__actions {
+		@apply flex items-center;
+	}
+	.resident-calendar-monthbar__today {
+		@apply inline-flex min-h-9 items-center rounded-full border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+	}
+	.resident-calendar-grid-wrap {
+		@apply border-b border-border;
+	}
+	.resident-calendar-grid {
+		@apply grid grid-cols-7;
+	}
+	.resident-calendar-grid--weekdays {
+		@apply border-b border-border bg-muted/35;
+	}
+	.resident-calendar-grid__weekday {
+		@apply flex h-8 items-center justify-center text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.resident-calendar-grid__day {
+		@apply relative flex min-h-[3.8rem] flex-col items-center justify-start gap-1 border-r border-b border-border px-1 py-2 text-foreground transition-colors hover:bg-accent/45;
+	}
+	.resident-calendar-grid__day:nth-child(7n) {
+		border-right: 0;
+	}
+	.resident-calendar-grid__day.is-out {
+		@apply text-muted-foreground/65;
+	}
+	.resident-calendar-grid__day.is-today .resident-calendar-grid__day-number {
+		@apply rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary;
+	}
+	.resident-calendar-grid__day.is-selected {
+		background: color-mix(in oklch, var(--primary) 9%, transparent);
+	}
+	.resident-calendar-grid__day-number {
+		@apply text-sm;
+	}
+	.resident-calendar-grid__dots {
+		@apply mt-auto inline-flex items-center gap-1;
+	}
+	.resident-calendar-grid__dot,
+	.resident-calendar-legend__dot {
+		@apply inline-flex h-1.5 w-1.5 rounded-full;
+	}
+	.resident-calendar-filters {
+		@apply flex flex-col gap-3 px-1 py-4;
+	}
+	.resident-calendar-filters__list {
+		@apply flex flex-wrap gap-2;
+	}
+	.resident-calendar-filters__button {
+		@apply inline-flex min-h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/25 hover:text-foreground;
+	}
+	.resident-calendar-filters__button.is-active {
+		@apply border-primary bg-primary text-primary-foreground;
+	}
+	.resident-calendar-filters__count {
+		@apply inline-flex min-w-5 items-center justify-center rounded-full bg-background/80 px-1.5 text-[0.68rem] font-semibold text-foreground;
+	}
+	.resident-calendar-filters__button.is-active .resident-calendar-filters__count {
+		@apply bg-primary-foreground/20 text-primary-foreground;
+	}
+	.resident-calendar-legend {
+		@apply flex flex-wrap items-center gap-3 text-xs text-muted-foreground;
+	}
+	.resident-calendar-legend__item {
+		@apply inline-flex items-center gap-1.5;
+	}
+	.resident-calendar-day-focus {
+		@apply border-b border-border py-5;
+	}
+	.resident-calendar-day-focus__header {
+		@apply flex items-end justify-between gap-3;
+	}
+	.resident-calendar-day-focus__eyebrow {
+		@apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.resident-calendar-day-focus__title {
+		@apply mt-1 text-lg font-semibold capitalize text-foreground;
+	}
+	.resident-calendar-day-focus__meta {
+		@apply text-xs font-medium text-muted-foreground;
+	}
+	.resident-calendar-day-focus__empty {
+		@apply mt-3 text-sm text-muted-foreground;
+	}
+	.resident-calendar-day-focus__list {
+		@apply mt-4 flex flex-col gap-3;
+	}
+	.resident-calendar-day-focus__item {
+		@apply flex items-start gap-3;
+	}
+	.resident-calendar-day-focus__bar {
+		@apply mt-1.5 h-8 w-1.5 shrink-0 rounded-full;
+	}
+	.resident-calendar-day-focus__content {
+		@apply min-w-0;
+	}
+	.resident-calendar-day-focus__item-title {
+		@apply text-sm font-medium text-foreground;
+	}
+	.resident-calendar-day-focus__item-meta {
+		@apply mt-1 text-xs text-muted-foreground;
+	}
+	.resident-calendar-agenda {
+		@apply py-5;
+	}
+	.resident-calendar-agenda__empty {
+		@apply flex min-h-[16rem] flex-col items-center justify-center gap-3 text-center;
+	}
+	.resident-calendar-agenda__groups {
+		@apply flex flex-col gap-7;
+	}
+	.resident-calendar-day-group {
+		@apply scroll-mt-20 border-b border-border pb-6 last:border-b-0;
+	}
+	.resident-calendar-day-group.is-selected .resident-calendar-day-group__day {
+		@apply text-primary;
+	}
+	.resident-calendar-day-group__header {
+		@apply flex items-start justify-between gap-4 pb-4;
+	}
+	.resident-calendar-day-group__date {
+		@apply flex items-start gap-3;
+	}
+	.resident-calendar-day-group__day {
+		@apply min-w-8 text-right text-2xl font-semibold text-foreground;
+	}
+	.resident-calendar-day-group__meta {
+		@apply pt-0.5;
+	}
+	.resident-calendar-day-group__weekday {
+		@apply text-sm font-medium capitalize text-foreground;
+	}
+	.resident-calendar-day-group__month {
+		@apply text-xs capitalize text-muted-foreground;
+	}
+	.resident-calendar-day-group__count {
+		@apply text-xs font-medium text-muted-foreground;
+	}
+	.resident-calendar-events {
+		@apply flex flex-col;
+	}
+	.resident-calendar-event {
+		@apply flex items-start gap-3 border-t border-border py-4 first:border-t-0;
+	}
+	.resident-calendar-event__time {
+		@apply min-w-[4.2rem] shrink-0 pt-0.5;
+	}
+	.resident-calendar-event__time-value {
+		@apply text-[0.74rem] font-medium text-muted-foreground;
+	}
+	.resident-calendar-event__bar {
+		@apply mt-0.5 h-11 w-1.5 shrink-0 rounded-full;
+	}
+	.resident-calendar-event__main {
+		@apply min-w-0 flex-1;
+	}
+	.resident-calendar-event__topline {
+		@apply flex flex-col gap-2;
+	}
+	.resident-calendar-event__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-calendar-event__label {
+		@apply inline-flex w-fit items-center rounded-full bg-muted px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+	}
+	.resident-calendar-event__subtitle {
+		@apply mt-2 text-xs font-medium text-foreground;
+	}
+	.resident-calendar-event__location {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
+	}
+	.resident-calendar-tone--blue {
+		background: var(--primary);
+	}
+	.resident-calendar-tone--amber {
+		background: var(--warning);
+	}
+	.resident-calendar-tone--emerald {
+		background: var(--success);
+	}
+	.resident-calendar-dialog {
+		@apply max-h-[85vh] max-w-xl overflow-y-auto;
+	}
+	.resident-calendar-dialog__header {
+		@apply gap-2;
+	}
+	.resident-calendar-dialog__title {
+		@apply text-left text-xl;
+	}
+	.resident-calendar-dialog__copy {
+		@apply text-left text-sm leading-6 text-muted-foreground;
+	}
+	.resident-calendar-form {
+		@apply mt-2 space-y-4 pr-1;
+	}
+	.resident-calendar-form__field {
+		@apply space-y-2;
+	}
+	.resident-calendar-form__grid {
+		@apply grid gap-4;
+	}
+	.resident-calendar-form__input,
+	.resident-calendar-form__select {
+		@apply min-h-11;
+	}
+	.resident-calendar-form__hint {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
+	.resident-calendar-form__error {
+		@apply text-xs font-medium text-destructive;
+	}
+	.resident-calendar-form__actions {
+		@apply flex-col gap-3 pt-2;
+	}
+	.resident-calendar-form__button {
+		@apply w-full;
+	}
+	.resident-calendar-form__button--secondary {
+		@apply order-2;
+	}
+}
+
+@media (min-width: 640px) {
+	.resident-calendar-header__actions {
+		@apply flex-row items-end justify-between;
+	}
+	.resident-calendar-overview {
+		@apply flex-row items-start justify-between;
+	}
+	.resident-calendar-overview__item:last-child {
+		@apply items-end text-right;
+	}
+	.resident-calendar-monthbar {
+		@apply px-0;
+	}
+	.resident-calendar-grid__day {
+		@apply min-h-[4.4rem];
+	}
+	.resident-calendar-filters {
+		@apply flex-row items-center justify-between px-0;
+	}
+	.resident-calendar-day-focus__list {
+		@apply grid grid-cols-2 gap-4;
+	}
+	.resident-calendar-event__topline {
+		@apply flex-row items-start justify-between gap-3;
+	}
+	.resident-calendar-form__grid {
+		@apply grid-cols-2;
+	}
+	.resident-calendar-form__actions {
+		@apply flex-row justify-end;
+	}
+	.resident-calendar-form__button,
+	.resident-calendar-form__button--secondary {
+		@apply order-none w-auto;
+	}
+}
+
+@layer components {
 	/* Airbnb-style KPI cards: text on the left, isometric illustration on the right */
 	.kpi-card {
 		@apply flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-5 transition-shadow;
@@ -220,42 +565,122 @@
 		@apply mt-8 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
 	}
 
+	/* Resident mobile shell */
+	.resident-mobile-shell {
+		@apply flex h-screen flex-col bg-background;
+	}
+	.resident-mobile-topbar {
+		@apply flex h-14 shrink-0 items-center justify-between border-b border-border px-4;
+	}
+	.resident-mobile-topbar__brand {
+		@apply flex items-center gap-2;
+	}
+	.resident-mobile-topbar__logo {
+		@apply h-6 w-auto;
+	}
+	.resident-mobile-topbar__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-mobile-topbar__profile {
+		@apply relative;
+	}
+	.resident-mobile-topbar__profile-trigger {
+		@apply inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-2.5 py-1.5 text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+	}
+	.resident-mobile-topbar__profile-badge {
+		@apply inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary/10 px-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-primary;
+	}
+	.resident-mobile-topbar__profile-label {
+		@apply text-xs font-medium text-foreground;
+	}
+	.resident-mobile-topbar__profile-menu-icon {
+		@apply inline-flex text-muted-foreground;
+	}
+	.resident-profile-menu {
+		@apply absolute right-0 top-full z-50 mt-2 w-[16rem] overflow-hidden rounded-[1.25rem] border border-border bg-card shadow-lg;
+	}
+	.resident-profile-menu__header {
+		@apply border-b border-border px-4 py-4;
+	}
+	.resident-profile-menu__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-profile-menu__copy {
+		@apply mt-1 text-xs text-muted-foreground;
+	}
+	.resident-profile-menu__list {
+		@apply grid gap-1 p-2;
+	}
+	.resident-profile-menu__item {
+		@apply flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground;
+	}
+	.resident-profile-menu__icon {
+		@apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.resident-profile-menu__footer {
+		@apply border-t border-border p-2;
+	}
+	.resident-profile-menu__logout {
+		@apply flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10;
+	}
+	.resident-mobile-content {
+		@apply flex-1 overflow-y-auto;
+	}
+	.resident-mobile-nav {
+		@apply shrink-0 border-t border-border bg-card;
+	}
+	.resident-mobile-nav__list {
+		@apply flex items-stretch;
+	}
+	.resident-mobile-nav__item {
+		@apply flex flex-1 flex-col items-center gap-1 py-2 text-xs text-muted-foreground transition-colors;
+	}
+	.resident-mobile-nav__item.active {
+		@apply font-medium text-primary;
+	}
+	.resident-mobile-nav__icon {
+		@apply flex h-5 items-center justify-center;
+	}
+	.resident-mobile-nav__label {
+		@apply text-[0.7rem];
+	}
+
 	/* Resident modules */
 	.resident-module-page {
 		@apply mx-auto w-full max-w-3xl p-4 pb-8;
 	}
 	.resident-module-stack {
-		@apply space-y-4;
+		@apply space-y-5;
 	}
 	.resident-module-summary-card {
-		@apply rounded-[1.25rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+		@apply rounded-[1.25rem] border-border bg-card shadow-sm;
 	}
 	.resident-module-summary-card__header {
-		@apply gap-2;
+		@apply gap-1 pb-3;
 	}
 	.resident-module-summary-card__eyebrow {
 		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
 	}
 	.resident-module-summary-card__title {
-		@apply text-[1.6rem] font-semibold tracking-tight text-foreground;
+		@apply text-[1.45rem] font-semibold tracking-tight text-foreground;
 	}
 	.resident-module-summary-card__copy {
 		@apply text-sm leading-6 text-muted-foreground;
 	}
 	.resident-module-summary-card__content {
-		@apply space-y-4 pt-0;
+		@apply space-y-3 pt-0;
 	}
 	.resident-module-summary-card__stats {
-		@apply grid gap-3 sm:grid-cols-3;
+		@apply grid grid-cols-3 gap-3 border-y border-border py-3;
 	}
 	.resident-module-summary-card__stat {
-		@apply rounded-2xl border border-border/80 bg-background/85 p-3;
+		@apply min-w-0;
 	}
 	.resident-module-summary-card__stat-label {
 		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
 	}
 	.resident-module-summary-card__stat-value {
-		@apply mt-2 text-sm font-semibold text-foreground;
+		@apply mt-1 text-sm font-semibold text-foreground;
 	}
 	.resident-module-summary-card__chips {
 		@apply flex flex-wrap gap-2;
@@ -275,6 +700,120 @@
 	.resident-module-section__copy {
 		@apply text-sm leading-6 text-muted-foreground;
 	}
+	.resident-chart-card {
+		@apply rounded-[1.25rem] border-border shadow-sm;
+	}
+	.resident-chart-card__header {
+		@apply gap-2 pb-3;
+	}
+	.resident-chart-card__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.resident-chart-card__title {
+		@apply text-base font-semibold tracking-tight text-foreground;
+	}
+	.resident-chart-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-chart-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.resident-chart-toggle {
+		@apply flex flex-wrap gap-2;
+	}
+	.resident-chart-toggle__button,
+	.resident-chart-toolbar__button {
+		@apply min-h-9 rounded-full px-3;
+	}
+	.resident-chart-toolbar {
+		@apply flex flex-col gap-2 rounded-2xl border border-border/80 bg-background/70 p-3;
+	}
+	.resident-chart-toolbar__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-pie-chart {
+		@apply grid gap-4;
+	}
+	.resident-pie-chart__visual,
+	.resident-bar-chart__visual {
+		@apply overflow-hidden rounded-[1.25rem] border border-border/80 bg-background/80 p-3;
+	}
+	.resident-chart-skeleton {
+		@apply h-[220px] w-full rounded-[1rem] bg-gradient-to-br from-accent via-background to-accent/60;
+	}
+	.resident-chart-skeleton--tall {
+		@apply h-[240px];
+	}
+	.resident-pie-chart__summary {
+		@apply rounded-[1.25rem] border border-border/80 bg-secondary p-4;
+	}
+	.resident-pie-chart__summary-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.resident-pie-chart__summary-value {
+		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.resident-pie-chart__summary-copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.resident-pie-chart__legend {
+		@apply grid gap-2;
+	}
+	.resident-pie-chart__legend-button {
+		@apply h-auto w-full items-start justify-start gap-3 rounded-2xl px-3 py-3 text-left;
+	}
+	.resident-pie-chart__swatch {
+		@apply mt-0.5 inline-flex h-3 w-3 shrink-0 rounded-full;
+		background-color: var(--resident-chart-swatch);
+	}
+	.resident-pie-chart__legend-main {
+		@apply flex min-w-0 flex-1 items-start justify-between gap-3;
+	}
+	.resident-pie-chart__legend-label {
+		@apply min-w-0 text-sm font-medium leading-5;
+	}
+	.resident-pie-chart__legend-value {
+		@apply shrink-0 text-xs font-semibold uppercase tracking-[0.12em] opacity-80;
+	}
+	.resident-bar-chart {
+		@apply grid gap-3;
+	}
+	.resident-bar-chart__list {
+		@apply grid gap-2;
+	}
+	.resident-bar-chart__list-item {
+		@apply flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-background/70 px-3 py-3;
+	}
+	.resident-bar-chart__list-main {
+		@apply min-w-0;
+	}
+	.resident-bar-chart__list-label {
+		@apply text-sm font-medium leading-5 text-foreground;
+	}
+	.resident-bar-chart__list-value {
+		@apply shrink-0 text-sm font-semibold text-primary;
+	}
+	.resident-heading-with-tip {
+		@apply flex items-center gap-2;
+	}
+	.resident-heading-with-tip--compact {
+		@apply gap-1.5;
+	}
+	.resident-toolbar {
+		@apply flex flex-col gap-3 rounded-[1.25rem] border border-border bg-card p-4 shadow-sm;
+	}
+	.resident-toolbar__copy {
+		@apply space-y-1;
+	}
+	.resident-toolbar__title {
+		@apply text-base font-semibold tracking-tight text-foreground;
+	}
+	.resident-toolbar__description {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-toolbar__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
 	.resident-empty-card {
 		@apply rounded-[1.25rem] border-dashed shadow-none;
 	}
@@ -290,16 +829,429 @@
 	.resident-empty-card__copy {
 		@apply mx-auto max-w-xs text-sm leading-6 text-muted-foreground;
 	}
+	.resident-home-page {
+		@apply space-y-5 p-4 pb-8;
+	}
+	.resident-home-header {
+		@apply grid gap-3;
+	}
+	.resident-home-header__main {
+		@apply grid gap-1;
+	}
+	.resident-home-header__eyebrow,
+	.resident-home-hero__eyebrow,
+	.resident-bulletin-hero__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.resident-home-header__title {
+		@apply text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.resident-home-header__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-home-header__meta {
+		@apply flex flex-wrap gap-2;
+	}
+	.resident-home-header__meta-item {
+		@apply inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs text-muted-foreground;
+	}
+	.resident-home-header__meta-icon,
+	.resident-home-section__heading-icon,
+	.resident-bulletin-hero__icon {
+		@apply inline-flex text-primary;
+	}
+	.resident-home-hero,
+	.resident-bulletin-hero {
+		@apply rounded-[1.25rem] border border-border bg-card p-4 shadow-sm;
+	}
+	.resident-home-hero__header,
+	.resident-bulletin-hero__header {
+		@apply flex items-center gap-2;
+	}
+	.resident-home-hero__icon {
+		@apply inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.resident-home-hero__title,
+	.resident-bulletin-hero__title {
+		@apply mt-3 text-xl font-semibold tracking-tight text-foreground;
+	}
+	.resident-home-hero__copy,
+	.resident-bulletin-hero__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.resident-home-section {
+		@apply space-y-3;
+	}
+	.resident-home-section__header {
+		@apply space-y-1;
+	}
+	.resident-home-section__heading-row {
+		@apply flex items-center justify-between gap-3;
+	}
+	.resident-home-section__heading-main {
+		@apply flex items-center gap-2;
+	}
+	.resident-home-section__title {
+		@apply text-base font-semibold tracking-tight text-foreground;
+	}
+	.resident-home-section__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-home-section__link {
+		@apply text-xs font-medium text-primary transition-colors hover:text-foreground;
+	}
+	.resident-quick-grid {
+		@apply grid grid-cols-2 gap-3;
+	}
+	.resident-quick-card {
+		@apply flex flex-col items-start gap-3 rounded-[1.25rem] border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/20 hover:shadow-md;
+	}
+	.resident-quick-card__icon {
+		@apply inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.resident-quick-card__label {
+		@apply text-sm font-medium text-foreground;
+	}
+	.resident-home-bulletin,
+	.resident-bulletin-list {
+		@apply space-y-3;
+	}
+	.resident-home-bulletin__item,
+	.resident-bulletin-card {
+		@apply rounded-[1.25rem] border border-border bg-card p-4 shadow-sm;
+	}
+	.resident-home-bulletin__item--pinned,
+	.resident-bulletin-card--pinned {
+		@apply border-primary/30;
+	}
+	.resident-home-bulletin__pin,
+	.resident-bulletin-card__pin {
+		@apply mb-2 inline-flex items-center gap-1 text-xs font-medium text-primary;
+	}
+	.resident-home-bulletin__title,
+	.resident-bulletin-card__title {
+		@apply text-sm font-medium text-foreground;
+	}
+	.resident-home-bulletin__copy,
+	.resident-bulletin-card__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.resident-home-bulletin__empty,
+	.resident-bulletin-list__empty {
+		@apply py-8 text-center text-sm text-muted-foreground;
+	}
+	.resident-bulletin-page {
+		@apply space-y-5 p-4 pb-8;
+	}
+	.resident-bulletin-card__meta {
+		@apply mt-2 text-xs text-muted-foreground;
+	}
+	.resident-chat-context-card,
+	.resident-profile-card {
+		@apply rounded-[1.25rem] border-border shadow-sm;
+	}
+	.resident-chat-context-card__header,
+	.resident-profile-card__header {
+		@apply gap-2;
+	}
+	.resident-profile-card__heading {
+		@apply flex items-start gap-3;
+	}
+	.resident-profile-card__icon {
+		@apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.resident-chat-context-card__title,
+		.resident-chat-context-card__title,
+		.resident-profile-card__title {
+		@apply text-base font-semibold tracking-tight text-foreground;
+	}
+	.resident-chat-context-card__copy,
+		.resident-chat-context-card__copy,
+		.resident-profile-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-chat-layout {
+		@apply grid gap-4;
+	}
+	.resident-chat-thread-panel,
+	.resident-chat-conversation {
+		@apply rounded-[1.25rem] border border-border bg-card shadow-sm;
+	}
+	.resident-chat-thread-panel__header,
+	.resident-chat-conversation__header {
+		@apply border-b border-border px-4 py-4;
+	}
+	.resident-chat-thread-list {
+		@apply grid gap-2 p-3;
+	}
+	.resident-chat-thread-card {
+		@apply flex items-start gap-3 rounded-[1.1rem] border border-border bg-background px-3 py-3 text-left transition-all hover:border-primary/20 hover:bg-accent/30;
+	}
+	.resident-chat-thread-card--active {
+		@apply border-primary/30 bg-accent/40;
+	}
+	.resident-chat-thread-card__avatar,
+	.resident-chat-conversation__avatar {
+		@apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.resident-chat-thread-card__main {
+		@apply min-w-0;
+	}
+	.resident-chat-thread-card__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-chat-thread-card__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground line-clamp-2;
+	}
+	.resident-chat-thread-card__meta {
+		@apply shrink-0 text-right;
+	}
+	.resident-chat-thread-card__time {
+		@apply text-xs font-medium text-foreground;
+	}
+	.resident-chat-context-card__content,
+	.resident-profile-card__content {
+		@apply space-y-4 pt-0;
+	}
+	.resident-chat-conversation__header {
+		@apply space-y-4;
+	}
+	.resident-chat-conversation__identity {
+		@apply flex items-center gap-3;
+	}
+	.resident-chat-conversation__title {
+		@apply text-base font-semibold tracking-tight text-foreground;
+	}
+	.resident-chat-conversation__subtitle {
+		@apply mt-1 text-sm text-muted-foreground;
+	}
+	.resident-chat-summary-grid {
+		@apply grid gap-3 grid-cols-2;
+	}
+	.resident-chat-summary-card {
+		@apply rounded-[1rem] border border-border/80 bg-background/75 p-3;
+	}
+	.resident-chat-summary-card__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.resident-chat-summary-card__value {
+		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+	.resident-chat-messages {
+		@apply flex max-h-[28rem] flex-col gap-3 overflow-y-auto bg-background/65 px-4 py-4;
+	}
+	.resident-chat-day-divider {
+		@apply flex items-center text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.resident-chat-day-divider::before,
+	.resident-chat-day-divider::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--border);
+	}
+	.resident-chat-day-divider span {
+		@apply px-3;
+	}
+	.resident-chat-message-list {
+		@apply space-y-3;
+	}
+	.resident-chat-message {
+		@apply flex;
+	}
+	.resident-chat-message--mine {
+		@apply justify-end;
+	}
+	.resident-chat-message__bubble {
+		@apply max-w-[88%] rounded-[1.25rem] border border-border bg-secondary px-4 py-3;
+	}
+	.resident-chat-message--mine .resident-chat-message__bubble {
+		@apply border-primary/10 bg-primary/8;
+	}
+	.resident-chat-message__author {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+	.resident-chat-message__text {
+		@apply mt-2 text-sm leading-6 text-foreground;
+	}
+	.resident-chat-message__time {
+		@apply mt-2 text-xs text-muted-foreground;
+	}
+	.resident-chat-composer {
+		@apply flex items-end gap-3 border-t border-border bg-card px-4 py-4;
+	}
+	.resident-chat-composer__input {
+		@apply min-h-11 flex-1 resize-none rounded-[1.25rem] border border-input bg-background px-4 py-3 text-sm leading-6 shadow-sm;
+	}
+	.resident-chat-composer__send {
+		@apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground;
+	}
+	.resident-chat-reference-list,
+	.resident-chat-ticket-stack {
+		@apply grid gap-3;
+	}
+	.resident-chat-reference-card,
+	.resident-chat-ticket-card {
+		@apply rounded-[1.25rem] border border-border/80 bg-background/75 p-4;
+	}
+	.resident-chat-reference-card__main,
+	.resident-chat-ticket-card__header {
+		@apply min-w-0;
+	}
+	.resident-chat-reference-card__row,
+	.resident-chat-mini-panel__row {
+		@apply flex items-center gap-2;
+	}
+	.resident-chat-reference-card__icon,
+	.resident-chat-mini-panel__icon {
+		@apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.resident-chat-reference-card__title,
+	.resident-chat-ticket-card__title,
+	.resident-chat-mini-panel__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-chat-reference-card__copy,
+	.resident-chat-ticket-card__copy,
+	.resident-chat-ticket-card__next-copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.resident-chat-reference-card__meta {
+		@apply mt-3 flex flex-col gap-3 border-t border-border pt-3;
+	}
+	.resident-chat-reference-card__meta-copy {
+		@apply text-xs text-muted-foreground;
+	}
+	.resident-chat-ticket-card__header {
+		@apply flex items-start justify-between gap-3;
+	}
+	.resident-chat-ticket-card__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+	.resident-chat-ticket-card__status {
+		@apply rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.resident-chat-ticket-card__facts,
+	.resident-profile-card__facts {
+		@apply grid gap-3 sm:grid-cols-2;
+	}
+	.resident-chat-ticket-card__fact,
+	.resident-profile-card__fact {
+		@apply min-w-0;
+	}
+	.resident-chat-ticket-card__fact-label,
+	.resident-profile-card__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.resident-chat-ticket-card__fact-value,
+	.resident-profile-card__fact-value {
+		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+	.resident-chat-ticket-card__next {
+		@apply mt-4 rounded-2xl border border-border/80 bg-secondary p-3;
+	}
+	.resident-chat-ticket-card__next-label {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-chat-reference-grid,
+	.payment-ticket-chain {
+		@apply grid gap-3;
+	}
+	.resident-chat-mini-panel,
+	.payment-ticket-chain__panel {
+		@apply rounded-[1.25rem] border border-border/80 bg-secondary p-4;
+	}
+	.resident-chat-mini-panel__item,
+	.payment-ticket-chain__item {
+		@apply border-t border-border/70 pt-3 first:border-t-0 first:pt-0;
+	}
+	.resident-chat-mini-panel__label,
+	.payment-ticket-chain__label {
+		@apply text-sm font-medium text-foreground;
+	}
+	.resident-chat-mini-panel__value,
+	.payment-ticket-chain__value {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
+	}
+	.resident-chat-payment-actions,
+	.resident-profile-grid {
+		@apply grid gap-3;
+	}
+	.resident-chat-payment-actions .button,
+	.resident-chat-payment-actions button,
+	.resident-chat-payment-actions a {
+		@apply w-full;
+	}
+	.resident-profile-screen {
+		@apply grid gap-5;
+	}
+	.resident-profile-screen__hero {
+		@apply rounded-[1.5rem] bg-gradient-to-b from-accent to-background px-4 py-5;
+	}
+	.resident-profile-screen__identity {
+		@apply flex items-center gap-4;
+	}
+	.resident-profile-screen__avatar {
+		@apply inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary;
+	}
+	.resident-profile-screen__heading {
+		@apply min-w-0;
+	}
+	.resident-profile-screen__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.resident-profile-screen__title {
+		@apply mt-1 text-xl font-semibold tracking-tight text-foreground;
+	}
+	.resident-profile-screen__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.resident-profile-group {
+		@apply grid gap-2;
+	}
+	.resident-profile-group__header {
+		@apply px-1;
+	}
+	.resident-profile-group__title-row {
+		@apply flex items-center gap-2;
+	}
+	.resident-profile-group__icon {
+		@apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.resident-profile-group__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-profile-list {
+		@apply overflow-hidden rounded-[1.25rem] border border-border bg-card;
+	}
+	.resident-profile-row {
+		@apply flex items-start justify-between gap-4 border-t border-border px-4 py-3 first:border-t-0;
+	}
+	.resident-profile-row__label {
+		@apply min-w-0 text-sm text-muted-foreground;
+	}
+	.resident-profile-row__value {
+		@apply max-w-[58%] text-right text-sm font-medium leading-6 text-foreground;
+	}
+	.resident-profile-actions {
+		@apply pt-1;
+	}
+	.resident-profile-actions__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.resident-profile-card__button {
+		@apply min-h-11 w-full rounded-full px-4;
+	}
 
 	/* Documents */
 	.document-cards-stack {
 		@apply space-y-3;
 	}
 	.document-card-shell {
-		@apply rounded-[1.25rem] shadow-sm;
+		@apply rounded-[1.25rem] border-border shadow-sm;
 	}
 	.document-card-shell__header {
-		@apply gap-3;
+		@apply gap-2 pb-3;
 	}
 	.document-card-shell__header-main {
 		@apply min-w-0;
@@ -314,7 +1266,7 @@
 		@apply mt-2 text-sm leading-6 text-muted-foreground;
 	}
 	.document-card-shell__content {
-		@apply space-y-4;
+		@apply space-y-3 pt-0;
 	}
 	.document-card-shell__meta {
 		@apply flex flex-wrap gap-2;
@@ -323,31 +1275,28 @@
 		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
 	}
 	.document-card-shell__facts {
-		@apply grid grid-cols-2 gap-3;
+		@apply grid grid-cols-2 gap-4 border-t border-border pt-3;
 	}
 	.document-card-shell__fact {
-		@apply rounded-2xl bg-secondary p-3;
+		@apply min-w-0;
 	}
 	.document-card-shell__fact-label {
 		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
 	}
 	.document-card-shell__fact-value {
-		@apply mt-2 text-sm font-medium leading-5 text-foreground;
-	}
-	.document-card-shell__separator {
-		@apply mx-4;
+		@apply mt-1 text-sm font-medium leading-5 text-foreground;
 	}
 	.document-card-shell__footer {
-		@apply flex flex-col items-start gap-3 border-t border-border;
+		@apply flex flex-col items-start gap-3 border-t border-border pt-4;
 	}
 	.document-card-shell__path {
-		@apply min-w-0;
+		@apply min-w-0 border-t border-border pt-3;
 	}
 	.document-card-shell__path-label {
 		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
 	}
 	.document-card-shell__path-value {
-		@apply mt-2 break-all text-xs leading-5 text-foreground/70;
+		@apply mt-1 truncate text-xs leading-5 text-foreground/70;
 	}
 	.document-card-shell__button {
 		@apply min-h-11 w-full rounded-full px-4;
@@ -620,10 +1569,10 @@
 		@apply space-y-3;
 	}
 	.assembly-card-shell {
-		@apply rounded-[1.25rem] shadow-sm;
+		@apply rounded-[1.25rem] border-border shadow-sm;
 	}
 	.assembly-card-shell__header {
-		@apply gap-3;
+		@apply gap-2 pb-3;
 	}
 	.assembly-card-shell__header-main {
 		@apply min-w-0;
@@ -638,13 +1587,13 @@
 		@apply mt-2 text-sm leading-6 text-muted-foreground;
 	}
 	.assembly-card-shell__content {
-		@apply space-y-4;
+		@apply space-y-3 pt-0;
 	}
 	.assembly-card-shell__facts {
-		@apply grid grid-cols-2 gap-3;
+		@apply grid grid-cols-2 gap-4 border-t border-border pt-3;
 	}
 	.assembly-card-shell__fact {
-		@apply rounded-2xl bg-secondary p-3;
+		@apply min-w-0;
 	}
 	.assembly-card-shell__fact-label {
 		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
@@ -660,21 +1609,30 @@
 	}
 	.assembly-card-shell__agenda-list {
 		@apply space-y-2;
+		list-style: none;
+		margin: 0;
+		padding-left: 0;
 	}
 	.assembly-card-shell__agenda-item {
-		@apply rounded-2xl bg-background p-3 text-sm leading-6 text-foreground;
+		@apply flex items-start gap-2 text-sm leading-6 text-foreground;
 	}
-	.assembly-card-shell__separator {
-		@apply my-1;
+	.assembly-card-shell__agenda-item::before {
+		content: '';
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 9999px;
+		background: var(--primary);
+		flex: 0 0 auto;
+		margin-top: 0.55rem;
 	}
 	.assembly-card-shell__minutes-copy {
-		@apply text-sm leading-6 text-muted-foreground;
+		@apply line-clamp-2 text-sm leading-6 text-muted-foreground;
 	}
 	.assembly-card-shell__resolution-list {
 		@apply space-y-2;
 	}
 	.assembly-card-shell__resolution {
-		@apply flex items-start justify-between gap-3 rounded-2xl bg-background p-3;
+		@apply flex items-start justify-between gap-3 border-t border-border pt-3;
 	}
 	.assembly-card-shell__resolution-main {
 		@apply min-w-0;
@@ -685,8 +1643,14 @@
 	.assembly-card-shell__resolution-notes {
 		@apply mt-1 text-sm leading-6 text-muted-foreground;
 	}
+	.assembly-card-shell__minutes-meta {
+		@apply flex flex-wrap gap-x-4 gap-y-1 text-xs leading-5 text-muted-foreground;
+	}
+	.assembly-card-shell__section-note {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
 	.assembly-card-shell__footer {
-		@apply border-t border-border;
+		@apply border-t border-border pt-4;
 	}
 	.assembly-card-shell__footer-main {
 		@apply min-w-0;
@@ -698,10 +1662,10 @@
 		@apply min-h-11 rounded-full px-4;
 	}
 	.assembly-hero-card {
-		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
+		@apply rounded-[1.25rem] border-border bg-card shadow-sm;
 	}
 	.assembly-hero-card__header {
-		@apply gap-3;
+		@apply gap-2 pb-3;
 	}
 	.assembly-hero-card__heading {
 		@apply min-w-0;
@@ -710,19 +1674,19 @@
 		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
 	}
 	.assembly-hero-card__title {
-		@apply mt-2 text-2xl font-semibold tracking-tight text-foreground;
+		@apply mt-1 text-xl font-semibold tracking-tight text-foreground;
 	}
 	.assembly-hero-card__copy {
 		@apply mt-2 text-sm leading-6 text-muted-foreground;
 	}
 	.assembly-hero-card__content {
-		@apply space-y-4 pt-0;
+		@apply space-y-3 pt-0;
 	}
 	.assembly-hero-card__facts {
-		@apply grid grid-cols-2 gap-3;
+		@apply grid grid-cols-2 gap-4 border-y border-border py-3;
 	}
 	.assembly-hero-card__fact {
-		@apply rounded-2xl bg-background/90 p-3;
+		@apply min-w-0;
 	}
 	.assembly-hero-card__fact-label {
 		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
@@ -734,19 +1698,40 @@
 		@apply space-y-2;
 	}
 	.assembly-hero-card__agenda-item {
-		@apply rounded-2xl bg-background p-3 text-sm leading-6 text-foreground;
+		@apply flex items-start gap-2 text-sm leading-6 text-foreground;
+	}
+	.assembly-hero-card__agenda-dot {
+		@apply mt-[0.55rem] inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary;
 	}
 	.assembly-hero-card__actions {
-		@apply flex flex-col gap-2;
+		@apply flex flex-col gap-2 border-t border-border pt-3;
 	}
 	.assembly-hero-card__button {
 		@apply min-h-11 w-full rounded-full px-4;
 	}
+	.assembly-hero-card__note {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
+	.assembly-history-toolbar {
+		@apply grid gap-3;
+	}
+	.assembly-history-toolbar__search {
+		@apply min-w-0;
+	}
+	.assembly-history-toolbar__input {
+		@apply min-h-11 w-full rounded-2xl;
+	}
+	.assembly-history-toolbar__filters {
+		@apply flex flex-wrap gap-2;
+	}
+	.assembly-history-toolbar__button {
+		@apply min-h-9 rounded-full px-3;
+	}
 	.assembly-highlight-card {
-		@apply shadow-sm;
+		@apply rounded-[1.25rem] border-border shadow-sm;
 	}
 	.assembly-highlight-card__content {
-		@apply space-y-4 pt-0;
+		@apply space-y-3 pt-0;
 	}
 	.assembly-highlight-card__button {
 		@apply min-h-11 w-full rounded-full px-4;
@@ -1224,6 +2209,90 @@
 	.report-cards-stack {
 		@apply space-y-3;
 	}
+	.report-page-header {
+		@apply space-y-4 border-b border-border pb-5;
+	}
+	.report-page-header__main {
+		@apply space-y-1;
+	}
+	.report-page-header__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.report-page-header__title {
+		@apply text-[1.7rem] font-semibold tracking-tight text-foreground;
+	}
+	.report-page-header__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-page-header__stats {
+		@apply grid grid-cols-3 gap-3;
+	}
+	.report-page-header__stat {
+		@apply min-w-0 rounded-2xl bg-secondary/55 px-3 py-3;
+	}
+	.report-page-header__stat-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-page-header__stat-value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.report-page-header__chips {
+		@apply flex flex-wrap gap-2;
+	}
+	.report-page-header__chip {
+		@apply inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-secondary-foreground;
+	}
+	.report-created-banner {
+		@apply flex flex-col gap-3 rounded-[1.25rem] border border-primary/15 bg-primary/6 px-4 py-4;
+	}
+	.report-created-banner__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.report-created-banner__copy {
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	}
+	.report-list-shell {
+		@apply space-y-4;
+	}
+	.report-list-shell__header {
+		@apply flex flex-col gap-3;
+	}
+	.report-list-shell__heading {
+		@apply space-y-1;
+	}
+	.report-list-shell__title {
+		@apply text-base font-semibold tracking-tight text-foreground;
+	}
+	.report-list-shell__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-list-shell__button {
+		@apply inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4;
+	}
+	.report-list-shell__toolbar {
+		@apply grid gap-3 border-y border-border py-4;
+	}
+	.report-sorter {
+		@apply grid gap-2;
+	}
+	.report-sorter__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-sorter__trigger {
+		@apply min-h-11 w-full rounded-2xl;
+	}
+	.report-sorter__hint {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
+	.report-list-shell__empty {
+		@apply flex flex-col items-center justify-center gap-2 py-10 text-center;
+	}
+	.report-list-shell__empty-title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.report-list-shell__empty-copy {
+		@apply max-w-xs text-sm leading-6 text-muted-foreground;
+	}
 	.report-empty-card {
 		@apply border-dashed shadow-none;
 	}
@@ -1240,10 +2309,10 @@
 		@apply max-w-xs text-sm leading-6 text-muted-foreground;
 	}
 	.report-card-shell {
-		@apply rounded-[1.25rem] shadow-sm transition-all hover:border-primary/30 hover:shadow-md;
+		@apply rounded-[1.25rem] border-border shadow-sm transition-all hover:border-primary/30 hover:shadow-md;
 	}
 	.report-card-shell__header {
-		@apply flex items-start justify-between gap-3;
+		@apply flex items-start justify-between gap-3 pb-3;
 	}
 	.report-card-shell__header-main {
 		@apply min-w-0;
@@ -1258,31 +2327,37 @@
 		@apply mt-1 text-base font-semibold leading-6 text-foreground;
 	}
 	.report-card-shell__content {
-		@apply space-y-4;
+		@apply space-y-3 pt-0;
 	}
 	.report-card-shell__description {
-		@apply mt-3 text-sm leading-6 text-muted-foreground;
+		@apply text-sm leading-6 text-muted-foreground line-clamp-2;
 	}
 	.report-card-shell__glance {
-		@apply mt-4 grid grid-cols-2 gap-3;
+		@apply flex flex-wrap gap-2;
 	}
 	.report-card-shell__glance-item {
-		@apply rounded-2xl bg-secondary p-3;
-	}
-	.report-card-shell__glance-label {
-		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
-	}
-	.report-card-shell__glance-value {
-		@apply mt-2 text-sm font-medium leading-5 text-foreground;
+		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
 	}
 	.report-card-shell__meta {
-		@apply mt-3 flex flex-wrap gap-2;
+		@apply flex flex-wrap gap-2 border-t border-border pt-3;
+	}
+	.report-card-shell__operational {
+		@apply rounded-2xl border border-border/80 bg-secondary px-3 py-3;
+	}
+	.report-card-shell__operational-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-card-shell__operational-value {
+		@apply mt-2 text-sm font-semibold text-foreground;
+	}
+	.report-card-shell__operational-copy {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
 	}
 	.report-chip {
 		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
 	}
 	.report-card-shell__footer {
-		@apply flex items-end justify-between gap-3 border-t border-border;
+		@apply flex items-end justify-between gap-3 border-t border-border pt-4;
 	}
 	.report-card-shell__footer-copy {
 		@apply min-w-0;
@@ -1302,16 +2377,24 @@
 	.ticket-status-badge--opened {
 		@apply border-border bg-background text-muted-foreground;
 	}
+	.ticket-status-badge--nuova {
+		@apply border-transparent bg-primary/12 text-primary;
+	}
 	.ticket-status-badge--estimating,
 	.ticket-status-badge--in_progress {
 		@apply border-transparent bg-[color:var(--warning)]/15 text-[color:var(--warning-foreground)];
 	}
-	.ticket-status-badge--approved {
+	.ticket-status-badge--approved,
+	.ticket-status-badge--presa_in_carico {
 		@apply border-transparent bg-primary/12 text-primary;
 	}
 	.ticket-status-badge--completed,
+	.ticket-status-badge--completata,
 	.ticket-status-badge--paid {
 		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
+	}
+	.ticket-status-badge--closed {
+		@apply border-border bg-secondary text-secondary-foreground;
 	}
 	.ticket-priority-badge {
 		@apply rounded-full px-3 py-1 text-xs font-medium;
@@ -1332,7 +2415,7 @@
 		@apply px-0 text-sm font-medium text-muted-foreground no-underline hover:text-foreground;
 	}
 	.report-detail-stack {
-		@apply mt-4 space-y-4;
+		@apply mt-4 space-y-5;
 	}
 	.report-hero-card {
 		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-b from-accent to-card shadow-sm;
@@ -1401,7 +2484,7 @@
 		@apply text-sm text-muted-foreground;
 	}
 	.report-section-card__content {
-		@apply pt-0;
+		@apply space-y-4 pt-0;
 	}
 	.report-facts-grid {
 		@apply grid grid-cols-2 gap-3;
@@ -1428,25 +2511,43 @@
 		@apply flex flex-col items-center;
 	}
 	.ticket-timeline__dot {
-		@apply mt-1 h-2.5 w-2.5 rounded-full bg-primary;
+		@apply mt-1 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-primary/10;
+	}
+	.ticket-timeline__dot--operational {
+		@apply bg-[color:var(--warning)] ring-[color:var(--warning)]/15;
 	}
 	.ticket-timeline__line {
 		@apply mt-2 h-full w-px bg-border;
 	}
+	.ticket-timeline__line--operational {
+		@apply bg-[color:var(--warning)]/20;
+	}
 	.ticket-timeline__content {
-		@apply flex-1 rounded-2xl bg-secondary p-3;
+		@apply flex-1 rounded-2xl bg-secondary p-3.5;
+	}
+	.ticket-timeline__content--operational {
+		@apply border border-border/80 bg-background/80;
 	}
 	.ticket-timeline__row {
-		@apply flex items-start justify-between gap-3;
+		@apply flex flex-col gap-2;
 	}
 	.ticket-timeline__main {
 		@apply min-w-0;
+	}
+	.ticket-timeline__status {
+		@apply self-start;
 	}
 	.ticket-timeline__title {
 		@apply text-sm font-semibold text-foreground;
 	}
 	.ticket-timeline__meta {
 		@apply mt-1 text-xs text-muted-foreground;
+	}
+	.ticket-timeline__note {
+		@apply mt-3 text-sm leading-6 text-foreground/80;
+	}
+	.ticket-timeline__note--operational {
+		@apply rounded-2xl border border-border/80 bg-secondary px-3 py-3 text-foreground/85;
 	}
 	.ticket-timeline__date {
 		@apply mt-3 text-xs font-medium text-foreground/75;
@@ -1478,23 +2579,66 @@
 	.report-created-card__copy {
 		@apply text-sm leading-6 text-primary-foreground/80;
 	}
-	.report-create-prefill {
+	.report-hero-card--compact .report-hero-card__content {
+		@apply pt-0;
+	}
+	.report-create-brief {
 		@apply grid gap-3 sm:grid-cols-2;
 	}
-	.report-create-prefill__item {
+	.report-create-brief__item {
 		@apply rounded-2xl bg-background/90 p-3;
 	}
-	.report-create-prefill__label {
+	.report-create-brief__label {
 		@apply text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground;
 	}
-	.report-create-prefill__value {
+	.report-create-brief__value {
 		@apply mt-2 text-sm font-medium text-foreground;
 	}
-	.report-create-prefill__copy {
-		@apply mt-1 text-sm leading-6 text-muted-foreground;
+	.report-create-brief__copy {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
 	}
 	.report-form-card {
 		@apply shadow-sm;
+	}
+	.report-form-card__header-row {
+		@apply flex items-start justify-between gap-3;
+	}
+	.report-mode-segmented-wrap {
+		@apply space-y-3;
+	}
+	.report-mode-segmented__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-mode-segmented {
+		display: inline-flex;
+		padding: 3px;
+		gap: 2px;
+		background: var(--muted);
+		border-radius: 9999px;
+		border: 1px solid var(--border);
+		max-width: 100%;
+	}
+	.report-mode-segmented__option {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.375rem;
+		padding: 0.45rem 0.9rem;
+		border-radius: 9999px;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--muted-foreground);
+		transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+	}
+	.report-mode-segmented__option:hover {
+		color: var(--foreground);
+	}
+	.report-mode-segmented__option.is-active {
+		background: var(--card);
+		color: var(--foreground);
+		box-shadow:
+			0 1px 2px oklch(0 0 0 / 0.06),
+			0 1px 3px oklch(0 0 0 / 0.08);
 	}
 	.report-form-card__content {
 		@apply pt-0;
@@ -1507,6 +2651,167 @@
 	}
 	.report-form__field {
 		@apply space-y-2;
+	}
+	.report-ai-composer {
+		@apply grid gap-4 rounded-[1.25rem] border border-primary/15 bg-accent/35 p-4;
+	}
+	.report-ai-composer__examples {
+		@apply grid gap-3;
+	}
+	.report-ai-composer__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-ai-composer__chips {
+		@apply grid gap-2;
+	}
+	.report-ai-composer__chip {
+		@apply flex min-h-11 w-full items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/25 hover:bg-background;
+	}
+	.report-ai-composer__chip-icon {
+		@apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.report-ai-composer__chip-text {
+		@apply min-w-0;
+	}
+	.report-ai-composer__chip-title {
+		@apply block text-sm font-medium text-foreground;
+	}
+	.report-ai-composer__chip-copy {
+		@apply mt-1 block text-xs leading-5 text-muted-foreground;
+	}
+	.report-ai-chat {
+		@apply space-y-4;
+	}
+	.report-ai-prompt-card {
+		@apply flex flex-col rounded-[1.25rem] border border-border bg-card shadow-sm transition-colors;
+	}
+	.report-ai-prompt-card:focus-within {
+		border-color: var(--ring);
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 18%, transparent);
+	}
+	.report-ai-prompt-card__input {
+		width: 100%;
+		resize: none;
+		background: transparent;
+		border: 0;
+		outline: 0;
+		padding: 0.95rem 1rem;
+		font-size: 0.9375rem;
+		line-height: 1.5;
+		color: var(--foreground);
+		font-family: inherit;
+	}
+	.report-ai-prompt-card__input::placeholder {
+		color: var(--muted-foreground);
+	}
+	.report-ai-prompt-card__input:focus {
+		outline: 0;
+		box-shadow: none;
+		border-color: transparent;
+	}
+	.report-ai-prompt-card__footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.5rem 0.625rem 0.625rem 1rem;
+	}
+	.report-ai-prompt-card__hint {
+		@apply text-xs text-muted-foreground;
+	}
+	.report-ai-prompt-card__send {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 9999px;
+		background: var(--primary);
+		color: var(--primary-foreground);
+		border: 0;
+		cursor: pointer;
+		transition: background-color 150ms ease, opacity 150ms ease;
+	}
+	.report-ai-prompt-card__send:hover:not(:disabled) {
+		background: color-mix(in oklch, var(--primary) 88%, black);
+	}
+	.report-ai-prompt-card__send:disabled {
+		background: var(--muted);
+		color: var(--muted-foreground);
+		cursor: not-allowed;
+	}
+	.report-ai-thread {
+		@apply space-y-4;
+	}
+	.report-ai-thread__bubble-wrap {
+		@apply flex justify-end;
+	}
+	.report-ai-thread__user-bubble {
+		@apply max-w-[85%] rounded-[1rem] rounded-br-[0.25rem] bg-primary px-4 py-2.5 text-sm leading-6 text-primary-foreground;
+	}
+	.report-ai-thread__assistant {
+		@apply flex items-start gap-3;
+	}
+	.report-ai-thread__avatar {
+		@apply mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary;
+	}
+	.report-ai-thread__content {
+		@apply min-w-0 flex-1 space-y-3;
+	}
+	.report-ai-thread__intro,
+	.report-ai-thread__done {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-ai-thinking {
+		display: inline-flex;
+		gap: 4px;
+		align-items: center;
+		padding: 0.625rem 0.75rem;
+		border-radius: 1rem;
+		background: var(--muted);
+	}
+	.report-ai-thinking span {
+		width: 6px;
+		height: 6px;
+		border-radius: 9999px;
+		background: var(--muted-foreground);
+		animation: report-ai-dot-pulse 1.2s infinite ease-in-out;
+		opacity: 0.4;
+	}
+	.report-ai-thinking span:nth-child(2) {
+		animation-delay: 0.15s;
+	}
+	.report-ai-thinking span:nth-child(3) {
+		animation-delay: 0.3s;
+	}
+	@keyframes report-ai-dot-pulse {
+		0%,
+		80%,
+		100% {
+			opacity: 0.3;
+			transform: scale(0.85);
+		}
+		40% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+	.report-ai-fact-list {
+		@apply flex flex-col overflow-hidden rounded-[1.25rem] border border-border bg-card;
+	}
+	.report-ai-fact-row {
+		@apply flex items-start gap-3 border-b border-border px-4 py-3 last:border-b-0;
+	}
+	.report-ai-fact-row__icon {
+		@apply mt-1 inline-flex shrink-0 text-muted-foreground;
+	}
+	.report-ai-fact-row__main {
+		@apply min-w-0 flex-1;
+	}
+	.report-ai-fact-row__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.report-ai-fact-row__value {
+		@apply mt-1 text-sm leading-6 text-foreground;
 	}
 	.report-form__input,
 	.report-form__select-trigger,
@@ -1589,16 +2894,64 @@
 	.report-meta-card__value {
 		@apply mt-2 text-sm leading-6 text-foreground;
 	}
+	.report-operational-summary {
+		@apply flex flex-col gap-3 rounded-[1.25rem] border border-border/80 bg-background/70 p-4;
+	}
+	.report-operational-summary__main {
+		@apply min-w-0;
+	}
+	.report-operational-summary__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+	.report-operational-summary__title {
+		@apply mt-2 text-base font-semibold text-foreground;
+	}
+	.report-operational-summary__copy {
+		@apply mt-2 text-sm leading-6 text-muted-foreground;
+	}
+	.report-operational-summary__message {
+		@apply mt-3 rounded-2xl bg-secondary px-3 py-3 text-sm leading-6 text-foreground;
+	}
+	.report-operational-summary__meta {
+		@apply flex flex-col items-start gap-2;
+	}
+	.report-operational-summary__meta-copy {
+		@apply text-sm text-muted-foreground;
+	}
+	.report-operational-grid {
+		@apply grid gap-3;
+	}
+	.report-operational-panel {
+		@apply rounded-[1.25rem] border border-border/80 bg-secondary p-4;
+	}
+	.report-operational-panel__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.report-operational-panel__list {
+		@apply mt-3 grid gap-3;
+	}
+	.report-operational-panel__item {
+		@apply border-t border-border/70 pt-3 first:border-t-0 first:pt-0;
+	}
+	.report-operational-panel__label {
+		@apply text-sm font-medium text-foreground;
+	}
+	.report-operational-panel__value {
+		@apply mt-1 text-xs leading-5 text-muted-foreground;
+	}
+	.report-operational-actions {
+		@apply grid gap-2;
+	}
 
 	/* Resident payments */
 	.payment-cards-stack {
 		@apply space-y-3;
 	}
 	.payment-card-shell {
-		@apply rounded-[1.25rem] shadow-sm transition-all hover:border-primary/20 hover:shadow-md;
+		@apply rounded-[1.25rem] border-border shadow-sm transition-all hover:border-primary/20 hover:shadow-md;
 	}
 	.payment-card-shell__header {
-		@apply flex items-start justify-between gap-3;
+		@apply flex items-start justify-between gap-3 pb-3;
 	}
 	.payment-card-shell__header-main {
 		@apply min-w-0;
@@ -1613,7 +2966,7 @@
 		@apply mt-1 text-base font-semibold leading-6 text-foreground;
 	}
 	.payment-card-shell__content {
-		@apply space-y-4;
+		@apply space-y-3 pt-0;
 	}
 	.payment-card-shell__amount {
 		@apply text-2xl font-semibold tracking-tight text-foreground;
@@ -1628,22 +2981,19 @@
 		@apply inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-secondary-foreground;
 	}
 	.payment-card-shell__facts {
-		@apply grid grid-cols-2 gap-3;
+		@apply grid grid-cols-2 gap-4 border-t border-border pt-3;
 	}
 	.payment-card-shell__fact {
-		@apply rounded-2xl bg-secondary p-3;
+		@apply min-w-0;
 	}
 	.payment-card-shell__fact-label {
 		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
 	}
 	.payment-card-shell__fact-value {
-		@apply mt-2 text-sm font-medium leading-5 text-foreground;
-	}
-	.payment-card-shell__separator {
-		@apply mx-4;
+		@apply mt-1 text-sm font-medium leading-5 text-foreground;
 	}
 	.payment-card-shell__footer {
-		@apply flex flex-col items-start gap-3 border-t border-border;
+		@apply flex flex-col items-start gap-3 border-t border-border pt-4;
 	}
 	.payment-card-shell__footer-copy {
 		@apply min-w-0;
@@ -1675,7 +3025,7 @@
 	}
 	.payment-support-card,
 	.payment-detail-card {
-		@apply rounded-[1.25rem] shadow-sm;
+		@apply rounded-[1.25rem] border-border shadow-sm;
 	}
 	.payment-support-card__header,
 	.payment-detail-card__header {
@@ -1691,7 +3041,7 @@
 	}
 	.payment-support-card__content,
 	.payment-detail-card__content {
-		@apply space-y-4 pt-0;
+		@apply space-y-3 pt-0;
 	}
 	.payment-support-card__facts,
 	.payment-detail-card__facts,
@@ -1701,7 +3051,7 @@
 	.payment-support-card__fact,
 	.payment-detail-card__fact,
 	.payment-detail-hero__fact {
-		@apply rounded-2xl bg-secondary p-3;
+		@apply min-w-0;
 	}
 	.payment-support-card__fact-label,
 	.payment-detail-card__fact-label,
@@ -1729,7 +3079,7 @@
 	}
 	.payment-support-list__item,
 	.payment-detail-documents__item {
-		@apply flex flex-col gap-4 rounded-2xl bg-secondary p-4;
+		@apply flex flex-col gap-3 border-t border-border pt-3 first:border-t-0 first:pt-0;
 	}
 	.payment-support-list__main,
 	.payment-detail-documents__main {
@@ -1824,37 +3174,22 @@
 		@apply min-h-11 w-full rounded-full border-card bg-card px-4 text-foreground hover:bg-card/90;
 	}
 	.payment-reminder-card {
-		@apply rounded-[1.5rem] border-primary/10 bg-gradient-to-r from-primary/8 to-card shadow-sm;
+		@apply rounded-[1.25rem] border-border bg-card shadow-sm;
 	}
 	.payment-reminder-card__header {
-		@apply gap-3;
-	}
-	.payment-reminder-card__heading {
-		@apply min-w-0;
+		@apply gap-2 pb-3;
 	}
 	.payment-reminder-card__eyebrow {
 		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
 	}
 	.payment-reminder-card__title {
-		@apply mt-2 text-xl font-semibold tracking-tight text-foreground;
+		@apply mt-1 text-lg font-semibold tracking-tight text-foreground;
 	}
 	.payment-reminder-card__copy {
-		@apply mt-2 text-sm leading-6 text-muted-foreground;
+		@apply mt-1 text-sm leading-6 text-muted-foreground;
 	}
 	.payment-reminder-card__content {
-		@apply space-y-4 pt-0;
-	}
-	.payment-reminder-card__facts {
-		@apply grid gap-3 sm:grid-cols-2;
-	}
-	.payment-reminder-card__fact {
-		@apply rounded-2xl bg-background/90 p-3;
-	}
-	.payment-reminder-card__fact-label {
-		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
-	}
-	.payment-reminder-card__fact-value {
-		@apply mt-2 text-sm font-semibold text-foreground;
+		@apply pt-0;
 	}
 	.payment-reminder-card__actions,
 	.payment-form__actions {
@@ -1864,6 +3199,36 @@
 	.payment-form__submit,
 	.payment-form__cancel {
 		@apply min-h-11 w-full rounded-full px-4;
+	}
+	.payment-visibility-panel {
+		@apply grid gap-4;
+	}
+	.payment-visibility-panel__chart {
+		@apply min-w-0;
+	}
+	.payment-visibility-panel__legend {
+		@apply grid gap-3;
+	}
+	.payment-visibility-panel__item {
+		@apply flex items-start justify-between gap-3 rounded-[1.25rem] border border-border bg-card px-4 py-4;
+	}
+	.payment-visibility-panel__item-main {
+		@apply min-w-0;
+	}
+	.payment-visibility-panel__item-topline {
+		@apply flex items-center gap-2;
+	}
+	.payment-visibility-panel__item-dot {
+		@apply inline-flex h-2.5 w-2.5 shrink-0 rounded-full;
+	}
+	.payment-visibility-panel__item-title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.payment-visibility-panel__item-copy {
+		@apply mt-2 text-xs leading-5 text-muted-foreground;
+	}
+	.payment-visibility-panel__item-value {
+		@apply text-sm font-semibold text-foreground;
 	}
 	.payment-form {
 		@apply space-y-4;
@@ -1880,6 +3245,12 @@
 	.payment-detail-card__narrative {
 		@apply text-sm leading-6 text-muted-foreground;
 	}
+	.payment-ticket-chain__title {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.payment-ticket-chain__list {
+		@apply mt-3 grid gap-3;
+	}
 	.payment-breakdown-list {
 		@apply grid gap-3;
 	}
@@ -1891,6 +3262,23 @@
 	}
 	.payment-breakdown-list__value {
 		@apply mt-2 text-sm font-medium leading-6 text-foreground;
+	}
+
+	@media (min-width: 640px) {
+		.resident-chart-toolbar {
+			@apply flex-row items-center justify-between;
+		}
+		.resident-pie-chart {
+			@apply grid-cols-[minmax(0,1fr)_18rem] items-center;
+		}
+		.resident-pie-chart__legend {
+			@apply grid-cols-2;
+		}
+		.resident-chat-reference-grid,
+		.payment-ticket-chain,
+		.resident-profile-grid {
+			@apply grid-cols-2;
+		}
 	}
 
 	/* Assemblies additions */
@@ -2036,6 +3424,33 @@
 		.report-card-shell__button {
 			@apply px-5;
 		}
+		.report-operational-summary {
+			@apply flex-row items-start justify-between;
+		}
+		.report-operational-grid {
+			@apply grid-cols-2;
+		}
+		.report-operational-actions {
+			@apply grid-cols-2;
+		}
+		.report-created-banner {
+			@apply flex-row items-start justify-between;
+		}
+		.report-list-shell__header {
+			@apply flex-row items-start justify-between;
+		}
+		.report-list-shell__toolbar {
+			@apply grid-cols-[minmax(0,1fr)_15rem] items-end;
+		}
+		.report-list-shell__button {
+			@apply w-auto;
+		}
+		.report-ai-panel__actions {
+			@apply flex-row;
+		}
+		.report-ai-composer__chips {
+			@apply grid-cols-3;
+		}
 		.report-chat-card__content {
 			@apply flex-row items-center justify-between;
 		}
@@ -2086,6 +3501,9 @@
 		.payment-form__submit,
 		.payment-form__cancel {
 			@apply w-auto;
+		}
+		.payment-visibility-panel {
+			@apply grid-cols-[minmax(0,1fr)_20rem] items-start;
 		}
 		.payment-breakdown-list {
 			@apply grid-cols-2;

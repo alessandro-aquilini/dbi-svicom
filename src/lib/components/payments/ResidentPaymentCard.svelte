@@ -7,7 +7,6 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
-	import { Separator } from '$lib/components/ui/separator';
 	import type { ResidentPaymentStatus } from './presentation';
 	import PaymentStatusBadge from './PaymentStatusBadge.svelte';
 
@@ -72,18 +71,16 @@
 		{/if}
 
 		{#if facts.length > 0}
-			<div class="payment-card-shell__facts">
+			<dl class="payment-card-shell__facts">
 				{#each facts as fact}
 					<div class="payment-card-shell__fact">
-						<p class="payment-card-shell__fact-label">{fact.label}</p>
-						<p class="payment-card-shell__fact-value">{fact.value}</p>
+						<dt class="payment-card-shell__fact-label">{fact.label}</dt>
+						<dd class="payment-card-shell__fact-value">{fact.value}</dd>
 					</div>
 				{/each}
-			</div>
+			</dl>
 		{/if}
 	</CardContent>
-
-	<Separator class="payment-card-shell__separator" />
 
 	<CardFooter class="payment-card-shell__footer">
 		<div class="payment-card-shell__footer-copy">
