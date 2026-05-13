@@ -46,10 +46,9 @@
 	};
 </script>
 
-<button
-	type="button"
+<a
+	href="/resident/services/{booking.id}"
 	class="flex items-center gap-4 p-4 w-full rounded-2xl border border-border bg-card text-left transition-all hover:border-primary/30 hover:shadow-sm group"
-	{onclick}
 >
 	<div class="shrink-0 w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
 		<HugeiconsIcon icon={Calendar03Icon} size={24} />
@@ -84,4 +83,4 @@
 	<div class="shrink-0 text-muted-foreground group-hover:text-primary transition-colors">
 		<HugeiconsIcon icon={ArrowRight02Icon} size={20} />
 	</div>
-</button>
+</a>
