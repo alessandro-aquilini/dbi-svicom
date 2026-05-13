@@ -17,6 +17,8 @@ export interface Supplier {
 	availability: 'disponibile' | 'occupato' | 'fuori-servizio';
 	propertyIds: string[];
 	serviceIds?: string[]; // References Service.id
+	/** Human-friendly residential services offered by this supplier (optional) */
+	residentialServices?: string[];
 	comments?: Comment[];
 	tags?: string[];
 }
@@ -78,6 +80,7 @@ export const suppliers: Supplier[] = [
 		availability: 'disponibile',
 		propertyIds: ['cnd-marconi-14', 'cnd-europa-7'],
 		serviceIds: ['srv-pet-sitting-premium'],
+		residentialServices: ['Pet-sitting 24/7'],
 		comments: [
 			{
 				authorId: 'adm-matteo-02',
@@ -95,6 +98,7 @@ export const suppliers: Supplier[] = [
 		availability: 'occupato',
 		propertyIds: ['cnd-verdi-3', 'cnd-carducci-21'],
 		serviceIds: ['srv-benessere-yoga'],
+		residentialServices: ['Yoga a domicilio', 'Pilates in condominio'],
 		comments: []
 	},
 	{

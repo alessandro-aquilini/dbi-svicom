@@ -26,6 +26,8 @@ export interface Property {
 	status: PropertyStatus;
 	health: PropertyHealth;
 	tags: string[];
+	/** Number of currently active tickets/pratiche for this property (derived in UI) */
+	activeTickets?: number;
 }
 
 export const properties: Property[] = [
@@ -39,7 +41,8 @@ export const properties: Property[] = [
 		residentIds: ['res-bianchi-01'],
 		status: 'attivo',
 		health: 'giallo',
-		tags: ['storico', 'centro']
+		tags: ['storico', 'centro'],
+		activeTickets: 1
 	},
 	{
 		id: 'cnd-europa-7',
@@ -51,7 +54,8 @@ export const properties: Property[] = [
 		residentIds: ['res-conti-02'],
 		status: 'attivo',
 		health: 'verde',
-		tags: ['direzionale-misto']
+		tags: ['direzionale-misto'],
+		activeTickets: 1
 	},
 	{
 		id: 'cnd-verdi-3',
@@ -63,7 +67,8 @@ export const properties: Property[] = [
 		residentIds: ['res-rossi-03'],
 		status: 'attivo',
 		health: 'verde',
-		tags: []
+		tags: [],
+		activeTickets: 0
 	},
 	{
 		id: 'cnd-carducci-21',
@@ -75,7 +80,8 @@ export const properties: Property[] = [
 		residentIds: ['res-greco-04'],
 		status: 'attivo',
 		health: 'rosso',
-		tags: ['ristrutturazione-in-corso']
+		tags: ['ristrutturazione-in-corso'],
+		activeTickets: 0
 	},
 	{
 		id: 'cnd-pacini-44',
@@ -87,7 +93,8 @@ export const properties: Property[] = [
 		residentIds: ['res-bellini-05', 'res-esposito-06'],
 		status: 'onboarding',
 		health: 'giallo',
-		tags: ['nuovo']
+		tags: ['nuovo'],
+		activeTickets: 0
 	},
 	{
 		id: 'cnd-solari-30',
@@ -99,7 +106,8 @@ export const properties: Property[] = [
 		residentIds: ['res-moretti-07', 'res-ricci-08'],
 		status: 'attivo',
 		health: 'verde',
-		tags: []
+		tags: [],
+		activeTickets: 0
 	},
 	{
 		id: 'cnd-tortona-12',
@@ -111,7 +119,8 @@ export const properties: Property[] = [
 		residentIds: ['res-bruno-08'],
 		status: 'in-uscita',
 		health: 'rosso',
-		tags: ['in-uscita-q3']
+		tags: ['in-uscita-q3'],
+		activeTickets: 0
 	}
 ];
 

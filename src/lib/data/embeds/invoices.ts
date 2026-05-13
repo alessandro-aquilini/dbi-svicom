@@ -8,6 +8,8 @@ export interface Invoice {
 	amount: number;
 	currency: string;
 	issueDate: string;
+	/** Optional due date for invoice payment */
+	dueDate?: string;
 	description: string;
 	attachments?: string[];
 }
@@ -20,13 +22,13 @@ export const invoices: Invoice[] = [
 		customerId: 'adm-giorgio-01',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001',
-		amount: 450.00,
+		amount: 450.0,
 		currency: 'EUR',
 		issueDate: '2026-05-02T09:00:00Z',
+		dueDate: '2026-05-31T00:00:00Z',
 		description: 'Intervento di riparazione idraulica presso Via Marconi 14.',
 		attachments: ['fattura_idroclima_154.pdf']
-	}
-	,
+	},
 	{
 		id: 'inv-002',
 		number: '2026/FT/200',
@@ -34,7 +36,7 @@ export const invoices: Invoice[] = [
 		customerId: 'res-bianchi-01',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-002',
-		amount: 80.00,
+		amount: 80.0,
 		currency: 'EUR',
 		issueDate: '2026-04-20T15:30:00Z',
 		description: 'Pulizia appartamento - servizio extra',
