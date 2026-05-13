@@ -152,9 +152,9 @@
 				{:else if item.type === 'event'}
 					<ChatTimelineEvent event={item.data} />
 				{:else if item.type === 'quote'}
-					<ChatQuoteCard quote={item.data} />
+					<ChatQuoteCard quote={item.data} isOwn={false} />
 				{:else if item.type === 'invoice'}
-					<ChatInvoiceCard invoice={item.data} />
+					<ChatInvoiceCard invoice={item.data} isOwn={false} />
 				{:else if item.type === 'payment'}
 					<ChatPaymentCard payment={item.data} />
 				{/if}
