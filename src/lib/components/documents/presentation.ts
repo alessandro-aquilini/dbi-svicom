@@ -213,7 +213,7 @@ function buildPropertyCitation(context: DocumentDemoContext): DocumentDemoCitati
 	return {
 		id: `${context.property.id}-property`,
 		label: 'Condominio',
-		text: `${context.property.name}, ${context.property.address.street}, ${context.property.units} unita. Stato ${context.property.status}, salute ${context.property.health}, ${context.property.activeTickets} pratiche attive.`
+	text: `${context.property.name}, ${context.property.address.street}, ${context.property.units} unita. Stato ${context.property.status}, salute ${context.property.health}, ${context.property.activeTickets ?? 0} pratiche attive.`
 	};
 }
 

@@ -41,7 +41,7 @@
 				<p class="mt-1 text-xs text-muted-foreground">{property.address.street}, {property.address.city}</p>
 				<div class="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
 					<span>{property.units} unità</span>
-					<span>{property.activeTickets} pratiche</span>
+					<span>{property.activeTickets ?? 0} pratiche</span>
 					<span class="ml-auto rounded bg-secondary px-1.5 py-0.5 text-secondary-foreground">
 						{statusLabels[property.status] ?? property.status}
 					</span>

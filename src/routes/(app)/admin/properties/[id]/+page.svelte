@@ -2,8 +2,7 @@
 	import { page } from '$app/state';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentsByPropertyId } from '$lib/data/residents';
-	import { getTicketsByPropertyId } from '$lib/data/ticket/tickets';
-	import { getCurrentStatus } from '$lib/components/reports';
+	import { getTicketsByPropertyId, getCurrentStatus } from '$lib/data/ticket/tickets';
 
 	const property = $derived(getPropertyById(page.params.id ?? ''));
 	const residents = $derived(property ? getResidentsByPropertyId(property.id) : []);
