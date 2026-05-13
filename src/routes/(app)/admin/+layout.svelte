@@ -10,7 +10,8 @@
 		BubbleChatIcon,
 		InformationCircleIcon,
 		CreditCardIcon,
-		Settings02Icon
+		Settings02Icon,
+		AiChat02Icon
 	} from '@hugeicons/core-free-icons';
 	import { PropertySelector } from '$lib/components/shared';
 
@@ -70,9 +71,19 @@
 		</nav>
 
 		<!-- Footer -->
-		<div class="border-t border-sidebar-border px-4 py-3">
-			<p class="text-xs text-muted-foreground">Studio Svicom Milano</p>
-			<a href="/login" class="mt-1 text-xs text-primary hover:underline">Cambia profilo</a>
+		<div class="space-y-3 border-t border-sidebar-border px-3 py-3">
+			<a
+				href="/admin/ai"
+				class="group flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px"
+				aria-current={isActive('/admin/ai') ? 'page' : undefined}
+			>
+				<HugeiconsIcon icon={AiChat02Icon} size={18} strokeWidth={1.75} />
+				<span>Assistente AI</span>
+			</a>
+			<div class="px-1">
+				<p class="text-xs text-muted-foreground">Studio Svicom Milano</p>
+				<a href="/login" class="mt-1 text-xs text-primary hover:underline">Cambia profilo</a>
+			</div>
 		</div>
 	</aside>
 
