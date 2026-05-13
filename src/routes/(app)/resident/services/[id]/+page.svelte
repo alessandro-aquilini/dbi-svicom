@@ -88,7 +88,7 @@
 		if (booking.paymentIds) {
 			booking.paymentIds.forEach(id => {
 				const payment = getPaymentById(id);
-				if (payment) {
+				if (payment && payment.paidAt) {
 					items.push({
 						type: 'payment',
 						date: new Date(payment.paidAt),

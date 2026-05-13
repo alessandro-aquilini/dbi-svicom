@@ -15,6 +15,14 @@
 		Search01Icon
 	} from '@hugeicons/core-free-icons';
 	import { getCurrentUser } from '$lib/auth';
+	import { propertySelection } from '$lib/state/property-selection.svelte';
+	import { getPropertyById } from '$lib/data/properties';
+	import { getUserById } from '$lib/data/users';
+	import { getOverduePayments, getDaysOverdue } from '$lib/data/embeds/payments';
+	import { getOpenTickets } from '$lib/data/ticket/tickets';
+	import { getUpcomingMeetings } from '$lib/data/events/meetings';
+
+	const TODAY = new Date('2026-05-13T09:00:00');
 
 	marked.setOptions({ gfm: true, breaks: true });
 
@@ -61,37 +69,72 @@
 
 	type Block = TextBlock | ToolBlock | DraftBlock | EventBlock | StatusBlock;
 
+	type Scope = { id: string; name: string } | null;
+
 	type Message =
-		| { id: string; role: 'user'; text: string }
+		| { id: string; role: 'user'; text: string; scope: Scope }
 		| { id: string; role: 'assistant'; blocks: Block[]; pending: boolean };
 
 	type Step = { delay: number; run: (blocks: Block[]) => Block[] };
 
+	type ScriptBuilder = (scope: Scope) => Step[];
+
 	const currentUser = getCurrentUser();
 	const firstName = currentUser?.name?.split(' ')[0] ?? 'amministratore';
 
-	const suggestions = [
-		{
-			icon: Mail01Icon,
-			title: 'Sollecita i morosi',
-			prompt: 'Manda una mail di sollecito a tutti i residenti morosi oltre 30 giorni.'
-		},
-		{
-			icon: Calendar03Icon,
-			title: 'Programma un\'assemblea',
-			prompt: 'Programma l\'assemblea ordinaria di Via Marconi 14 per il prossimo mese.'
-		},
-		{
-			icon: Note01Icon,
-			title: 'Pratiche aperte',
-			prompt: 'Riepiloga le pratiche aperte questa settimana, raggruppate per priorità.'
-		},
-		{
-			icon: Building03Icon,
-			title: 'Report condominio',
-			prompt: 'Genera il report mensile per il condominio Solari 30.'
-		}
-	];
+	const activeScope = $derived<Scope>(
+		propertySelection.selected
+			? { id: propertySelection.selected.id, name: propertySelection.selected.name }
+			: null
+	);
+
+	const suggestions = $derived(
+		activeScope
+			? [
+					{
+						icon: Mail01Icon,
+						title: 'Sollecita i morosi',
+						prompt: `Manda una mail di sollecito ai residenti morosi di ${activeScope.name} oltre 30 giorni.`
+					},
+					{
+						icon: Calendar03Icon,
+						title: "Programma un'assemblea",
+						prompt: `Programma l'assemblea ordinaria di ${activeScope.name} per il prossimo mese.`
+					},
+					{
+						icon: Note01Icon,
+						title: 'Pratiche aperte',
+						prompt: `Riepiloga le pratiche aperte di ${activeScope.name} raggruppate per priorità.`
+					},
+					{
+						icon: Building03Icon,
+						title: 'Report condominio',
+						prompt: `Genera il report mensile per ${activeScope.name}.`
+					}
+				]
+			: [
+					{
+						icon: Mail01Icon,
+						title: 'Sollecita i morosi',
+						prompt: 'Manda una mail di sollecito a tutti i residenti morosi oltre 30 giorni.'
+					},
+					{
+						icon: Calendar03Icon,
+						title: "Programma un'assemblea",
+						prompt: "Programma l'assemblea ordinaria di Via Marconi 14 per il prossimo mese."
+					},
+					{
+						icon: Note01Icon,
+						title: 'Pratiche aperte',
+						prompt: 'Riepiloga le pratiche aperte questa settimana, raggruppate per priorità.'
+					},
+					{
+						icon: Building03Icon,
+						title: 'Report condominio',
+						prompt: 'Genera il report mensile per il condominio Solari 30.'
+					}
+				]
+	);
 
 	let messages = $state<Message[]>([]);
 	let draft = $state('');
@@ -121,26 +164,50 @@
 		return new Promise((r) => setTimeout(r, ms));
 	}
 
-	function pickScript(prompt: string): Step[] {
+	function pickScript(prompt: string, scope: Scope): Step[] {
 		const p = prompt.toLowerCase();
-		if (/(mais|mail|sollecit|moros|in ritardo)/.test(p)) return scriptMorosi;
-		if (/(assemblea|riunione|convoca|programm)/.test(p)) return scriptAssemblea;
-		if (/(pratich|priorit|aperte)/.test(p)) return scriptPratiche;
-		if (/(report|riepilog|solari|mensile)/.test(p)) return scriptReport;
-		if (/(agenda|settimana|appuntament|scadenz)/.test(p)) return scriptAgenda;
-		return scriptDefault(prompt);
+		if (/(mais|mail|sollecit|moros|in ritardo)/.test(p)) return scriptMorosi(scope);
+		if (/(assemblea|riunione|convoca|programm)/.test(p)) return scriptAssemblea(scope);
+		if (/(pratich|priorit|aperte)/.test(p)) return scriptPratiche(scope);
+		if (/(report|riepilog|solari|mensile)/.test(p)) return scriptReport(scope);
+		if (/(agenda|settimana|appuntament|scadenz)/.test(p)) return scriptAgenda(scope);
+		return scriptDefault(prompt, scope);
 	}
 
-	const scriptMorosi: Step[] = [
+	function scopeLabel(scope: Scope): string {
+		return scope ? `condominio: ${scope.name}` : 'tutti i condomìni';
+	}
+
+	function scopeHeader(scope: Scope, leadIn: string): TextBlock {
+		const where = scope
+			? `**${scope.name}**`
+			: '**tutti i condomìni** in portafoglio';
+		return { kind: 'text', markdown: `${leadIn} ${where}.` };
+	}
+
+	function formatRowsForMorosi(scope: Scope) {
+		const overdue = getOverduePayments({
+			now: TODAY,
+			propertyId: scope?.id,
+			minDaysOverdue: 30
+		});
+		const rows = overdue.map((p) => {
+			const u = getUserById(p.fromId);
+			const property = p.propertyId ? getPropertyById(p.propertyId) : undefined;
+			const days = getDaysOverdue(p, TODAY);
+			const amount = `€${p.amount.toLocaleString('it-IT', { minimumFractionDigits: 0 })}`;
+			return `${u?.name ?? p.fromId} · ${property?.name ?? '—'} · ${amount} · ${days} gg`;
+		});
+		const total = overdue.reduce((sum, p) => sum + p.amount, 0);
+		return { overdue, rows, total };
+	}
+
+	const scriptMorosi: ScriptBuilder = (scope) => [
 		{
-			delay: 350,
+			delay: 300,
 			run: (b) => [
 				...b,
-				{
-					kind: 'text',
-					markdown:
-						"Ok, procedo a contattare i residenti con pagamenti scaduti da più di **30 giorni**. Prima li identifico nel sistema."
-				}
+				scopeHeader(scope, 'Cerco i pagamenti scaduti oltre **30 giorni** su')
 			]
 		},
 		{
@@ -149,7 +216,7 @@
 				...b,
 				{
 					kind: 'tool',
-					label: 'cerca_morosi · soglia: 30gg',
+					label: `cerca_morosi · ${scopeLabel(scope)} · soglia: 30gg`,
 					icon: Search01Icon,
 					status: 'running'
 				}
@@ -159,94 +226,119 @@
 			delay: 1100,
 			run: (b) => {
 				const last = b[b.length - 1] as ToolBlock;
+				const { rows, total } = formatRowsForMorosi(scope);
 				return [
 					...b.slice(0, -1),
 					{
 						...last,
 						status: 'done',
-						summary: '4 residenti trovati · €3.420 totali',
-						rows: [
-							'M. Rossi · Via Marconi 14 · €420 · 47 gg',
-							'L. Conti · Corso Europa 7 · €860 · 38 gg',
-							'A. Greco · Via Carducci 21 · €1.240 · 62 gg',
-							'S. Bruno · Via Tortona 12 · €900 · 33 gg'
-						]
+						summary: rows.length
+							? `${rows.length} residenti trovati · €${total.toLocaleString('it-IT', { minimumFractionDigits: 0 })} totali`
+							: 'Nessun residente moroso in questo condominio',
+						rows: rows.length ? rows : undefined
 					}
 				];
 			}
 		},
 		{
 			delay: 550,
-			run: (b) => [
-				...b,
-				{
-					kind: 'text',
-					markdown:
-						'Ho preparato una bozza personalizzata per ciascun destinatario. Eccone l\'anteprima:'
+			run: (b) => {
+				const prev = b[b.length - 1] as ToolBlock;
+				const recipients = prev.rows?.length ?? 0;
+				if (recipients === 0) {
+					return [
+						...b,
+						{
+							kind: 'text',
+							markdown:
+								"Nessun residente moroso da contattare in questo condominio: nulla da inviare."
+						} as Block
+					];
 				}
-			]
+				return [
+					...b,
+					{
+						kind: 'text',
+						markdown:
+							'Ho preparato una bozza personalizzata per ciascun destinatario. Eccone l\'anteprima:'
+					}
+				];
+			}
 		},
 		{
 			delay: 500,
-			run: (b) => [
-				...b,
-				{
-					kind: 'draft',
-					subject: 'Promemoria pagamento quote condominiali',
-					recipients: '4 destinatari · personalizzata per nome, importo e giorni di ritardo',
-					body: `Gentile {{nome}},\n\nle ricordiamo che risulta in sospeso il pagamento di €{{importo}}, scaduto da {{giorni}} giorni. La invitiamo a regolarizzare entro 7 giorni lavorativi tramite l'area Pagamenti del portale, oppure contattando lo studio per concordare un piano di rientro.\n\nCordiali saluti,\nStudio Svicom Milano`
-				}
-			]
+			run: (b) => {
+				const tool = [...b].reverse().find((x) => x.kind === 'tool') as ToolBlock | undefined;
+				const recipients = tool?.rows?.length ?? 0;
+				if (recipients === 0) return b;
+				return [
+					...b,
+					{
+						kind: 'draft',
+						subject: 'Promemoria pagamento quote condominiali',
+						recipients: `${recipients} destinatari · personalizzata per nome, importo e giorni di ritardo`,
+						body: `Gentile {{nome}},\n\nle ricordiamo che risulta in sospeso il pagamento di €{{importo}}, scaduto da {{giorni}} giorni. La invitiamo a regolarizzare entro 7 giorni lavorativi tramite l'area Pagamenti del portale, oppure contattando lo studio per concordare un piano di rientro.\n\nCordiali saluti,\nStudio Svicom Milano`
+					}
+				];
+			}
 		},
 		{
 			delay: 600,
-			run: (b) => [
-				...b,
-				{
-					kind: 'tool',
-					label: 'invia_email · 4 destinatari',
-					icon: Mail01Icon,
-					status: 'running'
-				}
-			]
+			run: (b) => {
+				const tool = [...b].reverse().find((x) => x.kind === 'tool') as ToolBlock | undefined;
+				const recipients = tool?.rows?.length ?? 0;
+				if (recipients === 0) return b;
+				return [
+					...b,
+					{
+						kind: 'tool',
+						label: `invia_email · ${recipients} destinatari`,
+						icon: Mail01Icon,
+						status: 'running'
+					}
+				];
+			}
 		},
 		{
 			delay: 1200,
 			run: (b) => {
-				const last = b[b.length - 1] as ToolBlock;
+				const last = b[b.length - 1];
+				if (last.kind !== 'tool' || last.status !== 'running') return b;
+				const n = last.label.match(/(\d+) destinatari/)?.[1] ?? '0';
 				return [
 					...b.slice(0, -1),
 					{
 						...last,
 						status: 'done',
-						summary: '4/4 mail consegnate · 0 errori'
+						summary: `${n}/${n} mail consegnate · 0 errori`
 					}
 				];
 			}
 		},
 		{
 			delay: 350,
-			run: (b) => [
-				...b,
-				{
-					kind: 'status',
-					tone: 'success',
-					label: 'Solleciti inviati e registrati nel log comunicazioni di ciascun residente.'
-				}
-			]
+			run: (b) => {
+				const tool = [...b].reverse().find((x) => x.kind === 'tool') as ToolBlock | undefined;
+				const recipients = tool?.rows?.length ?? 0;
+				if (recipients === 0) return b;
+				return [
+					...b,
+					{
+						kind: 'status',
+						tone: 'success',
+						label: 'Solleciti inviati e registrati nel log comunicazioni di ciascun residente.'
+					}
+				];
+			}
 		}
 	];
 
-	const scriptAssemblea: Step[] = [
+	const scriptAssemblea: ScriptBuilder = (scope) => [
 		{
 			delay: 350,
 			run: (b) => [
 				...b,
-				{
-					kind: 'text',
-					markdown:
-						'Procedo a verificare la disponibilità della sala e a notificare i residenti di **Via Marconi 14**.'
-				}
+				scopeHeader(scope, 'Procedo a verificare la sala e a notificare i residenti di')
 			]
 		},
 		{
@@ -255,7 +347,7 @@
 				...b,
 				{
 					kind: 'tool',
-					label: 'verifica_disponibilita · sala condominiale',
+					label: `verifica_disponibilita · ${scopeLabel(scope)}`,
 					icon: Calendar03Icon,
 					status: 'running'
 				}
@@ -277,39 +369,51 @@
 		},
 		{
 			delay: 500,
-			run: (b) => [
-				...b,
-				{
-					kind: 'event',
-					title: 'Assemblea ordinaria — Via Marconi 14',
-					when: 'Mar 9 giugno 2026 · 18:30 (durata stimata 90 min)',
-					where: 'Sala condominiale, Via Marconi 14',
-					invitees: 24
-				}
-			]
+			run: (b) => {
+				const property = scope ? getPropertyById(scope.id) : getPropertyById('cnd-marconi-14');
+				const name = property?.name ?? scope?.name ?? 'Via Marconi 14';
+				const invitees = property?.units ?? 24;
+				return [
+					...b,
+					{
+						kind: 'event',
+						title: `Assemblea ordinaria — ${name}`,
+						when: 'Mar 9 giugno 2026 · 18:30 (durata stimata 90 min)',
+						where: `Sala condominiale, ${name}`,
+						invitees
+					}
+				];
+			}
 		},
 		{
 			delay: 500,
-			run: (b) => [
-				...b,
-				{
-					kind: 'tool',
-					label: 'invia_convocazione · 24 condomini',
-					icon: Mail01Icon,
-					status: 'running'
-				}
-			]
+			run: (b) => {
+				const event = [...b].reverse().find((x) => x.kind === 'event') as
+					| EventBlock
+					| undefined;
+				const n = event?.invitees ?? 24;
+				return [
+					...b,
+					{
+						kind: 'tool',
+						label: `invia_convocazione · ${n} condomini`,
+						icon: Mail01Icon,
+						status: 'running'
+					}
+				];
+			}
 		},
 		{
 			delay: 1000,
 			run: (b) => {
 				const last = b[b.length - 1] as ToolBlock;
+				const n = last.label.match(/(\d+) condomini/)?.[1] ?? '24';
 				return [
 					...b.slice(0, -1),
 					{
 						...last,
 						status: 'done',
-						summary: 'Convocazioni inviate · 24/24'
+						summary: `Convocazioni inviate · ${n}/${n}`
 					}
 				];
 			}
@@ -327,15 +431,12 @@
 		}
 	];
 
-	const scriptPratiche: Step[] = [
+	const scriptPratiche: ScriptBuilder = (scope) => [
 		{
 			delay: 350,
 			run: (b) => [
 				...b,
-				{
-					kind: 'text',
-					markdown: 'Recupero le pratiche aperte e le organizzo per priorità.'
-				}
+				scopeHeader(scope, 'Recupero le pratiche aperte per')
 			]
 		},
 		{
@@ -344,7 +445,7 @@
 				...b,
 				{
 					kind: 'tool',
-					label: 'query_pratiche · stato: aperta',
+					label: `query_pratiche · ${scopeLabel(scope)} · stato: aperta`,
 					icon: DatabaseIcon,
 					status: 'running'
 				}
@@ -354,47 +455,69 @@
 			delay: 900,
 			run: (b) => {
 				const last = b[b.length - 1] as ToolBlock;
+				const open = getOpenTickets(scope?.id);
+				const priorityOrder = { critica: 0, alta: 1, media: 2, bassa: 3 } as const;
+				const sorted = [...open].sort(
+					(a, x) => priorityOrder[a.priority] - priorityOrder[x.priority]
+				);
+				const rows = sorted.map((t) => {
+					const prop = getPropertyById(t.propertyId);
+					const label = t.priority.charAt(0).toUpperCase() + t.priority.slice(1);
+					return `${label} · ${t.title} · ${prop?.name ?? '—'}`;
+				});
 				return [
 					...b.slice(0, -1),
 					{
 						...last,
 						status: 'done',
-						summary: '7 pratiche aperte questa settimana',
-						rows: [
-							'Alta · perdita locale caldaia · Via Marconi 14',
-							'Alta · ascensore fuori uso · Corso Europa 7',
-							'Media · sostituzione luci scale · Solari 30',
-							'Media · revisione antincendio · Pacini 44',
-							'Media · ripristino citofono · Verdi 3',
-							'Bassa · pulizia parti comuni · Tortona 12',
-							'Bassa · richiesta info polizza · Carducci 21'
-						]
+						summary: rows.length
+							? `${rows.length} pratiche aperte questa settimana`
+							: 'Nessuna pratica aperta su questo condominio',
+						rows: rows.length ? rows : undefined
 					}
 				];
 			}
 		},
 		{
 			delay: 450,
-			run: (b) => [
-				...b,
-				{
-					kind: 'text',
-					markdown:
-						'**Sintesi:**\n\n- 2 pratiche **ad alta priorità** richiedono il tuo intervento.\n- 3 pratiche **medie** sono in attesa preventivo.\n- 2 pratiche **basse** possono essere chiuse a fine settimana.\n\nVuoi che programmi un sollecito al fornitore dell\'ascensore?'
+			run: (b) => {
+				const tool = [...b].reverse().find((x) => x.kind === 'tool') as ToolBlock | undefined;
+				const n = tool?.rows?.length ?? 0;
+				if (n === 0) {
+					return [
+						...b,
+						{
+							kind: 'text',
+							markdown: 'Nessuna pratica da gestire al momento.'
+						} as Block
+					];
 				}
-			]
+				const critical = tool?.rows?.filter((r) => r.startsWith('Critica')).length ?? 0;
+				const high = tool?.rows?.filter((r) => r.startsWith('Alta')).length ?? 0;
+				const mid = tool?.rows?.filter((r) => r.startsWith('Media')).length ?? 0;
+				const low = tool?.rows?.filter((r) => r.startsWith('Bassa')).length ?? 0;
+				const parts: string[] = [];
+				if (critical) parts.push(`${critical} **critiche**`);
+				if (high) parts.push(`${high} ad **alta priorità**`);
+				if (mid) parts.push(`${mid} **medie**`);
+				if (low) parts.push(`${low} **basse**`);
+				return [
+					...b,
+					{
+						kind: 'text',
+						markdown: `**Sintesi:** ${parts.join(' · ')}.\n\nVuoi che programmi un sollecito ai fornitori coinvolti?`
+					}
+				];
+			}
 		}
 	];
 
-	const scriptReport: Step[] = [
+	const scriptReport: ScriptBuilder = (scope) => [
 		{
 			delay: 350,
 			run: (b) => [
 				...b,
-				{
-					kind: 'text',
-					markdown: 'Raccolgo i dati operativi del mese per **Solari 30**.'
-				}
+				scopeHeader(scope, 'Raccolgo i dati operativi del mese per')
 			]
 		},
 		{
@@ -403,7 +526,7 @@
 				...b,
 				{
 					kind: 'tool',
-					label: 'aggrega_metriche · Solari 30 · 30gg',
+					label: `aggrega_metriche · ${scopeLabel(scope)} · 30gg`,
 					icon: DatabaseIcon,
 					status: 'running'
 				}
@@ -413,17 +536,28 @@
 			delay: 1000,
 			run: (b) => {
 				const last = b[b.length - 1] as ToolBlock;
+				const openTickets = getOpenTickets(scope?.id);
+				const overdue = getOverduePayments({
+					now: TODAY,
+					propertyId: scope?.id
+				});
+				const owedTotal = overdue.reduce((s, p) => s + p.amount, 0);
+				const upcoming = getUpcomingMeetings({
+					now: TODAY,
+					withinDays: 30,
+					propertyId: scope?.id
+				});
 				return [
 					...b.slice(0, -1),
 					{
 						...last,
 						status: 'done',
-						summary: 'Dati raccolti da 4 fonti',
+						summary: 'Dati aggregati da pratiche, pagamenti e calendario',
 						rows: [
-							'Pratiche chiuse: 6 (+2 vs mese scorso)',
-							'Tempo medio risoluzione: 3.4 gg',
-							'Spesa straordinaria: €1.840',
-							'Soddisfazione residenti: 4.6 / 5'
+							`Pratiche aperte: ${openTickets.length}`,
+							`Quote in ritardo: ${overdue.length} · €${owedTotal.toLocaleString('it-IT', { minimumFractionDigits: 0 })}`,
+							`Eventi prossimi 30 giorni: ${upcoming.length}`,
+							'Soddisfazione residenti: 4.6 / 5 (rilevazione campionaria)'
 						]
 					}
 				];
@@ -431,26 +565,25 @@
 		},
 		{
 			delay: 500,
-			run: (b) => [
-				...b,
-				{
-					kind: 'text',
-					markdown:
-						'**Report mensile — Solari 30** pronto. Andamento positivo: tempi di risoluzione in calo del 18% e nessuna pratica critica aperta a fine mese.\n\nLo invio anche al referente del condominio?'
-				}
-			]
+			run: (b) => {
+				const name = scope?.name ?? 'portafoglio completo';
+				return [
+					...b,
+					{
+						kind: 'text',
+						markdown: `**Report mensile — ${name}** pronto. Andamento positivo: tempi di risoluzione in calo del 18% e nessuna pratica critica aperta a fine mese.\n\nLo invio anche al referente del condominio?`
+					}
+				];
+			}
 		}
 	];
 
-	const scriptAgenda: Step[] = [
+	const scriptAgenda: ScriptBuilder = (scope) => [
 		{
 			delay: 350,
 			run: (b) => [
 				...b,
-				{
-					kind: 'text',
-					markdown: 'Ecco gli impegni dei prossimi 7 giorni.'
-				}
+				scopeHeader(scope, 'Ecco gli impegni dei prossimi 7 giorni per')
 			]
 		},
 		{
@@ -459,7 +592,7 @@
 				...b,
 				{
 					kind: 'tool',
-					label: 'leggi_calendario · 7gg',
+					label: `leggi_calendario · ${scopeLabel(scope)} · 7gg`,
 					icon: Calendar03Icon,
 					status: 'running'
 				}
@@ -469,24 +602,37 @@
 			delay: 800,
 			run: (b) => {
 				const last = b[b.length - 1] as ToolBlock;
+				const upcoming = getUpcomingMeetings({
+					now: TODAY,
+					withinDays: 7,
+					propertyId: scope?.id
+				});
+				const dayFmt = new Intl.DateTimeFormat('it-IT', {
+					weekday: 'short',
+					day: '2-digit'
+				});
+				const rows = upcoming.map((m) => {
+					const d = new Date(`${m.date}T${m.startTime}:00`);
+					const day = dayFmt.format(d).replace('.', '');
+					return `${day} · ${m.startTime} · ${m.title}`;
+				});
 				return [
 					...b.slice(0, -1),
 					{
 						...last,
 						status: 'done',
-						summary: '3 eventi pianificati',
-						rows: [
-							'Mar 14 · 09:30 · Sopralluogo Solari 30',
-							'Mer 15 · 18:00 · Assemblea Corso Europa 7',
-							'Ven 17 · scadenza preventivo Pacini 44'
-						]
+						summary: rows.length
+							? `${rows.length} eventi pianificati`
+							: 'Nessun evento in agenda per questo condominio',
+						rows: rows.length ? rows : undefined
 					}
 				];
 			}
 		}
 	];
 
-	function scriptDefault(prompt: string): Step[] {
+	function scriptDefault(prompt: string, scope: Scope): Step[] {
+		const tail = scope ? ` (contesto: ${scope.name})` : '';
 		return [
 			{
 				delay: 500,
@@ -494,7 +640,7 @@
 					...b,
 					{
 						kind: 'text',
-						markdown: `Sto simulando una risposta a: "${prompt}". Quando l'integrazione LLM sarà attiva, qui arriverà una risposta in streaming da un modello configurato per Svicom Living Hub.`
+						markdown: `Sto simulando una risposta a: "${prompt}"${tail}. Quando l'integrazione LLM sarà attiva, qui arriverà una risposta in streaming da un modello configurato per Svicom Living Hub.`
 					}
 				]
 			}
@@ -505,7 +651,9 @@
 		const content = (promptOverride ?? draft).trim();
 		if (!content || isSending) return;
 
-		messages.push({ id: newId(), role: 'user', text: content });
+		const snapshotScope: Scope = activeScope ? { ...activeScope } : null;
+
+		messages.push({ id: newId(), role: 'user', text: content, scope: snapshotScope });
 		draft = '';
 		autoGrow();
 		isSending = true;
@@ -515,7 +663,7 @@
 		messages.push({ id: assistantId, role: 'assistant', blocks: [], pending: true });
 		await scrollToBottom();
 
-		const steps = pickScript(content);
+		const steps = pickScript(content, snapshotScope);
 
 		for (const step of steps) {
 			await sleep(step.delay);
@@ -561,14 +709,28 @@
 			</span>
 			<div>
 				<h1>Assistente AI</h1>
-				<p>Conversa con l'assistente operativo di Svicom Living Hub.</p>
+				<p>
+					{#if activeScope}
+						Contesto attivo: <strong>{activeScope.name}</strong>
+					{:else}
+						Conversa con l'assistente operativo di Svicom Living Hub.
+					{/if}
+				</p>
 			</div>
 		</div>
-		{#if !isEmpty}
-			<button type="button" class="ai-chat__reset" onclick={resetConversation}>
-				Nuova conversazione
-			</button>
-		{/if}
+		<div class="ai-chat__header-actions">
+			{#if activeScope}
+				<span class="ai-chat__scope-pill" title="Filtro attivo dalla sidebar">
+					<HugeiconsIcon icon={Building03Icon} size={12} strokeWidth={1.8} />
+					{activeScope.name}
+				</span>
+			{/if}
+			{#if !isEmpty}
+				<button type="button" class="ai-chat__reset" onclick={resetConversation}>
+					Nuova conversazione
+				</button>
+			{/if}
+		</div>
 	</header>
 
 	<div class="ai-chat__scroll" bind:this={scrollEl}>
@@ -581,6 +743,15 @@
 				<p class="ai-chat__empty-copy">
 					Chiedi all'assistente di eseguire un'azione, raccogliere dati o preparare comunicazioni.
 				</p>
+				{#if activeScope}
+					<div class="ai-chat__empty-scope">
+						<HugeiconsIcon icon={Building03Icon} size={13} strokeWidth={1.8} />
+						<span>
+							Le richieste verranno applicate al condominio
+							<strong>{activeScope.name}</strong>.
+						</span>
+					</div>
+				{/if}
 				<div class="ai-chat__suggestions">
 					{#each suggestions as s}
 						<button type="button" class="ai-chat__suggestion" onclick={() => send(s.prompt)}>
@@ -693,10 +864,18 @@
 								{/each}
 							</div>
 						{:else}
-							<div class="ai-chat__bubble">
-								{#each m.text.split('\n') as line, i (i)}
-									<p>{line}</p>
-								{/each}
+							<div class="ai-chat__user-stack">
+								<div class="ai-chat__bubble">
+									{#each m.text.split('\n') as line, i (i)}
+										<p>{line}</p>
+									{/each}
+								</div>
+								{#if m.scope}
+									<span class="ai-chat__msg-scope" title="Inviato nel contesto di questo condominio">
+										<HugeiconsIcon icon={Building03Icon} size={11} strokeWidth={1.9} />
+										{m.scope.name}
+									</span>
+								{/if}
 							</div>
 						{/if}
 					</div>
@@ -785,6 +964,25 @@
 		margin-top: 2px;
 	}
 
+	.ai-chat__header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.ai-chat__scope-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.35rem 0.65rem;
+		border-radius: 9999px;
+		font-size: 0.72rem;
+		font-weight: 500;
+		color: var(--primary);
+		background: color-mix(in oklch, var(--primary) 12%, transparent);
+		border: 1px solid color-mix(in oklch, var(--primary) 28%, transparent);
+	}
+
 	.ai-chat__reset {
 		font-size: 0.75rem;
 		color: var(--muted-foreground);
@@ -798,6 +996,43 @@
 	.ai-chat__reset:hover {
 		background: var(--muted);
 		color: var(--foreground);
+	}
+
+	.ai-chat__empty-scope {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin-top: 1rem;
+		padding: 0.4rem 0.7rem;
+		border-radius: 9999px;
+		background: color-mix(in oklch, var(--primary) 10%, transparent);
+		color: var(--primary);
+		font-size: 0.72rem;
+		border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
+	}
+
+	.ai-chat__empty-scope strong {
+		font-weight: 600;
+	}
+
+	.ai-chat__user-stack {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.3rem;
+		max-width: min(85%, 640px);
+	}
+
+	.ai-chat__msg-scope {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.2rem 0.5rem;
+		border-radius: 9999px;
+		font-size: 0.68rem;
+		color: var(--primary);
+		background: color-mix(in oklch, var(--primary) 10%, transparent);
+		border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
 	}
 
 	.ai-chat__scroll {

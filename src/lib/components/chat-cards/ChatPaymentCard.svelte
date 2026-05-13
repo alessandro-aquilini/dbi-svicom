@@ -35,7 +35,7 @@
         </div>
         
         <div class="px-4 py-2 bg-emerald-50/30 text-[10px] text-emerald-700/70">
-            Transazione completata il {format(new Date(payment.paidAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
+            Transazione completata il {payment.paidAt ? format(new Date(payment.paidAt), "d MMM yyyy 'alle' HH:mm", { locale: it }) : '—'}
         </div>
     </div>
 </div>
