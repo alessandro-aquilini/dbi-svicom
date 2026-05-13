@@ -198,10 +198,10 @@ export const bookings: Booking[] = [
     // 6) Citofono: resident requested, waiting for supplier (demonstrates 'requested' state)
     {
         id: 'bkg-006',
-        residentId: 'res-bianchi-01',
+        residentId: 'res-bellini-05',
         serviceId: 'srv-riparazione-citofono',
         timeline: [
-            { id: 'bkg-006-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-10T08:30:00Z', slot: { start: '2026-05-12T09:00:00Z', end: '2026-05-12T11:00:00Z' } }
+            { id: 'bkg-006-e1', kind: 'request_created', authorId: 'res-bellini-05', at: '2026-05-10T08:30:00Z', slot: { start: '2026-05-12T09:00:00Z', end: '2026-05-12T11:00:00Z' } }
         ]
     }
 ];
