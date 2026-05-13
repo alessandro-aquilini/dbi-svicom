@@ -1,8 +1,5 @@
-import { browser } from '$app/environment';
 import { reports, getReportById, type Report, type ReportPriority } from '$lib/data/ticket/reports';
-
-const RESIDENT_LOCAL_TICKETS_STORAGE_KEY = 'svicom_resident_local_tickets';
-const RESIDENT_LOCAL_TICKET_META_STORAGE_KEY = 'svicom_resident_local_ticket_meta';
+import { getPropertyById } from '$lib/data/properties';
 
 export interface ResidentTicketDraftInput {
     title: string;
@@ -53,6 +50,17 @@ export interface ResidentTicketDraftPresentationInput {
 	fieldAnswers?: ResidentTicketFieldAnswer[];
 }
 
+export interface ResidentTicketAiDraft {
+	title: string;
+	category: string;
+	priority: ReportPriority;
+	description: string;
+	dynamicAnswers: Record<string, string>;
+}
+
+let residentLocalTickets: Report[] = [];
+let residentLocalTicketMeta: ResidentTicketPresentationMeta[] = [];
+
 export const residentTicketPriorityOptions: ResidentTicketOption[] = [
 	{ value: 'bassa', label: 'Bassa', copy: 'Per richieste informative o non urgenti.' },
 	{ value: 'media', label: 'Media', copy: 'Per problemi da gestire nel breve periodo.' },
@@ -61,42 +69,59 @@ export const residentTicketPriorityOptions: ResidentTicketOption[] = [
 ];
 
 const residentTicketCategoryCopyByValue: Record<string, string> = {
-	impianti: 'Ascensore, acqua, contatori, energia e impianti comuni.',
-	sicurezza: 'Accessi, cancelli, porte e situazioni da verificare rapidamente.'
+	Idraulica: 'Perdite, acqua calda, scarichi, rubinetterie e impianti idrici comuni.',
+	Elettrico: 'Luci, citofoni, alimentazione, quadri e impianti elettrici comuni.',
+	Fabbro: 'Porte, portoni, cancelli, serrature e chiusure da regolare o riparare.'
 };
 
 const residentTicketDynamicFields: ResidentTicketDynamicFieldDefinition[] = [
 	{
-		id: 'impianti-area',
+		id: 'idraulica-area',
 		label: 'Area interessata',
 		copy: 'Indica impianto, scala o locale coinvolto.',
-		placeholder: 'Es. ascensore scala B, locale contatori, citofono ingresso',
+		placeholder: 'Es. locale caldaia, scala B, bagno di servizio piano terra',
 		input: 'text',
-		categories: ['impianti']
+		categories: ['Idraulica']
 	},
 	{
-		id: 'impianti-pattern',
+		id: 'idraulica-pattern',
 		label: 'Quando si presenta',
 		copy: 'Descrivi frequenza, fascia oraria o condizione in cui il problema si manifesta.',
-		placeholder: 'Es. a intermittenza dalle 18, soprattutto al primo utilizzo del mattino',
+		placeholder: 'Es. perdita continua dalla mattina, acqua calda assente dalle 7',
 		input: 'textarea',
-		categories: ['impianti']
+		categories: ['Idraulica']
 	},
 	{
-		id: 'sicurezza-varco',
-		label: 'Varco o punto critico',
-		copy: 'Specifica accesso, scala o area comune coinvolta.',
-		placeholder: 'Es. portone via Marconi, corsello box, scala B',
+		id: 'elettrico-area',
+		label: 'Area interessata',
+		copy: 'Specifica scala, piano o dispositivo coinvolto.',
+		placeholder: 'Es. pianerottolo secondo piano, videocitofono ingresso, scala B',
 		input: 'text',
-		categories: ['sicurezza']
+		categories: ['Elettrico']
 	},
 	{
-		id: 'sicurezza-accesso',
-		label: 'Condizione di accesso',
-		copy: 'Segnala se il tecnico trova accesso libero o se serve coordinamento.',
-		placeholder: 'Es. accesso libero di giorno, serve avviso al custode',
+		id: 'elettrico-pattern',
+		label: 'Come si manifesta',
+		copy: 'Descrivi se il problema e continuo, intermittente o legato a un momento preciso.',
+		placeholder: 'Es. lampadina spenta da ieri sera, citofono senza audio in modo continuo',
 		input: 'textarea',
-		categories: ['sicurezza']
+		categories: ['Elettrico']
+	},
+	{
+		id: 'fabbro-area',
+		label: 'Punto critico',
+		copy: 'Specifica porta, cancello, serratura o area coinvolta.',
+		placeholder: 'Es. portone ingresso principale, cancelletto cortile, porta box',
+		input: 'text',
+		categories: ['Fabbro']
+	},
+	{
+		id: 'fabbro-accesso',
+		label: 'Condizione riscontrata',
+		copy: 'Descrivi cosa succede quando si apre o si chiude.',
+		placeholder: 'Es. rimane socchiuso, chiude con fatica, serratura bloccata in alcuni momenti',
+		input: 'textarea',
+		categories: ['Fabbro']
 	}
 ];
 
@@ -114,72 +139,20 @@ function isTicketPriority(value: string): value is ReportPriority {
 	return residentTicketPriorityOptions.some((option) => option.value === value);
 }
 
-function parseResidentLocalTickets(rawValue: string | null): Report[] {
-	if (!rawValue) return [];
-
-	try {
-		const parsed = JSON.parse(rawValue);
-		if (!Array.isArray(parsed)) return [];
-
-		return parsed.filter((ticket): ticket is Report => {
-			return (
-				typeof ticket?.id === 'string' &&
-				typeof ticket?.title === 'string' &&
-				typeof ticket?.description === 'string' &&
-				typeof ticket?.priority === 'string' &&
-				typeof ticket?.reportedById === 'string' &&
-				typeof ticket?.propertyId === 'string' &&
-				typeof ticket?.category === 'string' &&
-				Array.isArray(ticket?.statusHistory)
-			);
-		});
-	} catch {
-		return [];
-	}
-}
-
-function parseResidentLocalTicketMeta(rawValue: string | null): ResidentTicketPresentationMeta[] {
-	if (!rawValue) return [];
-
-	try {
-		const parsed = JSON.parse(rawValue);
-		if (!Array.isArray(parsed)) return [];
-
-		return parsed.filter((item): item is ResidentTicketPresentationMeta => {
-			return (
-				typeof item?.ticketId === 'string' &&
-				typeof item?.submittedAt === 'string' &&
-				Array.isArray(item?.attachments) &&
-				Array.isArray(item?.fieldAnswers)
-			);
-		});
-	} catch {
-		return [];
-	}
-}
-
 function getResidentLocalTicketStorage(): Report[] {
-	if (!browser) return [];
-
-	return parseResidentLocalTickets(localStorage.getItem(RESIDENT_LOCAL_TICKETS_STORAGE_KEY));
+	return residentLocalTickets;
 }
 
 function getResidentLocalTicketMetaStorage(): ResidentTicketPresentationMeta[] {
-	if (!browser) return [];
-
-	return parseResidentLocalTicketMeta(localStorage.getItem(RESIDENT_LOCAL_TICKET_META_STORAGE_KEY));
+	return residentLocalTicketMeta;
 }
 
 function setResidentLocalTicketStorage(localTickets: Report[]) {
-	if (!browser) return;
-
-	localStorage.setItem(RESIDENT_LOCAL_TICKETS_STORAGE_KEY, JSON.stringify(localTickets));
+	residentLocalTickets = localTickets;
 }
 
 function setResidentLocalTicketMetaStorage(metaItems: ResidentTicketPresentationMeta[]) {
-	if (!browser) return;
-
-	localStorage.setItem(RESIDENT_LOCAL_TICKET_META_STORAGE_KEY, JSON.stringify(metaItems));
+	residentLocalTicketMeta = metaItems;
 }
 
 function generateResidentLocalTicketId(existingTickets: Report[]): string {
@@ -207,6 +180,7 @@ export function getResidentVisibleTicketById(id: string): Report | undefined {
 export function createResidentLocalTicket(input: ResidentTicketDraftInput): Report {
 	const localTickets = getResidentLocalTicketStorage();
 	const now = new Date().toISOString();
+	const property = getPropertyById(input.propertyId);
 	const ticket: Report = {
 		id: generateResidentLocalTicketId([...reports, ...localTickets]),
 		title: input.title.trim(),
@@ -214,6 +188,7 @@ export function createResidentLocalTicket(input: ResidentTicketDraftInput): Repo
 		priority: input.priority,
 		reportedById: input.reportedById,
 		propertyId: input.propertyId,
+		adminId: property?.adminId ?? 'adm-giorgio-01',
 		category: input.category,
 		status: 'nuova',
 		createdAt: now,
@@ -294,4 +269,180 @@ function formatResidentTicketAttachmentSize(size: number): string {
 	}
 
 	return `${size} B`;
+}
+
+export function buildResidentTicketAiDraft(prompt: string): ResidentTicketAiDraft {
+	const normalizedPrompt = prompt.trim();
+	const lowerPrompt = normalizedPrompt.toLowerCase();
+	const category = inferResidentTicketCategory(lowerPrompt);
+	const area = inferResidentTicketArea(normalizedPrompt, category);
+	const priority = inferResidentTicketPriority(lowerPrompt);
+
+	return {
+		title: inferResidentTicketTitle(normalizedPrompt, category, area),
+		category,
+		priority,
+		description: buildResidentTicketDescription(normalizedPrompt, area),
+		dynamicAnswers: buildResidentTicketDynamicAnswers(category, normalizedPrompt, lowerPrompt, area)
+	};
+}
+
+function inferResidentTicketCategory(lowerPrompt: string): string {
+	if (
+		lowerPrompt.includes('perdita') ||
+		lowerPrompt.includes('acqua') ||
+		lowerPrompt.includes('caldaia') ||
+		lowerPrompt.includes('scarico') ||
+		lowerPrompt.includes('rubinetto')
+	) {
+		return 'Idraulica';
+	}
+
+	if (
+		lowerPrompt.includes('lampadina') ||
+		lowerPrompt.includes('luce') ||
+		lowerPrompt.includes('citofono') ||
+		lowerPrompt.includes('videocitofono') ||
+		lowerPrompt.includes('corrente') ||
+		lowerPrompt.includes('quadro')
+	) {
+		return 'Elettrico';
+	}
+
+	if (
+		lowerPrompt.includes('portone') ||
+		lowerPrompt.includes('porta') ||
+		lowerPrompt.includes('cancello') ||
+		lowerPrompt.includes('serratura') ||
+		lowerPrompt.includes('chiudiporta')
+	) {
+		return 'Fabbro';
+	}
+
+	return residentTicketCategoryOptions[0]?.value ?? 'Idraulica';
+}
+
+function inferResidentTicketPriority(lowerPrompt: string): ReportPriority {
+	if (
+		lowerPrompt.includes('urgente') ||
+		lowerPrompt.includes('allag') ||
+		lowerPrompt.includes('grossa perdita') ||
+		lowerPrompt.includes('bloccato') ||
+		lowerPrompt.includes('non si apre') ||
+		lowerPrompt.includes('non chiude')
+	) {
+		return 'critica';
+	}
+
+	if (
+		lowerPrompt.includes('non funziona') ||
+		lowerPrompt.includes('guasto') ||
+		lowerPrompt.includes('manca') ||
+		lowerPrompt.includes('perdita') ||
+		lowerPrompt.includes('spento')
+	) {
+		return 'alta';
+	}
+
+	if (lowerPrompt.includes('verificare') || lowerPrompt.includes('controllare')) {
+		return 'media';
+	}
+
+	return 'media';
+}
+
+function inferResidentTicketArea(prompt: string, category: string): string {
+	const areaPatterns = [
+		/(locale [a-zà-ù0-9 ]+)/i,
+		/(scala [a-z0-9]+)/i,
+		/(pianerottolo [a-zà-ù0-9 ]+)/i,
+		/(secondo piano|primo piano|terzo piano|piano terra)/i,
+		/(portone [a-zà-ù0-9 ]+)/i,
+		/(videocitofono [a-zà-ù0-9 ]+)/i,
+		/(ingresso principale)/i
+	];
+
+	for (const pattern of areaPatterns) {
+		const match = prompt.match(pattern);
+		if (match?.[1]) return sanitizeSentence(match[1]);
+		if (match?.[0]) return sanitizeSentence(match[0]);
+	}
+
+	if (category === 'Idraulica') return 'Area impianto idrico';
+	if (category === 'Elettrico') return 'Area impianto elettrico';
+	return 'Accesso o chiusura comune';
+}
+
+function inferResidentTicketTitle(prompt: string, category: string, area: string): string {
+	if (category === 'Idraulica') {
+		if (prompt.toLowerCase().includes('acqua calda')) return `Mancanza acqua calda in ${area}`;
+		if (prompt.toLowerCase().includes('perdita')) return `Perdita d'acqua in ${area}`;
+		return `Problema idraulico in ${area}`;
+	}
+
+	if (category === 'Elettrico') {
+		if (prompt.toLowerCase().includes('lampadina') || prompt.toLowerCase().includes('luce')) {
+			return `Illuminazione non funzionante in ${area}`;
+		}
+		if (prompt.toLowerCase().includes('citofono')) return `Guasto citofono in ${area}`;
+		return `Problema elettrico in ${area}`;
+	}
+
+	if (prompt.toLowerCase().includes('serratura')) return `Serratura da verificare in ${area}`;
+	if (prompt.toLowerCase().includes('cancello')) return `Cancello da regolare in ${area}`;
+	return `Porta o portone da sistemare in ${area}`;
+}
+
+function buildResidentTicketDescription(prompt: string, area: string): string {
+	const text = sanitizeSentence(prompt);
+	return text.includes(area) ? text : `${text} Area indicata: ${area}.`;
+}
+
+function buildResidentTicketDynamicAnswers(
+	category: string,
+	prompt: string,
+	lowerPrompt: string,
+	area: string
+): Record<string, string> {
+	if (category === 'Idraulica') {
+		return {
+			'idraulica-area': area,
+			'idraulica-pattern': inferPatternText(
+				lowerPrompt,
+				prompt,
+				'Il problema si presenta in modo continuativo e richiede verifica del punto di perdita o del servizio acqua.'
+			)
+		};
+	}
+
+	if (category === 'Elettrico') {
+		return {
+			'elettrico-area': area,
+			'elettrico-pattern': inferPatternText(
+				lowerPrompt,
+				prompt,
+				'Il malfunzionamento e visibile durante l uso ordinario dell area o del dispositivo segnalato.'
+			)
+		};
+	}
+
+	return {
+		'fabbro-area': area,
+		'fabbro-accesso': inferPatternText(
+			lowerPrompt,
+			prompt,
+			'La chiusura o l apertura del varco non risultano regolari e serve una verifica sul punto indicato.'
+		)
+	};
+}
+
+function inferPatternText(lowerPrompt: string, prompt: string, fallback: string): string {
+	if (lowerPrompt.includes('da ieri')) return `${sanitizeSentence(prompt)} Situazione presente da ieri.`;
+	if (lowerPrompt.includes('da stamattina')) return `${sanitizeSentence(prompt)} Situazione presente da stamattina.`;
+	if (lowerPrompt.includes('intermitten')) return `${sanitizeSentence(prompt)} Il problema si presenta in modo intermittente.`;
+	return fallback;
+}
+
+function sanitizeSentence(value: string): string {
+	return value.trim().replace(/\s+/g, ' ').replace(/[.]+$/, '');
 }

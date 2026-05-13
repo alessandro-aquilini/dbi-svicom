@@ -36,7 +36,7 @@
 
 	<CardContent class="resident-module-summary-card__content">
 		{#if stats.length}
-			<div class="resident-module-summary-card__stats">
+			<div class="resident-module-summary-card__stats" aria-label="Metriche sintetiche">
 				{#each stats as stat}
 					<div class="resident-module-summary-card__stat">
 						<p class="resident-module-summary-card__stat-label">{stat.label}</p>

@@ -1,6 +1,5 @@
-<script lang="ts">
+	<script lang="ts">
 	import {
-		AssemblyMinutesHighlights,
 		ResidentAssemblyCard,
 		formatAssemblyDate,
 		formatAssemblySchedule,
@@ -10,8 +9,12 @@
 		getResidentAssemblyProxyRecord,
 		getResidentAssemblyVoteRecord
 	} from '$lib/components/assemblies';
-	import { ResidentEmptyCard, ResidentSummaryCard } from '$lib/components/resident';
+	import {
+		ResidentEmptyCard
+	} from '$lib/components/resident';
+	import { InfoTip } from '$lib/components/shared';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import {
 		Card,
 		CardContent,
@@ -40,14 +43,12 @@
 	const remainingPlannedAssemblies = plannedAssemblies.filter(
 		(assembly) => assembly.id !== nextAssembly?.id
 	);
-	const latestMinutesAssembly = [...completedAssemblies].find((assembly) => assembly.minutes);
 	const savedVotesCount = currentUser
 		? plannedAssemblies.filter((assembly) => getResidentAssemblyVoteRecord(assembly.id, currentUser.id)).length
 		: 0;
 	const savedProxyCount = currentUser
 		? plannedAssemblies.filter((assembly) => getResidentAssemblyProxyRecord(assembly.id, currentUser.id)).length
 		: 0;
-
 	const summaryCopy =
 		property && resident
 			? `${property.name}, ${resident.apartment}. Qui trovi convocazioni, verbali, delibere e accessi rapidi alle prossime assemblee.`
@@ -67,6 +68,31 @@
 				savedProxyCount > 0 ? `${savedProxyCount} delega registrata` : 'Nessuna delega registrata'
 			]
 		: [];
+	let completedSearch = $state('');
+	let completedFilter = $state<'all' | 'minutes' | 'ordinaria' | 'straordinaria'>('all');
+	const filteredCompletedAssemblies = $derived.by(() => {
+		const query = completedSearch.trim().toLowerCase();
+
+		return completedAssemblies.filter((assembly) => {
+			if (completedFilter === 'minutes' && !assembly.minutes) return false;
+			if (completedFilter === 'ordinaria' && assembly.type !== 'ordinaria') return false;
+			if (completedFilter === 'straordinaria' && assembly.type !== 'straordinaria') return false;
+
+			if (!query) return true;
+
+			const searchableText = [
+				assembly.location,
+				assembly.type,
+				...assembly.agenda,
+				assembly.minutes?.text ?? '',
+				...(assembly.minutes?.resolutions.map((resolution) => `${resolution.title} ${resolution.notes ?? ''}`) ?? [])
+			]
+				.join(' ')
+				.toLowerCase();
+
+			return searchableText.includes(query);
+		});
+	});
 </script>
 
 <svelte:head>
@@ -75,19 +101,42 @@
 
 <div class="resident-module-page">
 	<div class="resident-module-stack">
-		<ResidentSummaryCard
-			eyebrow="Governance"
-			title="Assemblee"
-			copy={summaryCopy}
-			stats={summaryStats}
-			chips={summaryChips}
-		/>
+		<section class="report-page-header">
+			<div class="report-page-header__main">
+				<p class="report-page-header__eyebrow">Governance</p>
+				<div class="resident-heading-with-tip">
+					<h1 class="report-page-header__title">Assemblee</h1>
+					<InfoTip text="Qui trovi convocazioni, verbali, delibere e accessi rapidi alle prossime assemblee del tuo stabile." />
+				</div>
+				<p class="report-page-header__copy">{summaryCopy}</p>
+			</div>
+
+			<div class="report-page-header__stats" aria-label="Panoramica assemblee">
+				{#each summaryStats as stat}
+					<div class="report-page-header__stat">
+						<p class="report-page-header__stat-label">{stat.label}</p>
+						<p class="report-page-header__stat-value">{stat.value}</p>
+					</div>
+				{/each}
+			</div>
+
+			{#if summaryChips.length > 0}
+				<div class="report-page-header__chips">
+					{#each summaryChips as chip}
+						<span class="report-page-header__chip">{chip}</span>
+					{/each}
+				</div>
+			{/if}
+		</section>
 
 		{#if nextAssembly}
 			<Card class="assembly-hero-card">
 				<CardHeader class="assembly-hero-card__header">
 					<div class="assembly-hero-card__heading">
-						<p class="assembly-hero-card__eyebrow">Prossima assemblea</p>
+						<div class="resident-heading-with-tip resident-heading-with-tip--compact">
+							<p class="assembly-hero-card__eyebrow">Prossima assemblea</p>
+							<InfoTip text="Quando l'assemblea e pianificata, da qui puoi aprire scheda, chiamata, voto e delega." />
+						</div>
 						<CardTitle class="assembly-hero-card__title">{property?.name}</CardTitle>
 						<CardDescription class="assembly-hero-card__copy">
 							{formatAssemblySchedule(nextAssembly.scheduledAt)} presso {nextAssembly.location}.
@@ -108,10 +157,18 @@
 					</div>
 
 					<div class="assembly-hero-card__agenda">
-						{#each nextAssembly.agenda as agendaItem}
-							<p class="assembly-hero-card__agenda-item">{agendaItem}</p>
+						{#each nextAssembly.agenda.slice(0, 3) as agendaItem}
+							<div class="assembly-hero-card__agenda-item">
+								<span class="assembly-hero-card__agenda-dot" aria-hidden="true"></span>
+								<p>{agendaItem}</p>
+							</div>
 						{/each}
 					</div>
+					{#if nextAssembly.agenda.length > 3}
+						<p class="assembly-hero-card__note">
+							Altri {nextAssembly.agenda.length - 3} punti disponibili nella scheda completa.
+						</p>
+					{/if}
 
 					<div class="assembly-hero-card__actions">
 						<Button href={`/resident/assemblies/${nextAssembly.id}`} size="lg" class="assembly-hero-card__button">
@@ -140,28 +197,6 @@
 			</Card>
 		{/if}
 
-		{#if latestMinutesAssembly?.minutes}
-			<Card class="assembly-highlight-card">
-				<CardHeader>
-					<CardTitle>Ultimo verbale disponibile</CardTitle>
-					<CardDescription>
-						Verbale pubblicato il {formatAssemblyDate(latestMinutesAssembly.minutes.publishedAt)} con i punti principali gia estratti dalla scheda assemblea.
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent class="assembly-highlight-card__content">
-					<AssemblyMinutesHighlights
-						assembly={latestMinutesAssembly}
-						unitsCount={property?.units}
-					/>
-
-					<Button href={`/resident/assemblies/${latestMinutesAssembly.id}?minutes=1`} variant="outline" size="lg" class="assembly-highlight-card__button">
-						Apri verbale completo
-					</Button>
-				</CardContent>
-			</Card>
-		{/if}
-
 		{#if remainingPlannedAssemblies.length > 0}
 			<section class="resident-module-section">
 				<div class="resident-module-section__header">
@@ -182,20 +217,78 @@
 		{#if completedAssemblies.length > 0}
 			<section class="resident-module-section">
 				<div class="resident-module-section__header">
-					<h2 class="resident-module-section__title">Storico e verbali</h2>
-					<p class="resident-module-section__copy">
-						Assemblee concluse con verbali, presenze e delibere registrate.
-					</p>
+					<div class="resident-heading-with-tip">
+						<h2 class="resident-module-section__title">Storico e verbali</h2>
+						<InfoTip text="Cerca per luogo o contenuto e filtra solo le assemblee che ti interessa rivedere." />
+					</div>
+					<p class="resident-module-section__copy">Assemblee concluse con verbali, presenze e delibere registrate.</p>
+				</div>
+
+				<div class="assembly-history-toolbar">
+					<div class="assembly-history-toolbar__search">
+						<Input
+							placeholder="Cerca per luogo, ODG o verbale"
+							value={completedSearch}
+							oninput={(event: Event) => (completedSearch = (event.currentTarget as HTMLInputElement).value)}
+							class="assembly-history-toolbar__input"
+						/>
+					</div>
+
+					<div class="assembly-history-toolbar__filters">
+						<Button
+							type="button"
+							size="sm"
+							variant={completedFilter === 'all' ? 'default' : 'outline'}
+							class="assembly-history-toolbar__button"
+							onclick={() => (completedFilter = 'all')}
+						>
+							Tutte
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant={completedFilter === 'minutes' ? 'default' : 'outline'}
+							class="assembly-history-toolbar__button"
+							onclick={() => (completedFilter = 'minutes')}
+						>
+							Con verbale
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant={completedFilter === 'ordinaria' ? 'default' : 'outline'}
+							class="assembly-history-toolbar__button"
+							onclick={() => (completedFilter = 'ordinaria')}
+						>
+							Ordinarie
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant={completedFilter === 'straordinaria' ? 'default' : 'outline'}
+							class="assembly-history-toolbar__button"
+							onclick={() => (completedFilter = 'straordinaria')}
+						>
+							Straordinarie
+						</Button>
+					</div>
 				</div>
 
 				<div class="assembly-cards-stack">
-					{#each completedAssemblies as assembly}
+					{#each filteredCompletedAssemblies as assembly}
 						<ResidentAssemblyCard
 							assembly={assembly}
 							href={`/resident/assemblies/${assembly.id}`}
 							secondaryHref={assembly.minutes ? `/resident/assemblies/${assembly.id}?minutes=1` : undefined}
 						/>
 					{/each}
+
+					{#if filteredCompletedAssemblies.length === 0}
+						<ResidentEmptyCard
+							title="Nessuna assemblea trovata"
+							copy="Prova a cambiare filtro o a cercare con un termine diverso."
+						/>
+					{/if}
 				</div>
 			</section>
 		{/if}

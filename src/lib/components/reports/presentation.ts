@@ -1,9 +1,22 @@
 import type { Report } from '$lib/data/ticket/reports';
+import {
+	getCurrentStatus as getOperationalTicketStatus,
+	tickets,
+	type Ticket,
+	type TicketEvent
+} from '$lib/data/ticket/tickets';
+import { getUserById } from '$lib/data/users';
 
 export const ticketStatusLabels: Record<string, string> = {
 	nuova: 'Segnalazione inviata',
 	presa_in_carico: 'In presa in carico',
-	completata: 'Intervento completato'
+	completata: 'Intervento completato',
+	opened: 'Pratica aperta',
+	estimating: 'In preventivazione',
+	approved: 'Preventivo approvato',
+	in_progress: 'Intervento in corso',
+	paid: 'Pagamento registrato',
+	closed: 'Pratica chiusa'
 };
 
 export const ticketPriorityLabels: Record<string, string> = {
@@ -16,8 +29,29 @@ export const ticketPriorityLabels: Record<string, string> = {
 export const ticketProgressValues: Record<string, number> = {
 	nuova: 16,
 	presa_in_carico: 60,
-	completata: 100
+	completata: 100,
+	opened: 12,
+	estimating: 32,
+	approved: 52,
+	in_progress: 78,
+	paid: 100,
+	closed: 100
 };
+
+export interface ReportOperationalContext {
+	ticket: Ticket;
+	status: string;
+	supplierLabel: string;
+}
+
+export interface ReportTimelineEvent {
+	id: string;
+	at: string;
+	actorId?: string;
+	toStatus?: string;
+	note?: string;
+	label?: string;
+}
 
 export function isTicketStatus(value: string | undefined): boolean {
 	return Boolean(value && value in ticketStatusLabels);
@@ -41,4 +75,87 @@ export function formatTicketDate(value: string | undefined): string {
 		dateStyle: 'medium',
 		timeStyle: 'short'
 	}).format(new Date(value));
+}
+
+export function getLinkedOperationalTicket(report: Report): Ticket | undefined {
+	const reportReference = report.id.replace('rep-', 'REP-').toUpperCase();
+
+	return tickets.find((ticket) => {
+		if (ticket.propertyId !== report.propertyId) return false;
+		const searchableText = `${ticket.title} ${ticket.description}`.toUpperCase();
+		return searchableText.includes(reportReference);
+	});
+}
+
+export function getReportOperationalContext(report: Report): ReportOperationalContext | undefined {
+	const ticket = getLinkedOperationalTicket(report);
+	if (!ticket) return undefined;
+
+	return {
+		ticket,
+		status: getOperationalTicketStatus(ticket),
+		supplierLabel: ticket.supplierId
+			? (getUserById(ticket.supplierId)?.name ?? 'Fornitore assegnato')
+			: 'Da assegnare'
+	};
+}
+
+export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEvent[] {
+	return ticket.eventTimeline.map((event) => {
+		if (event.kind === 'status' || event.kind === 'closed') {
+			return {
+				id: event.id,
+				at: event.at,
+				actorId: ticket.supplierId ?? ticket.creatorId,
+				toStatus: event.toStatus,
+				label: event.toStatus ? ticketStatusLabels[event.toStatus] : 'Aggiornamento stato'
+			};
+		}
+
+		if (event.kind === 'created') {
+			return {
+				id: event.id,
+				at: event.at,
+				actorId: ticket.creatorId,
+				label: 'Pratica operativa aperta',
+				note: 'L amministrazione ha trasformato la segnalazione in una pratica operativa.'
+			};
+		}
+
+		if (event.kind === 'assigned') {
+			return {
+				id: event.id,
+				at: event.at,
+				actorId: event.supplierId,
+				label: 'Fornitore assegnato',
+				note: event.supplierId
+					? `Assegnata a ${getUserById(event.supplierId)?.name ?? 'fornitore esterno'}.`
+					: 'Fornitore assegnato alla pratica.'
+			};
+		}
+
+		if (event.kind === 'reassigned') {
+			return {
+				id: event.id,
+				at: event.at,
+				actorId: event.supplierId,
+				label: 'Fornitore riassegnato',
+				note: event.supplierId
+					? `La pratica e stata riallocata a ${getUserById(event.supplierId)?.name ?? 'un altro fornitore'}.`
+					: 'La pratica e stata riassegnata.'
+			};
+		}
+
+		return buildOperationalNarrativeEvent(event);
+	});
+}
+
+function buildOperationalNarrativeEvent(event: TicketEvent): ReportTimelineEvent {
+	return {
+		id: event.id,
+		at: event.at,
+		actorId: event.supplierId ?? undefined,
+		label: event.kind === 'ai' ? 'Aggiornamento automatico' : 'Aggiornamento operativo',
+		note: event.body ?? 'Nuovo aggiornamento registrato sulla pratica operativa.'
+	};
 }

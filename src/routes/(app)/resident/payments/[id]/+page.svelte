@@ -1,7 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { getCurrentUser } from '$lib/auth';
 	import { page } from '$app/state';
-	import { getTicketById } from '$lib/data/ticket/tickets';
+	import {
+		getCurrentStatus as getTicketCurrentStatus,
+		getTicketById
+	} from '$lib/data/ticket/tickets';
+	import { getInvoiceById } from '$lib/data/embeds/invoices';
+	import { getQuoteById } from '$lib/data/embeds/quotes';
+	import { getSupplierTaskById } from '$lib/data/embeds/supplierTasks';
 	import { getUserById } from '$lib/data/users';
 	import {
 		getResidentPaymentStatus,
@@ -13,7 +20,6 @@
 		getResidentVisiblePaymentById,
 		PaymentStatusBadge
 	} from '$lib/components/payments';
-	import { getCurrentStatus, ticketStatusLabels } from '$lib/components/reports';
 	import { ResidentEmptyCard } from '$lib/components/resident';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -29,7 +35,26 @@
 	const payer = $derived(payment ? getUserById(payment.fromId) : undefined);
 	const beneficiary = $derived(payment ? getUserById(payment.toId) : undefined);
 	const relatedTicket = $derived(payment?.ticketId ? getTicketById(payment.ticketId) : undefined);
-	const relatedTicketStatus = $derived(relatedTicket ? getCurrentStatus(relatedTicket) : undefined);
+	const relatedTicketStatus = $derived(relatedTicket ? getTicketCurrentStatus(relatedTicket) : undefined);
+	const relatedQuotes = $derived(
+		relatedTicket
+			? relatedTicket.quoteIds.map((id) => getQuoteById(id)).filter((quote) => quote !== undefined)
+			: []
+	);
+	const relatedInvoices = $derived(
+		relatedTicket
+			? relatedTicket.invoiceIds
+					.map((id) => getInvoiceById(id))
+					.filter((invoice) => invoice !== undefined)
+			: []
+	);
+	const relatedTasks = $derived(
+		relatedTicket
+			? relatedTicket.interventionIds
+					.map((id) => getSupplierTaskById(id))
+					.filter((task) => task !== undefined)
+			: []
+	);
 	const paymentReminder = $derived(getResidentPaymentReminder(context));
 	const latestReceipt = $derived(getResidentLatestReceipt(currentUser?.id));
 	const accountingDocument = $derived(context.accountingDocuments.find((document) => document.category === 'bilancio'));
@@ -58,6 +83,19 @@
 				]
 			: []
 	);
+	const ticketStatusLabels: Record<string, string> = {
+		opened: 'Aperto',
+		estimating: 'In preventivazione',
+		approved: 'Approvato',
+		in_progress: 'In corso',
+		completed: 'Completato',
+		paid: 'Pagato',
+		closed: 'Chiuso'
+	};
+
+	onMount(() => {
+		window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+	});
 </script>
 
 <svelte:head>
@@ -213,7 +251,7 @@
 					<CardHeader class="payment-detail-card__header">
 						<CardTitle class="payment-detail-card__title">Intervento collegato</CardTitle>
 						<CardDescription class="payment-detail-card__copy">
-							Il movimento e collegato a una pratica gia presente nel backend del condominio.
+							Il movimento e collegato alla filiera operativa del ticket amministrativo presente sul condominio.
 						</CardDescription>
 					</CardHeader>
 
@@ -247,6 +285,58 @@
 							<p class="payment-detail-card__notes-label">Descrizione pratica</p>
 							<p class="payment-detail-card__notes-copy">{relatedTicket.title}. {relatedTicket.description}</p>
 						</div>
+
+						{#if relatedQuotes.length > 0 || relatedInvoices.length > 0 || relatedTasks.length > 0}
+							<div class="payment-ticket-chain">
+								{#if relatedQuotes.length > 0}
+									<div class="payment-ticket-chain__panel">
+										<p class="payment-ticket-chain__title">Preventivi collegati</p>
+										<div class="payment-ticket-chain__list">
+											{#each relatedQuotes as quote}
+												<div class="payment-ticket-chain__item">
+													<p class="payment-ticket-chain__label">{quote.title}</p>
+													<p class="payment-ticket-chain__value">
+														{formatMoney(quote.amount, quote.currency)} · scade {formatPaymentDate(quote.expiresAt)}
+													</p>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+
+								{#if relatedInvoices.length > 0}
+									<div class="payment-ticket-chain__panel">
+										<p class="payment-ticket-chain__title">Fatture collegate</p>
+										<div class="payment-ticket-chain__list">
+											{#each relatedInvoices as invoice}
+												<div class="payment-ticket-chain__item">
+													<p class="payment-ticket-chain__label">{invoice.number}</p>
+													<p class="payment-ticket-chain__value">
+														{formatMoney(invoice.amount, invoice.currency)} · emessa {formatPaymentDate(invoice.issueDate)}
+													</p>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+
+								{#if relatedTasks.length > 0}
+									<div class="payment-ticket-chain__panel">
+										<p class="payment-ticket-chain__title">Sopralluoghi e interventi</p>
+										<div class="payment-ticket-chain__list">
+											{#each relatedTasks as task}
+												<div class="payment-ticket-chain__item">
+													<p class="payment-ticket-chain__label">{task.title}</p>
+													<p class="payment-ticket-chain__value">
+														{task.type} · {task.date} · {task.startTime}-{task.endTime}
+													</p>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+						{/if}
 					</CardContent>
 				</Card>
 			{/if}
@@ -256,7 +346,7 @@
 					<CardHeader class="payment-detail-card__header">
 						<CardTitle class="payment-detail-card__title">Ripartizione quota</CardTitle>
 						<CardDescription class="payment-detail-card__copy">
-							Lettura guidata dei contenuti economici gia disponibili per il tuo stabile.
+							Lettura guidata delle voci economiche gia disponibili per il tuo stabile.
 						</CardDescription>
 					</CardHeader>
 
@@ -280,6 +370,17 @@
 									</div>
 								{/each}
 							</div>
+						{/if}
+
+						{#if accountingDocument}
+							<Button
+								href={`/resident/documents/${accountingDocument.id}`}
+								variant="outline"
+								size="lg"
+								class="payment-detail-documents__button"
+							>
+								Apri documento di ripartizione
+							</Button>
 						{/if}
 					</CardContent>
 				</Card>
@@ -316,41 +417,6 @@
 					</CardContent>
 				</Card>
 
-				<Card class="payment-detail-card">
-					<CardHeader class="payment-detail-card__header">
-						<CardTitle class="payment-detail-card__title">Documenti disponibili</CardTitle>
-						<CardDescription class="payment-detail-card__copy">
-							Allegati gia presenti per controllare il quadro economico del tuo stabile.
-						</CardDescription>
-					</CardHeader>
-
-					<CardContent class="payment-detail-card__content">
-						{#if context.accountingDocuments.length > 0}
-							<div class="payment-detail-documents">
-								{#each context.accountingDocuments as document}
-									<div class="payment-detail-documents__item">
-										<div class="payment-detail-documents__main">
-											<p class="payment-detail-documents__eyebrow">{document.status}</p>
-											<p class="payment-detail-documents__title">{document.title}</p>
-											<p class="payment-detail-documents__copy">{document.summary}</p>
-										</div>
-
-										<Button
-											href={`/resident/documents/${document.id}`}
-											variant="outline"
-											size="lg"
-											class="payment-detail-documents__button"
-										>
-											Apri documento
-										</Button>
-									</div>
-								{/each}
-							</div>
-						{:else}
-							<p class="payment-detail-card__empty">Nessun documento contabile disponibile.</p>
-						{/if}
-					</CardContent>
-				</Card>
 			</div>
 
 			<Card class="payment-chat-card">
@@ -358,11 +424,11 @@
 					<div>
 						<p class="payment-chat-card__title">Serve un chiarimento su questo movimento?</p>
 						<p class="payment-chat-card__copy">
-							Apri la chat residente per contattare Svicom dal flusso operativo del tuo stabile.
+							Apri l assistenza residente per contattare l amministrazione sul movimento selezionato.
 						</p>
 					</div>
 					<Button href="/resident/chat" size="lg" class="payment-chat-card__button">
-						Vai alla chat
+						Apri assistenza
 					</Button>
 				</CardContent>
 			</Card>
