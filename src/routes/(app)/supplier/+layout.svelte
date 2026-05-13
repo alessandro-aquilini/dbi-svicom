@@ -52,7 +52,7 @@
 			{/each}
 		</nav>
 		
-		<div class="ml-auto relative">
+		<div class="ml-auto flex items-center gap-3">
 			<button 
 				class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none"
 				onclick={() => {
@@ -63,28 +63,28 @@
 			>
 				<HugeiconsIcon icon={Contact01Icon} size={18} strokeWidth={1.5} />
 			</button>
+		</div>
 
-			<div id="profile-menu" class="hidden absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50">
-				<div class="border-b border-border p-4">
-					<p class="font-medium text-foreground">{user?.name ?? 'Il tuo Profilo'}</p>
-					<p class="text-xs text-muted-foreground truncate">{user?.email ?? 'fornitore@example.com'}</p>
-				</div>
-				<div class="p-2">
-					<a href="/supplier/profile" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
-						Edit Profile
-					</a>
-					<a href="/support" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
-						Help / Support
-					</a>
-					<a href="/about" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
-						About us
-					</a>
-				</div>
-				<div class="border-t border-border p-2">
-					<a href="/login" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
-						Log Out
-					</a>
-				</div>
+		<div id="profile-menu" class="hidden absolute right-4 top-14 w-64 rounded-xl border border-border bg-card shadow-lg z-50">
+			<div class="border-b border-border p-4">
+				<p class="font-medium text-foreground">{user?.name ?? 'Il tuo Profilo'}</p>
+				<p class="text-xs text-muted-foreground truncate">{user?.email ?? 'fornitore@example.com'}</p>
+			</div>
+			<div class="p-2">
+				<a href="/supplier/profile" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+					Edit Profile
+				</a>
+				<a href="/support" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+					Help / Support
+				</a>
+				<a href="/about" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+					About us
+				</a>
+			</div>
+			<div class="border-t border-border p-2">
+				<a href="/login" class="flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+					Log Out
+				</a>
 			</div>
 		</div>
 	</header>

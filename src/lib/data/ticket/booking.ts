@@ -167,13 +167,41 @@ export const bookings: Booking[] = [
         ]
     },
 
-    // 4) Citofono: resident requested, waiting for supplier (demonstrates 'requested' state)
+    // 4) Check Termico: Requested to frn-idroclima-nord
     {
         id: 'bkg-004',
         residentId: 'res-bianchi-01',
+        serviceId: 'srv-check-termico',
+        timeline: [
+            { id: 'bkg-004-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-10T14:20:00Z', slot: { start: '2026-05-15T10:00:00Z', end: '2026-05-15T11:00:00Z' } }
+        ],
+        messageTimeline: [
+            { id: 'msg-bkg-004-1', senderId: 'res-bianchi-01', text: 'Vorrei un controllo della caldaia prima dell\'estate.', timestamp: '2026-05-10T14:20:00Z' }
+        ]
+    },
+
+    // 5) Installazione Climatizzatore: New request for another property
+    {
+        id: 'bkg-005',
+        residentId: 'res-rossi-01',
+        serviceId: 'srv-installazione-climatizzatore',
+        timeline: [
+            { id: 'bkg-005-e1', kind: 'request_created', authorId: 'res-rossi-01', at: '2026-05-12T09:00:00Z', slot: { start: '2026-05-20T09:00:00Z', end: '2026-05-20T12:00:00Z' } },
+            { id: 'bkg-005-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-13T08:30:00Z' }
+        ],
+        messageTimeline: [
+            { id: 'msg-bkg-005-1', senderId: 'res-rossi-01', text: 'Preventivo per climatizzatore in camera da letto.', timestamp: '2026-05-12T09:00:00Z' },
+            { id: 'msg-bkg-005-2', senderId: 'frn-idroclima-nord', text: 'Confermato sopralluogo per il 20 maggio.', timestamp: '2026-05-13T08:30:00Z' }
+        ]
+    },
+
+    // 6) Citofono: resident requested, waiting for supplier (demonstrates 'requested' state)
+    {
+        id: 'bkg-006',
+        residentId: 'res-bianchi-01',
         serviceId: 'srv-riparazione-citofono',
         timeline: [
-            { id: 'bkg-004-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-10T08:30:00Z', slot: { start: '2026-05-12T09:00:00Z', end: '2026-05-12T11:00:00Z' } }
+            { id: 'bkg-006-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-10T08:30:00Z', slot: { start: '2026-05-12T09:00:00Z', end: '2026-05-12T11:00:00Z' } }
         ]
     }
 ];
@@ -184,4 +212,11 @@ export function getBookingById(id: string): Booking | undefined {
 
 export function getBookingsByResidentId(residentId: string): Booking[] {
     return bookings.filter((b) => b.residentId === residentId);
+}
+
+export function getBookingsBySupplierId(supplierId: string): Booking[] {
+    // Note: serviceId contains supplier info in the services dataset
+    // For now we filter based on IDs we know belong to the supplier
+    const supplierServiceIds = ['srv-installazione-climatizzatore', 'srv-check-termico'];
+    return bookings.filter((b) => supplierServiceIds.includes(b.serviceId));
 }
