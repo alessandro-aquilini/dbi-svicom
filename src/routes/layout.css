@@ -567,10 +567,12 @@
 
 	/* Resident mobile shell */
 	.resident-mobile-shell {
-		@apply flex h-screen flex-col bg-background;
+		@apply flex h-dvh flex-col bg-background;
 	}
 	.resident-mobile-topbar {
 		@apply flex h-14 shrink-0 items-center justify-between border-b border-border px-4;
+		padding-top: env(safe-area-inset-top);
+		height: calc(3.5rem + env(safe-area-inset-top));
 	}
 	.resident-mobile-topbar__brand {
 		@apply flex items-center gap-2;
@@ -628,6 +630,7 @@
 	}
 	.resident-mobile-nav {
 		@apply shrink-0 border-t border-border bg-card;
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 	.resident-mobile-nav__list {
 		@apply flex items-stretch;
