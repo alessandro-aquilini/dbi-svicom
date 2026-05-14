@@ -15,10 +15,10 @@
 		ResidentReportCard,
 		formatTicketDate,
 		getResidentVisibleTicketsByCreatorId,
-		getCurrentStatus,
 		getReportOperationalContext,
 		ticketStatusLabels
 	} from '$lib/components/reports';
+	import { inferReportStatus, getReportCreatedAt, getReportUpdatedAt } from '$lib/data/ticket/reports';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';
 
@@ -29,8 +29,8 @@
 		currentUser
 			? getResidentVisibleTicketsByCreatorId(currentUser.id).sort(
 					(a, b) =>
-						new Date(b.updatedAt ?? b.statusHistory.at(-1)?.at ?? 0).getTime() -
-						new Date(a.updatedAt ?? a.statusHistory.at(-1)?.at ?? 0).getTime()
+						new Date(getReportUpdatedAt(b) ?? 0).getTime() -
+						new Date(getReportUpdatedAt(a) ?? 0).getTime()
 				)
 			: []
 	);
@@ -56,7 +56,7 @@
 		{ label: 'Segnalazioni', value: sortedReports.length },
 		{
 			label: 'Aperte',
-			value: sortedReports.filter((report) => getCurrentStatus(report) !== 'completata').length
+			value: sortedReports.filter((report) => inferReportStatus(report) !== 'completata').length
 		},
 		{
 			label: 'Pratiche operative',
@@ -91,7 +91,7 @@
 			key: 'open' as const,
 			label: 'Aperte',
 			value: sortedReports.filter((report) => {
-				const status = getCurrentStatus(report);
+				const status = inferReportStatus(report);
 				return status === 'nuova' || status === 'presa_in_carico';
 			}).length,
 			copy: 'Pratiche ancora aperte o in lavorazione.'
@@ -99,13 +99,13 @@
 		{
 			key: 'presa_in_carico' as const,
 			label: 'In carico',
-			value: sortedReports.filter((report) => getCurrentStatus(report) === 'presa_in_carico').length,
+			value: sortedReports.filter((report) => inferReportStatus(report) === 'presa_in_carico').length,
 			copy: 'Segnalazioni gia prese in carico.'
 		},
 		{
 			key: 'completata' as const,
 			label: 'Completate',
-			value: sortedReports.filter((report) => getCurrentStatus(report) === 'completata').length,
+			value: sortedReports.filter((report) => inferReportStatus(report) === 'completata').length,
 			copy: 'Pratiche chiuse con intervento completato.'
 		}
 	]);
@@ -118,7 +118,7 @@
 
 		if (statusFilter !== 'all') {
 			items = items.filter(({ report }) => {
-				const status = getCurrentStatus(report);
+				const status = inferReportStatus(report);
 				if (statusFilter === 'open') return status === 'nuova' || status === 'presa_in_carico';
 				return status === statusFilter;
 			});
@@ -133,7 +133,10 @@
 
 		return [...items].sort((left, right) => {
 			if (sortMode === 'created') {
-				return new Date(right.report.createdAt).getTime() - new Date(left.report.createdAt).getTime();
+						return (
+							new Date(getReportCreatedAt(right.report) ?? 0).getTime() -
+							new Date(getReportCreatedAt(left.report) ?? 0).getTime()
+						);
 			}
 
 			if (sortMode === 'priority') {
@@ -145,8 +148,8 @@
 			}
 
 			return (
-				new Date(right.report.updatedAt ?? right.report.statusHistory.at(-1)?.at ?? 0).getTime() -
-				new Date(left.report.updatedAt ?? left.report.statusHistory.at(-1)?.at ?? 0).getTime()
+				new Date(getReportUpdatedAt(right.report) ?? 0).getTime() -
+				new Date(getReportUpdatedAt(left.report) ?? 0).getTime()
 			);
 		});
 	});
@@ -277,7 +280,7 @@
 						href={`/resident/reports/${item.report.id}`}
 						propertyName={property?.name}
 						apartment={resident?.apartment}
-						updatedAtLabel={formatTicketDate(item.report.updatedAt ?? item.report.statusHistory.at(-1)?.at)}
+						updatedAtLabel={formatTicketDate(getReportUpdatedAt(item.report))}
 						operationalTicketId={item.operational?.ticket.id}
 						operationalStatusLabel={item.operational ? ticketStatusLabels[item.operational.status] : undefined}
 						operationalSupplierLabel={item.operational?.supplierLabel}

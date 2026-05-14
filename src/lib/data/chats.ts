@@ -22,12 +22,7 @@ export const chats: Chat[] = [
 		participantIds: ['adm-giorgio-01', 'res-bianchi-01'],
 		lastMessageAt: '2026-05-01T09:15:00Z',
 		messages: [
-			{
-				id: 'msg-res-001',
-				senderId: 'adm-giorgio-01',
-				text: 'Grazie Marco, ho preso in carico la segnalazione. Chiamo subito Idroclima.',
-				timestamp: '2026-05-01T09:15:00Z'
-			}
+			// messages for this conversation have been migrated into the related report.messageTimeline
 		],
 		reportIds: ['rep-001', 'rep-005']
 	},
@@ -35,55 +30,22 @@ export const chats: Chat[] = [
 		id: 'chat-adm-res-bellini-05',
 		participantIds: ['adm-giorgio-01', 'res-bellini-05'],
 		lastMessageAt: '2026-05-01T09:15:00Z',
-		messages: [
-			{
-				id: 'msg-res-101',
-				senderId: 'res-bellini-05',
-				text: 'Manca l\'acqua calda nella scala B da stamattina!',
-				timestamp: '2026-05-01T07:45:00Z'
-			},
-			{
-				id: 'msg-res-102',
-				senderId: 'adm-giorgio-01',
-				text: 'Sì, è collegato alla perdita in caldaia. Risolveremo in mattinata.',
-				timestamp: '2026-05-01T09:15:00Z'
-			}
-		],
+		messages: [],
 		reportIds: ['rep-002']
 	},
 	{
 		id: 'chat-adm-res-conti-02',
 		participantIds: ['adm-giorgio-01', 'res-conti-02'],
 		lastMessageAt: '2026-05-03T16:00:00Z',
-		messages: [
-			{
-				id: 'msg-res-201',
-				senderId: 'res-conti-02',
-				text: 'Ciao Giorgio, il videocitofono non funziona più bene. Non si vede nulla.',
-				timestamp: '2026-05-03T14:20:00Z'
-			},
-			{
-				id: 'msg-res-202',
-				senderId: 'adm-giorgio-01',
-				text: 'Ricevuto. Contatto Secure Entry per un controllo domani.',
-				timestamp: '2026-05-03T16:00:00Z'
-			}
-		],
+		messages: [],
 		reportIds: ['rep-003']
 	},
 	{
 		id: 'chat-adm-res-rossi-03',
 		participantIds: ['adm-giorgio-01', 'res-rossi-03'],
 		lastMessageAt: '2026-05-05T11:00:00Z',
-		messages: [
-			// {
-			// 	id: 'msg-res-301',
-			// 	senderId: 'res-rossi-03',
-			// 	text: 'Buongiorno, il portone d\'ingresso rimane aperto. Credo sia il braccio idraulico.',
-			// 	timestamp: '2026-05-05T11:00:00Z'
-			// }
-			// FIX: Removing the chat (even though there is a report open), gives empty chat in "Segnalazioni". 
-		],
+		messages: [],
+		// Note: report rep-004 exists but chat messages were left empty; message timeline lives on the report
 		reportIds: ['rep-004']
 	},
 	{

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
     import { tick } from 'svelte';
     import { getCurrentUser } from '$lib/auth';
     import { chats, type Chat, type Message } from '$lib/data/chats';
@@ -550,8 +550,7 @@
                 {/each}
             </div>
 
-            <!-- Role-aware action buttons (supplier vs resident) -->
-            {#if selectedChat}
+          {#if selectedChat}
                 {@const cpRole = cp?.role}
                 {#if cpRole === 'supplier'}
                     <div style="padding:0.75rem 1.5rem; display:flex; gap:0.5rem; background: #fff; border-top:1px solid var(--border);">
@@ -584,3 +583,4 @@
         {/if}
     </div>
 </div>
+ --> -->

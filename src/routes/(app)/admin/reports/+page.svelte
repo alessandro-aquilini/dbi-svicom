@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { reports, type ReportStatus, type ReportPriority } from '$lib/data/ticket/reports';
+	import { reports, type ReportStatus, type ReportPriority, inferReportStatus, getReportCreatedAt } from '$lib/data/ticket/reports';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getUserById } from '$lib/data/users';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
@@ -15,13 +15,15 @@
 	const statusLabels: Record<ReportStatus, string> = {
 		nuova: 'Nuova',
 		presa_in_carico: 'In carico',
-		completata: 'Completata'
+		completata: 'Completata',
+		archiviata: 'Archiviata',
 	};
 
 	const statusColors: Record<ReportStatus, string> = {
 		nuova: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
 		presa_in_carico: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-		completata: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+		completata: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+		archiviata: 'bg-gray-500/10 text-gray-500 border-gray-500/20'
 	};
 
 	const priorityLabels: Record<ReportPriority, string> = {
@@ -53,7 +55,7 @@
 				query === '' ||
 				r.title.toLowerCase().includes(query.toLowerCase()) ||
 				r.description.toLowerCase().includes(query.toLowerCase());
-			const matchesStatus = filterStatus === '' || r.status === filterStatus;
+			const matchesStatus = filterStatus === '' || inferReportStatus(r) === filterStatus;
 
 			return matchesSearch && matchesStatus;
 		})
@@ -114,8 +116,8 @@
 					>
 						<div class="flex flex-col gap-1">
 							<div class="flex items-center gap-2">
-								<Badge variant="outline" class={cn('font-medium', statusColors[report.status])}>
-									{statusLabels[report.status]}
+								<Badge variant="outline" class={cn('font-medium', statusColors[inferReportStatus(report)])}>
+									{statusLabels[inferReportStatus(report)]}
 								</Badge>
 								<span class="text-sm font-medium text-muted-foreground">
 									{report.id}
@@ -139,7 +141,7 @@
 									{priorityLabels[report.priority]}
 								</Badge>
 								<span class="text-xs text-muted-foreground">
-									Inviata il {new Date(report.createdAt).toLocaleDateString('it-IT')}
+									Inviata il {new Date(getReportCreatedAt(report) ?? '').toLocaleDateString('it-IT')}
 								</span>
 							</div>
 
