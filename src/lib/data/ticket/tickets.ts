@@ -34,7 +34,7 @@ export interface TicketEvent {
 
 	// optional payloads for certain kinds
 	supplierId?: string; // assignToSupplier
-	body?: string; // accepted/declined, addInternalNote, ai
+	body?: string;
 	previousSupplierId?: string; // reassigned
 	// updatePriority payload
 	fromPriority?: string;
@@ -135,10 +135,8 @@ export const tickets: Ticket[] = [
 		cc: ['res-bianchi-01', 'res-bellini-05'],
 		eventTimeline: [
 			{ id: 'ev-1', kind: 'createTicket', at: '2026-05-01T10:00:00', authorId: 'adm-giorgio-01' },
-			{ id: 'ev-2', kind: 'accepted', at: '2026-05-01T10:05:00', authorId: 'frn-idroclima-nord', body: 'Ricevuto, invio tecnico.' },
-			{ id: 'ev-3', kind: 'assignToSupplier', at: '2026-05-01T10:05:00', authorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord' },
-			{ id: 'ev-4', kind: 'accepted', at: '2026-05-01T11:45:00', authorId: 'frn-idroclima-nord', body: 'Trovata la perdita e inviato preventivo.' },
-			{ id: 'ev-5', kind: 'accepted', at: '2026-05-01T12:05:00', authorId: 'adm-giorgio-01', body: 'Procedi pure, è urgente.' },
+			{ id: 'ev-3', kind: 'assignToSupplier', at: '2026-05-01T10:05:00', authorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord'},
+			{ id: 'ev-4', kind: 'accepted', at: '2026-05-01T11:45:00', authorId: 'frn-idroclima-nord' },
 			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
 			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
 		],
@@ -157,13 +155,6 @@ export const tickets: Ticket[] = [
 				at: '2026-05-01T10:20:00',
 				authorId: 'adm-giorgio-01',
 				body: 'Confermata urgenza: scala B senza acqua calda. Tenere informati i residenti.'
-			},
-			{
-				id: 'adm-3',
-				kind: 'ai',
-				at: '2026-05-03T20:15:00',
-				authorId: 'adm-giorgio-01',
-				body: 'Intervento concluso e validato. Resta da confermare l\'avvenuto pagamento e archiviare la pratica.'
 			}
 		],
 		messageTimeline: [
