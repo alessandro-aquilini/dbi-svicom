@@ -5,17 +5,16 @@
 		ArrowLeft01Icon,
 		SparklesIcon,
 		Wrench01Icon,
-		UserAdd01Icon,
-		File01Icon,
-		Exchange01Icon
+		UserAdd01Icon
 	} from '@hugeicons/core-free-icons';
 	import { StatusBadge } from '$lib/components/shared';
+	import TicketTimeline from '$lib/components/ticket/TicketTimeline.svelte';
+	import type { TicketTimelineItem } from '$lib/components/ticket/types';
 	import type { StatusVariant } from '$lib/types';
 	import {
 		getTicketById,
 		getTicketNextStep,
 		getCurrentStatus,
-		type TicketEvent,
 		type TicketStatus
 	} from '$lib/data/ticket/tickets';
 	import { getPropertyById } from '$lib/data/properties';
@@ -23,73 +22,60 @@
 	import { getQuoteById } from '$lib/data/embeds/quotes';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getPaymentById } from '$lib/data/embeds/payments';
-	import { getSupplierTasksByTicketId } from '$lib/data/embeds/supplierTasks';
+	import { getSupplierTaskById } from '$lib/data/embeds/supplierTasks';
 
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);
 	const reporter = $derived(ticket ? getUserById(ticket.creatorId) : undefined); // creatorId is always Admin
-	const internalOwner = $derived(property ? getUserById(property.adminId) : undefined);
 	const supplier = $derived(ticket?.supplierId ? getUserById(ticket.supplierId) : undefined);
-	const aiSummary = $derived(ticket?.eventTimeline.find(ev => ev.kind === 'ai')?.body);
+	const aiSummary = $derived(ticket?.adminMetadata.find((ev) => ev.kind === 'ai')?.body);
 	const aiNextStep = $derived(ticket ? getTicketNextStep(ticket.id) : undefined);
-	const timeline = $derived<TicketEvent[]>(ticket ? ticket.eventTimeline : []);
 	const currentStatus = $derived(ticket ? getCurrentStatus(ticket) : 'opened');
 	const firstEvent = $derived(ticket?.eventTimeline[0]);
-	const lastEvent = $derived(ticket?.eventTimeline[ticket.eventTimeline.length - 1]);
-
-	type UnifiedEvent = 
-		| { type: 'ticket-event'; data: TicketEvent; at: string }
-		| { type: 'quote'; data: any; at: string }
-		| { type: 'invoice'; data: any; at: string }
-		| { type: 'payment'; data: any; at: string }
-		| { type: 'supplier-task'; data: any; at: string };
-
-	const unifiedTimeline = $derived.by<UnifiedEvent[]>(() => {
+	const timelineItems = $derived.by<TicketTimelineItem[]>(() => {
 		if (!ticket) return [];
-		
-		const items: UnifiedEvent[] = ticket.eventTimeline.map(ev => ({
-			type: 'ticket-event',
-			data: ev,
-			at: ev.at
-		}));
 
-		if (ticket.quoteIds) {
-			ticket.quoteIds.forEach(id => {
-				const q = getQuoteById(id);
-				if (q) items.push({ type: 'quote', data: q, at: q.sentAt });
-			});
+		const items: TicketTimelineItem[] = [];
+
+		for (const ev of ticket.eventTimeline ?? []) {
+			items.push({ type: 'ticket-event', id: ev.id, data: ev, at: ev.at });
 		}
 
-		if (ticket.invoiceIds) {
-			ticket.invoiceIds.forEach(id => {
-				const i = getInvoiceById(id);
-				if (i) items.push({ type: 'invoice', data: i, at: i.issueDate });
-			});
+		for (const meta of ticket.adminMetadata ?? []) {
+			items.push({ type: 'admin-metadata', id: meta.id, data: meta, at: meta.at });
 		}
 
-		if (ticket.paymentIds) {
-			ticket.paymentIds.forEach(id => {
-				const p = getPaymentById(id);
-				if (p) items.push({ type: 'payment', data: p, at: p.paidAt || p.dueDate });
-			});
+		for (const id of ticket.quoteIds ?? []) {
+			const q = getQuoteById(id);
+			if (q) items.push({ type: 'quote', id: q.id, data: q, at: q.sentAt });
 		}
 
-		const tasks = getSupplierTasksByTicketId(ticket.id);
-		tasks.forEach(t => {
-			items.push({ type: 'supplier-task' as any, data: t, at: `${t.date}T${t.startTime}:00Z` });
-		});
+		for (const id of ticket.invoiceIds ?? []) {
+			const i = getInvoiceById(id);
+			if (i) items.push({ type: 'invoice', id: i.id, data: i, at: i.issueDate });
+		}
 
-		return items.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+		for (const id of ticket.paymentIds ?? []) {
+			const p = getPaymentById(id);
+			if (p) items.push({ type: 'payment', id: p.id, data: p, at: p.paidAt || p.dueDate });
+		}
+
+		for (const intId of ticket.interventionIds ?? []) {
+			const task = getSupplierTaskById(intId);
+			if (task) {
+				items.push({
+					type: 'intervention',
+					id: task.id,
+					data: task,
+					at: `${task.date}T${task.startTime}:00Z`
+				});
+			}
+		}
+
+		return items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
 	});
 
-	let newNote = $state('');
-
-	function submitNote(e: SubmitEvent) {
-		e.preventDefault();
-		const body = newNote.trim();
-		if (!body || !ticket) return;
-		newNote = '';
-	}
+	const lastUpdateAt = $derived(timelineItems[0]?.at);
 
 	const priorityColors: Record<string, string> = {
 		critica: 'bg-destructive/15 text-destructive',
@@ -138,15 +124,6 @@
 		return months === 1 ? '1 mese fa' : `${months} mesi fa`;
 	}
 
-	function relativeTime(iso: string): string {
-		const ms = Date.now() - new Date(iso).getTime();
-		if (ms < 60_000) return 'ora';
-		const mins = Math.floor(ms / 60_000);
-		if (mins < 60) return `${mins} min fa`;
-		const hrs = Math.floor(mins / 60);
-		if (hrs < 24) return `${hrs} h fa`;
-		return relativeDays(iso);
-	}
 
 	function initials(name: string): string {
 		return name
@@ -203,8 +180,8 @@
 						{#if firstEvent}
 							Aperta {relativeDays(firstEvent.at)}
 						{/if}
-						{#if lastEvent}
-							· ultima modifica {relativeDays(lastEvent.at)}
+						{#if lastUpdateAt}
+							· ultima modifica {relativeDays(lastUpdateAt)}
 						{/if}
 					</span>
 				</div>
@@ -247,211 +224,15 @@
 						{/if}
 					</section>
 
-					<!-- Cronologia -->
 					<section class="block">
-						<h2 class="block__title">Cronologia</h2>
-						<ol class="timeline mt-5">
-							{#each unifiedTimeline as item}
-								{#if item.type === 'ticket-event'}
-									{@const ev = item.data}
-									{@const actor = reporter}
-									{#if ev.kind === 'addInternalNote'}
-										<li class="tl-item tl-item--comment">
-											<span class="tl-node">
-												{#if actor}
-													<span
-														class="avatar avatar--sm"
-														style:background-color={avatarColor(actor)}
-														aria-hidden="true"
-													>
-														{initials(actor.name)}
-													</span>
-												{:else}
-													<span class="tl-dot"></span>
-												{/if}
-											</span>
-											<div class="tl-card">
-												<header class="tl-card__head">
-													<span class="tl-card__author">{actor?.name ?? 'Amministratore'}</span>
-													<span class="tl-card__time">{relativeTime(ev.at)}</span>
-												</header>
-												<p class="tl-card__body">{ev.body}</p>
-											</div>
-										</li>
-									{:else}
-										<li class="tl-item tl-item--inline">
-											<span class="tl-node">
-												<span class="tl-dot tl-dot--{ev.kind}" aria-hidden="true">
-													{#if ev.kind === 'createTicket'}
-														<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
-													{:else if ev.kind === 'assignToSupplier' || ev.kind === 'reassigned'}
-														<HugeiconsIcon icon={UserAdd01Icon} size={11} strokeWidth={2} />
-													{:else if ev.kind === 'reportCompletion' || ev.kind === 'validateAndClose' || ev.kind === 'archiveTicket'}
-														<HugeiconsIcon icon={Exchange01Icon} size={11} strokeWidth={2} />
-													{:else if ev.kind === 'accepted' || ev.kind === 'declined'}
-														<HugeiconsIcon icon={Wrench01Icon} size={11} strokeWidth={2} />
-													{:else if ev.kind === 'ai'}
-														<HugeiconsIcon icon={SparklesIcon} size={11} strokeWidth={2} />
-													{/if}
-												</span>
-											</span>
-											<div class="tl-inline-group">
-												<p class="tl-inline">
-													{#if ev.kind === 'createTicket'}
-														<strong>{actor?.name ?? 'Amministratore'}</strong>
-														<span class="tl-inline__verb">ha aperto la pratica</span>
-													{:else if ev.kind === 'assignToSupplier' || ev.kind === 'reassigned'}
-														{@const target = ev.supplierId ? getUserById(ev.supplierId) : undefined}
-														<span class="tl-inline__verb"
-															>{ev.kind === 'assignToSupplier' ? 'Pratica assegnata a' : 'Pratica riassegnata a'}</span
-														>
-														<strong>{target?.name ?? '—'}</strong>
-													{:else if ev.kind === 'reportCompletion' || ev.kind === 'validateAndClose' || ev.kind === 'archiveTicket'}
-														<span class="tl-inline__verb">Stato cambiato in</span>
-														{@const to = ev.kind === 'reportCompletion' ? 'completed' : 'closed'}
-														<strong>{statusLabel[to]}</strong>
-													{:else if ev.kind === 'accepted' || ev.kind === 'declined'}
-														<strong>{getUserById(ev.authorId ?? '')?.name ?? 'Fornitore'}</strong>
-														<span class="tl-inline__verb">{ev.kind === 'accepted' ? 'accettato' : 'respinto'}</span>
-													{:else if ev.kind === 'ai'}
-														<strong>Assistente</strong>
-														<span class="tl-inline__verb">{ev.body}</span>
-													{/if}
-													<span class="tl-inline__time">· {relativeTime(ev.at)}</span>
-												</p>
-											</div>
-										</li>
-									{/if}
-								{:else if item.type === 'quote'}
-									{@const q = item.data}
-									<li class="tl-item tl-item--inline">
-										<span class="tl-node">
-											<span class="tl-dot" aria-hidden="true">
-												<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
-											</span>
-										</span>
-										<div class="tl-inline-group">
-											<p class="tl-inline">
-												<strong>Documento ricevuto</strong>
-												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
-											</p>
-											<div class="mt-2">
-												<div class="embed-pill embed-pill--quote">
-													<span class="embed-pill__label">Preventivo</span>
-													<span class="embed-pill__value">{q.title} ({q.amount} {q.currency})</span>
-												</div>
-											</div>
-										</div>
-									</li>
-								{:else if item.type === 'invoice'}
-									{@const i = item.data}
-									<li class="tl-item tl-item--inline">
-										<span class="tl-node">
-											<span class="tl-dot" aria-hidden="true">
-												<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
-											</span>
-										</span>
-										<div class="tl-inline-group">
-											<p class="tl-inline">
-												<strong>Fattura emessa</strong>
-												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
-											</p>
-											<div class="mt-2">
-												<div class="embed-pill embed-pill--invoice">
-													<span class="embed-pill__label">Fattura</span>
-													<span class="embed-pill__value">N. {i.number} ({i.amount} {i.currency})</span>
-												</div>
-											</div>
-										</div>
-									</li>
-								{:else if item.type === 'payment'}
-									{@const p = item.data}
-									<li class="tl-item tl-item--inline">
-										<span class="tl-node">
-											<span class="tl-dot" aria-hidden="true">
-												<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
-											</span>
-										</span>
-										<div class="tl-inline-group">
-											<p class="tl-inline">
-												<strong>Transazione finanziaria</strong>
-												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
-											</p>
-											<div class="mt-2">
-												<div class="embed-pill embed-pill--payment">
-													<span class="embed-pill__label">Pagamento</span>
-													<span class="embed-pill__value">{p.paidAt ? 'Eseguito' : 'In attesa'} ({p.amount} {p.currency})</span>
-												</div>
-											</div>
-										</div>
-									</li>
-								{:else if (item as any).type === 'supplier-task'}
-									{@const task = item.data}
-									<li class="tl-item tl-item--inline">
-										<span class="tl-node">
-											<span class="tl-dot" aria-hidden="true">
-												<HugeiconsIcon icon={Wrench01Icon} size={11} strokeWidth={2} />
-											</span>
-										</span>
-										<div class="tl-inline-group">
-											<p class="tl-inline">
-												{#if task.type === 'intervento'}
-													<strong>Intervento sul posto</strong>
-												{:else if task.type === 'sopralluogo'}
-													<strong>Sopralluogo</strong>
-												{:else}
-													<strong>Attività fornitore</strong>
-												{/if}
-												<span class="tl-inline__verb">· {relativeTime(item.at)}</span>
-											</p>
-											<div class="mt-2">
-												<div class="embed-pill embed-pill--supplier-task">
-													<span class="embed-pill__label">Appuntamento</span>
-													<span class="embed-pill__value">{task.title} ({task.startTime} - {task.endTime})</span>
-												</div>
-											</div>
-										</div>
-									</li>
-								{/if}
-							{/each}
-
-							<!-- Add-note form integrata nella timeline -->
-							<li class="tl-item tl-item--form">
-								<span class="tl-node">
-									{#if internalOwner}
-										<span
-											class="avatar avatar--sm"
-											style:background-color={avatarColor(internalOwner)}
-											aria-hidden="true"
-										>
-											{initials(internalOwner.name)}
-										</span>
-									{:else}
-										<span class="tl-dot"></span>
-									{/if}
-								</span>
-								<form class="tl-card tl-form" onsubmit={submitNote}>
-									<textarea
-										bind:value={newNote}
-										rows="2"
-										placeholder="Aggiungi una nota interna…"
-										class="tl-form__input"
-										aria-label="Aggiungi nota"
-									></textarea>
-									<div class="tl-form__footer">
-										<span class="tl-form__hint">Le note sono visibili solo al team.</span>
-										<button
-											type="submit"
-											disabled={!newNote.trim()}
-											class="tl-form__submit"
-										>
-											Aggiungi nota
-										</button>
-									</div>
-								</form>
-							</li>
-						</ol>
+						<div class="block__head">
+							<h2 class="block__title">Cronologia</h2>
+						</div>
+						<div class="mt-4">
+							<TicketTimeline items={timelineItems} />
+						</div>
 					</section>
+
 				</div>
 
 				<!-- Sidebar -->
@@ -544,7 +325,7 @@
 							</div>
 							<div class="detail-row">
 								<dt>Aggiornata</dt>
-								<dd>{lastEvent ? formatDate(lastEvent.at) : '—'}</dd>
+								<dd>{lastUpdateAt ? formatDate(lastUpdateAt) : '—'}</dd>
 							</div>
 						</dl>
 					</section>
@@ -743,239 +524,6 @@
 		color: var(--foreground);
 		min-width: 0;
 		word-break: break-word;
-	}
-
-	/* ─── Timeline ────────────────────────────────────────────── */
-	.timeline {
-		position: relative;
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-
-	.timeline::before {
-		content: '';
-		position: absolute;
-		left: 0.875rem; /* center of 1.75rem node column */
-		top: 0.5rem;
-		bottom: 0.5rem;
-		width: 1px;
-		background: var(--border);
-	}
-
-	.tl-item {
-		position: relative;
-		display: grid;
-		grid-template-columns: 1.75rem 1fr;
-		gap: 0.875rem;
-		align-items: start;
-	}
-
-	.tl-item + .tl-item {
-		margin-top: 1rem;
-	}
-
-	.tl-item--comment + .tl-item,
-	.tl-item--form {
-		margin-top: 1.25rem;
-	}
-
-	.tl-node {
-		position: relative;
-		z-index: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding-top: 0.125rem;
-	}
-
-	.tl-dot {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.5rem;
-		height: 1.5rem;
-		border-radius: 9999px;
-		background: var(--card);
-		border: 1px solid var(--border);
-		color: var(--muted-foreground);
-	}
-
-	.tl-dot--ai {
-		background: color-mix(in oklch, var(--primary) 12%, var(--card));
-		border-color: color-mix(in oklch, var(--primary) 30%, var(--border));
-		color: var(--primary);
-	}
-
-	.avatar--sm {
-		width: 1.75rem;
-		height: 1.75rem;
-		font-size: 0.625rem;
-		border: 2px solid var(--card);
-	}
-
-	/* Inline events */
-	.tl-inline {
-		font-size: 0.8125rem;
-		line-height: 1.5;
-		color: var(--foreground);
-		padding-top: 0.25rem;
-	}
-
-	.tl-inline strong {
-		font-weight: 600;
-		color: var(--foreground);
-	}
-
-	.tl-inline__verb {
-		color: var(--muted-foreground);
-		font-weight: 400;
-	}
-
-	.tl-inline__time {
-		color: var(--muted-foreground);
-		font-weight: 400;
-		margin-left: 0.125rem;
-	}
-
-	/* Comment cards */
-	.tl-card {
-		border: 1px solid var(--border);
-		border-radius: 0.5rem;
-		background: var(--card);
-		overflow: hidden;
-	}
-
-	.tl-card__head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		padding: 0.5rem 0.875rem;
-		background: color-mix(in oklch, var(--muted) 35%, var(--card));
-		border-bottom: 1px solid var(--border);
-	}
-
-	.tl-card__author {
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--foreground);
-	}
-
-	.tl-card__time {
-		font-size: 0.75rem;
-		color: var(--muted-foreground);
-	}
-
-	.tl-card__body {
-		padding: 0.75rem 0.875rem;
-		font-size: 0.8125rem;
-		line-height: 1.55;
-		color: var(--foreground);
-		white-space: pre-wrap;
-	}
-
-	/* Add-note form */
-	.tl-form__input {
-		width: 100%;
-		display: block;
-		border: 0;
-		background: transparent;
-		padding: 0.625rem 0.875rem;
-		font-size: 0.8125rem;
-		line-height: 1.55;
-		color: var(--foreground);
-		resize: vertical;
-		min-height: 2.75rem;
-		outline: none;
-		font-family: inherit;
-	}
-
-	.tl-form__input::placeholder {
-		color: var(--muted-foreground);
-	}
-
-	.tl-form__footer {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		padding: 0.5rem 0.875rem;
-		background: color-mix(in oklch, var(--muted) 35%, var(--card));
-		border-top: 1px solid var(--border);
-	}
-
-	.tl-form__hint {
-		font-size: 0.6875rem;
-		color: var(--muted-foreground);
-	}
-
-	.tl-form__submit {
-		height: 1.875rem;
-		padding: 0 0.75rem;
-		border-radius: 0.375rem;
-		border: 0;
-		background: var(--primary);
-		color: var(--primary-foreground);
-		font-size: 0.75rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: opacity 150ms ease;
-	}
-
-	.tl-form__submit:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.tl-form__submit:not(:disabled):hover {
-		opacity: 0.92;
-	}
-
-	/* ─── Embed Pills ─────────────────────────────────────────── */
-	.embed-pill {
-		display: inline-flex;
-		flex-direction: column;
-		padding: 0.5rem 0.75rem;
-		border-radius: 0.5rem;
-		border: 1px solid var(--border);
-		background: var(--card);
-		min-width: 8rem;
-	}
-
-	.embed-pill--quote {
-		border-left: 3px solid #a07a55;
-	}
-	.embed-pill--invoice {
-		border-left: 3px solid #5d7d94;
-	}
-	.embed-pill--payment {
-		border-left: 3px solid #7b8c76;
-	}
-
-	.embed-pill--intervention {
-		border-left: 3px solid #7b6d8c;
-	}
-
-	.embed-pill--supplier-task {
-		border-left: 3px solid #7b6d8c;
-	}
-
-	/* sopralluogo could share the same visual or be overridden where data is available */
-
-	.embed-pill__label {
-		font-size: 0.625rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--muted-foreground);
-	}
-
-	.embed-pill__value {
-		margin-top: 0.125rem;
-		font-size: 0.75rem;
-		font-weight: 500;
-		color: var(--foreground);
 	}
 
 	/* ─── Assign CTA (empty supplier slot) ────────────────────── */

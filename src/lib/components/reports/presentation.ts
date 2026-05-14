@@ -146,7 +146,7 @@ function buildOperationalNarrativeEvent(event: TicketEvent): ReportTimelineEvent
 		id: event.id,
 		at: event.at,
 		actorId: event.supplierId ?? undefined,
-		label: event.kind === 'ai' ? 'Aggiornamento automatico' : 'Aggiornamento operativo',
+		label: 'Aggiornamento operativo',
 		note: event.body ?? 'Nuovo aggiornamento registrato sulla pratica operativa.'
 	};
 }

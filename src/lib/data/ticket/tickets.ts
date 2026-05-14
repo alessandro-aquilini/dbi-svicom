@@ -22,11 +22,9 @@ export type TicketEventKind =
 	| 'reportCompletion'
 	| 'validateAndClose'
 	| 'archiveTicket'
-	// admin-only / metadata events
-	| 'updatePriority'
-	| 'addInternalNote'
-	| 'ai'
 	| 'closed';
+
+export type TicketAdminMetadataKind = 'updatePriority' | 'addInternalNote' | 'ai';
 
 export interface TicketEvent {
 	id: string;
@@ -39,6 +37,16 @@ export interface TicketEvent {
 	body?: string; // accepted/declined, addInternalNote, ai
 	previousSupplierId?: string; // reassigned
 	// updatePriority payload
+	fromPriority?: string;
+	toPriority?: string;
+}
+
+export interface TicketAdminMetadata {
+	id: string;
+	kind: TicketAdminMetadataKind;
+	at: string; // ISO 8601
+	authorId?: string; // admin who produced the event
+	body?: string; // addInternalNote, ai
 	fromPriority?: string;
 	toPriority?: string;
 }
@@ -68,6 +76,9 @@ export interface Ticket {
 
 	/** Ordered activity log (timeline-driven). */
 	eventTimeline: TicketEvent[];
+
+	/** Admin-only timeline events (notes, priority changes, AI summaries). */
+	adminMetadata: TicketAdminMetadata[];
 
 	/** Conversation messages related to the ticket (migrated from chats). */
 	messageTimeline?: TicketMessage[];
@@ -131,9 +142,32 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
 			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
 		],
+		adminMetadata: [
+			{
+				id: 'adm-1',
+				kind: 'updatePriority',
+				at: '2026-05-01T10:02:00',
+				authorId: 'adm-giorgio-01',
+				fromPriority: 'alta',
+				toPriority: 'critica'
+			},
+			{
+				id: 'adm-2',
+				kind: 'addInternalNote',
+				at: '2026-05-01T10:20:00',
+				authorId: 'adm-giorgio-01',
+				body: 'Confermata urgenza: scala B senza acqua calda. Tenere informati i residenti.'
+			},
+			{
+				id: 'adm-3',
+				kind: 'ai',
+				at: '2026-05-03T20:15:00',
+				authorId: 'adm-giorgio-01',
+				body: 'Intervento concluso e validato. Resta da confermare l\'avvenuto pagamento e archiviare la pratica.'
+			}
+		],
 		messageTimeline: [
 			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B. Ti ho aperto un ticket.', timestamp: '2026-05-01T10:05:00Z' },
-			{ id: 'msg-101-meta', senderId: 'adm-giorgio-01', text: 'Ticket aperto: tkt-001', timestamp: '2026-05-01T10:05:00Z' },
 			{ id: 'msg-102', senderId: 'frn-idroclima-nord', text: 'Ricevuto Giorgio. Mando subito un tecnico per un sopralluogo. Ti aggiorno tra poco.', timestamp: '2026-05-01T10:10:00Z' },
 			{ id: 'msg-103', senderId: 'frn-idroclima-nord', text: 'Trovata la perdita. È il collettore principale, va sostituita anche una valvola. Ti ho caricato il preventivo.', timestamp: '2026-05-01T11:45:00Z' },
 			{ id: 'msg-104', senderId: 'adm-giorgio-01', text: 'Procedi pure, è urgente. Fammi sapere appena l\'acqua calda è ripristinata.', timestamp: '2026-05-01T12:05:00Z' }
@@ -158,6 +192,15 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-202', kind: 'assignToSupplier', at: '2026-05-03T16:35:00', authorId: 'adm-giorgio-01', supplierId: 'frn-secure-entry' },
 			{ id: 'ev-203', kind: 'accepted', at: '2026-05-03T17:30:00', authorId: 'frn-secure-entry', body: 'Passiamo domani mattina a controllare.' }
 		],
+		adminMetadata: [
+			{
+				id: 'adm-201',
+				kind: 'addInternalNote',
+				at: '2026-05-03T16:50:00',
+				authorId: 'adm-giorgio-01',
+				body: 'Segnalazione da portineria. Necessario aggiornare il consiglio dopo sopralluogo.'
+			}
+		],
 		messageTimeline: [
 			{ id: 'msg-201', senderId: 'adm-giorgio-01', text: 'Buongiorno, ci segnalano problemi al videocitofono in Corso Europa 7. Non arriva l\'immagine.', timestamp: '2026-05-03T16:40:00Z' },
 			{ id: 'msg-201-meta', senderId: 'adm-giorgio-01', text: 'Ticket aperto: tkt-002', timestamp: '2026-05-03T16:40:00Z' },
@@ -181,6 +224,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-301', kind: 'createTicket', at: '2026-05-11T08:15:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -198,6 +242,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-401', kind: 'createTicket', at: '2026-05-08T11:20:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -215,6 +260,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-501', kind: 'createTicket', at: '2026-05-06T09:00:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -232,6 +278,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-601', kind: 'createTicket', at: '2026-05-09T14:00:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -249,6 +296,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-701', kind: 'createTicket', at: '2026-05-10T07:30:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -266,6 +314,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-801', kind: 'createTicket', at: '2026-05-12T10:15:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -306,8 +355,7 @@ export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string):
 			}
 		}
 
-		// ignore internal notes when building supplier timeline
-		if (relevant && ev.kind !== 'addInternalNote') {
+		if (relevant) {
 			result.push(ev);
 		}
 
