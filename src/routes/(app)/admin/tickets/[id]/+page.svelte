@@ -255,7 +255,7 @@
 								{#if item.type === 'ticket-event'}
 									{@const ev = item.data}
 									{@const actor = reporter}
-									{#if ev.kind === 'note'}
+									{#if ev.kind === 'addInternalNote'}
 										<li class="tl-item tl-item--comment">
 											<span class="tl-node">
 												{#if actor}
@@ -282,12 +282,14 @@
 										<li class="tl-item tl-item--inline">
 											<span class="tl-node">
 												<span class="tl-dot tl-dot--{ev.kind}" aria-hidden="true">
-													{#if ev.kind === 'created'}
+													{#if ev.kind === 'createTicket'}
 														<HugeiconsIcon icon={File01Icon} size={11} strokeWidth={2} />
-													{:else if ev.kind === 'assigned'}
+													{:else if ev.kind === 'assignToSupplier' || ev.kind === 'reassigned'}
 														<HugeiconsIcon icon={UserAdd01Icon} size={11} strokeWidth={2} />
-													{:else if ev.kind === 'status'}
+													{:else if ev.kind === 'reportCompletion' || ev.kind === 'validateAndClose' || ev.kind === 'archiveTicket'}
 														<HugeiconsIcon icon={Exchange01Icon} size={11} strokeWidth={2} />
+													{:else if ev.kind === 'accepted' || ev.kind === 'declined'}
+														<HugeiconsIcon icon={Wrench01Icon} size={11} strokeWidth={2} />
 													{:else if ev.kind === 'ai'}
 														<HugeiconsIcon icon={SparklesIcon} size={11} strokeWidth={2} />
 													{/if}
@@ -295,18 +297,22 @@
 											</span>
 											<div class="tl-inline-group">
 												<p class="tl-inline">
-													{#if ev.kind === 'created'}
+													{#if ev.kind === 'createTicket'}
 														<strong>{actor?.name ?? 'Amministratore'}</strong>
 														<span class="tl-inline__verb">ha aperto la pratica</span>
-													{:else if ev.kind === 'assigned' || ev.kind === 'reassigned'}
+													{:else if ev.kind === 'assignToSupplier' || ev.kind === 'reassigned'}
 														{@const target = ev.supplierId ? getUserById(ev.supplierId) : undefined}
 														<span class="tl-inline__verb"
-															>{ev.kind === 'assigned' ? 'Pratica assegnata a' : 'Pratica riassegnata a'}</span
+															>{ev.kind === 'assignToSupplier' ? 'Pratica assegnata a' : 'Pratica riassegnata a'}</span
 														>
 														<strong>{target?.name ?? '—'}</strong>
-													{:else if ev.kind === 'status' || ev.kind === 'closed'}
+													{:else if ev.kind === 'reportCompletion' || ev.kind === 'validateAndClose' || ev.kind === 'archiveTicket'}
 														<span class="tl-inline__verb">Stato cambiato in</span>
-														<strong>{ev.toStatus ? statusLabel[ev.toStatus as TicketStatus] : '—'}</strong>
+														{@const to = ev.kind === 'reportCompletion' ? 'completed' : 'closed'}
+														<strong>{statusLabel[to]}</strong>
+													{:else if ev.kind === 'accepted' || ev.kind === 'declined'}
+														<strong>{getUserById(ev.authorId ?? '')?.name ?? 'Fornitore'}</strong>
+														<span class="tl-inline__verb">{ev.kind === 'accepted' ? 'accettato' : 'respinto'}</span>
 													{:else if ev.kind === 'ai'}
 														<strong>Assistente</strong>
 														<span class="tl-inline__verb">{ev.body}</span>

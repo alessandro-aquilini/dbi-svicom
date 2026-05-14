@@ -14,32 +14,43 @@ export type TicketPriority = 'bassa' | 'media' | 'alta' | 'critica';
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
 export type TicketEventKind =
-	| 'created'   // ticket opened by admin
-	| 'status'    // any status transition
-	| 'assigned'  // first supplier assignment
-	| 'reassigned'// supplier replaced by another
-	| 'note'      // free-text comment
-	| 'ai'        // system-generated narrative
-	| 'closed';   // ticket explicitly closed
+	| 'createTicket'
+	| 'assignToSupplier'
+	| 'reassigned'
+	| 'accepted'
+	| 'declined'
+	| 'reportCompletion'
+	| 'validateAndClose'
+	| 'archiveTicket'
+	// admin-only / metadata events
+	| 'updatePriority'
+	| 'addInternalNote'
+	| 'ai'
+	| 'closed';
 
 export interface TicketEvent {
 	id: string;
 	kind: TicketEventKind;
-	at: string;          // ISO 8601
+	at: string; // ISO 8601
+	authorId?: string; // user who produced the event
 
-	// ── status / closed events ──
-	fromStatus?: TicketStatus;
-	toStatus?: TicketStatus;
-
-	// ── assigned / reassigned events ──
-	supplierId?: string;          // incoming supplier
-	previousSupplierId?: string;  // outgoing supplier (reassigned only)
-
-	// ── note / ai events ──
-	body?: string;
+	// optional payloads for certain kinds
+	supplierId?: string; // assignToSupplier
+	body?: string; // accepted/declined, addInternalNote, ai
+	previousSupplierId?: string; // reassigned
+	// updatePriority payload
+	fromPriority?: string;
+	toPriority?: string;
 }
 
 // ─── Ticket ───────────────────────────────────────────────────────────────────
+
+export interface TicketMessage {
+	id: string;
+	senderId: string; // References User.id
+	text: string;
+	timestamp: string; // ISO datetime
+}
 
 export interface Ticket {
 	id: string;
@@ -48,32 +59,51 @@ export interface Ticket {
 	priority: TicketPriority;
 	category: string;
 
-	creatorId: string;    // Always an Admin User.id
-	supplierId?: string;  // Current active supplier User.id (mirrors last 'assigned'/'reassigned' event)
-	propertyId: string;   // The condominium
+	creatorId: string; // Always an Admin User.id
+	supplierId?: string; // Current active supplier User.id (mirrors last assignToSupplier/reassigned event)
+	propertyId: string; // The condominium
 
 	/** Resident User IDs who can view this ticket (read-only observers). */
 	cc: string[];
 
-	/** Ordered activity log. Replaces statusHistory — derive current status
-	 *  from the `toStatus` of the last 'status' or 'closed' event. */
+	/** Ordered activity log (timeline-driven). */
 	eventTimeline: TicketEvent[];
 
-	// ── Document links (ID-only — timestamps live in their own modules) ──
-	paymentIds: string[];  // References Payment.id  (payments.ts)
-	quoteIds: string[];    // References Quote.id    (quotes.ts)
-	invoiceIds: string[];  // References Invoice.id  (invoices.ts)
-	interventionIds: string[]; // References Intervento.id (intervento.ts)
+	/** Conversation messages related to the ticket (migrated from chats). */
+	messageTimeline?: TicketMessage[];
+
+	// Document links (ID-only)
+	paymentIds: string[];
+	quoteIds: string[];
+	invoiceIds: string[];
+	interventionIds: string[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Derives current status by walking the timeline. O(n) but n is tiny. */
 export function getCurrentStatus(ticket: Ticket): TicketStatus {
+	// Walk backwards through timeline and pick the first event that maps to a public status.
 	for (let i = ticket.eventTimeline.length - 1; i >= 0; i--) {
 		const ev = ticket.eventTimeline[i];
-		if ((ev.kind === 'status' || ev.kind === 'closed') && ev.toStatus) {
-			return ev.toStatus;
+		switch (ev.kind) {
+			case 'reportCompletion':
+				return 'completed';
+			case 'validateAndClose':
+				return 'closed';
+			case 'archiveTicket':
+				return 'closed';
+			case 'assignToSupplier':
+				return 'in_progress';
+			case 'accepted':
+				return 'estimating';
+			case 'declined':
+				return 'estimating';
+			case 'createTicket':
+				return 'opened';
+			// Legacy support
+			case 'closed':
+				return 'closed';
 		}
 	}
 	return 'opened';
@@ -93,14 +123,20 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-bianchi-01', 'res-bellini-05'],
 		eventTimeline: [
-			{ id: 'ev-1', kind: 'created', at: '2026-05-01T10:00:00' },
-			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00', fromStatus: 'opened', toStatus: 'estimating' },
-			{ id: 'ev-3', kind: 'assigned', at: '2026-05-01T10:05:00', supplierId: 'frn-idroclima-nord' },
-			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00', body: 'Idroclina Nord ha risposto subito ed è disponibile.' },
-			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:40:00', fromStatus: 'estimating', toStatus: 'approved' },
-			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00', fromStatus: 'approved', toStatus: 'in_progress' },
-			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00', fromStatus: 'in_progress', toStatus: 'completed' },
-			{ id: 'ev-8', kind: 'status', at: '2026-05-03T19:00:00', fromStatus: 'completed', toStatus: 'paid' }
+			{ id: 'ev-1', kind: 'createTicket', at: '2026-05-01T10:00:00', authorId: 'adm-giorgio-01' },
+			{ id: 'ev-2', kind: 'accepted', at: '2026-05-01T10:05:00', authorId: 'frn-idroclima-nord', body: 'Ricevuto, invio tecnico.' },
+			{ id: 'ev-3', kind: 'assignToSupplier', at: '2026-05-01T10:05:00', authorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord' },
+			{ id: 'ev-4', kind: 'accepted', at: '2026-05-01T11:45:00', authorId: 'frn-idroclima-nord', body: 'Trovata la perdita e inviato preventivo.' },
+			{ id: 'ev-5', kind: 'accepted', at: '2026-05-01T12:05:00', authorId: 'adm-giorgio-01', body: 'Procedi pure, è urgente.' },
+			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
+			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
+		],
+		messageTimeline: [
+			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B. Ti ho aperto un ticket.', timestamp: '2026-05-01T10:05:00Z' },
+			{ id: 'msg-101-meta', senderId: 'adm-giorgio-01', text: 'Ticket aperto: tkt-001', timestamp: '2026-05-01T10:05:00Z' },
+			{ id: 'msg-102', senderId: 'frn-idroclima-nord', text: 'Ricevuto Giorgio. Mando subito un tecnico per un sopralluogo. Ti aggiorno tra poco.', timestamp: '2026-05-01T10:10:00Z' },
+			{ id: 'msg-103', senderId: 'frn-idroclima-nord', text: 'Trovata la perdita. È il collettore principale, va sostituita anche una valvola. Ti ho caricato il preventivo.', timestamp: '2026-05-01T11:45:00Z' },
+			{ id: 'msg-104', senderId: 'adm-giorgio-01', text: 'Procedi pure, è urgente. Fammi sapere appena l\'acqua calda è ripristinata.', timestamp: '2026-05-01T12:05:00Z' }
 		],
 		paymentIds: ['pay-001'],
 		quoteIds: ['quo-001'],
@@ -118,9 +154,15 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
 		eventTimeline: [
-			{ id: 'ev-201', kind: 'created', at: '2026-05-03T16:30:00' },
-			{ id: 'ev-202', kind: 'assigned', at: '2026-05-03T16:35:00', supplierId: 'frn-secure-entry' },
-			{ id: 'ev-203', kind: 'status', at: '2026-05-03T16:35:00', fromStatus: 'opened', toStatus: 'estimating' }
+			{ id: 'ev-201', kind: 'createTicket', at: '2026-05-03T16:30:00', authorId: 'adm-giorgio-01' },
+			{ id: 'ev-202', kind: 'assignToSupplier', at: '2026-05-03T16:35:00', authorId: 'adm-giorgio-01', supplierId: 'frn-secure-entry' },
+			{ id: 'ev-203', kind: 'accepted', at: '2026-05-03T17:30:00', authorId: 'frn-secure-entry', body: 'Passiamo domani mattina a controllare.' }
+		],
+		messageTimeline: [
+			{ id: 'msg-201', senderId: 'adm-giorgio-01', text: 'Buongiorno, ci segnalano problemi al videocitofono in Corso Europa 7. Non arriva l\'immagine.', timestamp: '2026-05-03T16:40:00Z' },
+			{ id: 'msg-201-meta', senderId: 'adm-giorgio-01', text: 'Ticket aperto: tkt-002', timestamp: '2026-05-03T16:40:00Z' },
+			{ id: 'msg-202', senderId: 'frn-secure-entry', text: 'Buongiorno Giorgio, passiamo domani mattina a controllare.', timestamp: '2026-05-03T17:30:00Z' },
+			{ id: 'msg-203', senderId: 'frn-secure-entry', text: 'Telecamera guasta, va sostituito il modulo. Ti ho inviato il preventivo nel ticket.', timestamp: '2026-05-04T09:05:00Z' }
 		],
 		paymentIds: [],
 		quoteIds: ['quo-002'],
@@ -137,7 +179,7 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
 		eventTimeline: [
-			{ id: 'ev-301', kind: 'created', at: '2026-05-11T08:15:00' }
+			{ id: 'ev-301', kind: 'createTicket', at: '2026-05-11T08:15:00' }
 		],
 		paymentIds: [],
 		quoteIds: [],
@@ -154,7 +196,7 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-solari-30',
 		cc: ['res-moretti-07'],
 		eventTimeline: [
-			{ id: 'ev-401', kind: 'created', at: '2026-05-08T11:20:00' }
+			{ id: 'ev-401', kind: 'createTicket', at: '2026-05-08T11:20:00' }
 		],
 		paymentIds: [],
 		quoteIds: [],
@@ -171,7 +213,7 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-pacini-44',
 		cc: ['res-esposito-06'],
 		eventTimeline: [
-			{ id: 'ev-501', kind: 'created', at: '2026-05-06T09:00:00' }
+			{ id: 'ev-501', kind: 'createTicket', at: '2026-05-06T09:00:00' }
 		],
 		paymentIds: [],
 		quoteIds: [],
@@ -188,7 +230,7 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-verdi-3',
 		cc: ['res-rossi-03'],
 		eventTimeline: [
-			{ id: 'ev-601', kind: 'created', at: '2026-05-09T14:00:00' }
+			{ id: 'ev-601', kind: 'createTicket', at: '2026-05-09T14:00:00' }
 		],
 		paymentIds: [],
 		quoteIds: [],
@@ -205,7 +247,7 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-tortona-12',
 		cc: ['res-bruno-08'],
 		eventTimeline: [
-			{ id: 'ev-701', kind: 'created', at: '2026-05-10T07:30:00' }
+			{ id: 'ev-701', kind: 'createTicket', at: '2026-05-10T07:30:00' }
 		],
 		paymentIds: [],
 		quoteIds: [],
@@ -222,7 +264,7 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-carducci-21',
 		cc: ['res-greco-04'],
 		eventTimeline: [
-			{ id: 'ev-801', kind: 'created', at: '2026-05-12T10:15:00' }
+			{ id: 'ev-801', kind: 'createTicket', at: '2026-05-12T10:15:00' }
 		],
 		paymentIds: [],
 		quoteIds: [],
@@ -255,7 +297,7 @@ export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string):
 	const result: TicketEvent[] = [];
 
 	for (const ev of ticket.eventTimeline) {
-		if (ev.kind === 'assigned' || ev.kind === 'reassigned') {
+		if (ev.kind === 'assignToSupplier' || ev.kind === 'reassigned') {
 			if (ev.supplierId === supplierId) {
 				relevant = true;
 			} else if (relevant) {
@@ -264,11 +306,12 @@ export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string):
 			}
 		}
 
-		if (relevant && ev.kind != 'note') {
+		// ignore internal notes when building supplier timeline
+		if (relevant && ev.kind !== 'addInternalNote') {
 			result.push(ev);
 		}
 
-		if (ev.kind === 'closed') {
+		if (ev.kind === 'closed' || ev.kind === 'archiveTicket') {
 			relevant = false;
 		}
 	}

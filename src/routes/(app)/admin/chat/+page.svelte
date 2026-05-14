@@ -444,26 +444,26 @@
                                 <div class="ts">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</div>
                             </div>
                         {:else if ev.type === 'ticket-event'}
-                            {#if ['assigned','reassigned','status_update'].includes(ev.data.event.kind)}
+                            {#if ['assignToSupplier','reassigned','accepted','declined','reportCompletion','validateAndClose','archiveTicket','updatePriority','addInternalNote','ai'].includes(ev.data.event.kind)}
                                 <div class="embed-card" style="align-self: flex-end; max-width:480px;">
                                     <div class="embed-header">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/><path d="m10 12 2 2 4-4"/></svg>
-                                        Ticket update
+                                        Aggiornamento Ticket
                                     </div>
                                     <div class="embed-title">[{ev.data.ticket.id}] {ev.data.event.kind.replace(/_/g,' ')}</div>
                                     <div style="font-size:0.9rem;color:var(--foreground)">
-                                        {#if ev.data.event.kind === 'assigned'}
-                                            <div style="font-weight:600">This ticket has been assigned to you.</div>
-                                            <div>New status: <span style="color:var(--primary); text-transform: capitalize">{(ev.data.event.toStatus || 'open').replace(/_/g,' ')}</span></div>
+                                        {#if ev.data.event.kind === 'assignToSupplier'}
+                                            <div style="font-weight:600">Questo ticket è stato assegnato a te.</div>
+                                            <div>Nuovo stato: <span style="color:var(--primary); text-transform: capitalize">{(ev.data.event.toStatus || 'open').replace(/_/g,' ')}</span></div>
                                         {:else if ev.data.event.kind === 'reassigned'}
-                                            <div style="font-weight:600">This ticket has been reassigned.</div>
+                                            <div style="font-weight:600">Questo ticket è stato riassegnato.</div>
                                         {:else}
-                                            <div style="font-weight:600">Status changed to <span style="color:var(--primary); text-transform: capitalize">{(ev.data.event.toStatus || '').replace(/_/g,' ')}</span></div>
+                                            <div style="font-weight:600">Stato cambiato in <span style="color:var(--primary); text-transform: capitalize">{(ev.data.event.toStatus || '').replace(/_/g,' ')}</span></div>
                                         {/if}
                                     </div>
                                     <div class="embed-footer">
                                         <span style="color: var(--muted-foreground)">{new Date(ev.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>
-                                        <span style="font-weight: 600; color: var(--primary)">Details →</span>
+                                        <span style="font-weight: 600; color: var(--primary)">Dettagli →</span>
                                     </div>
                                 </div>
                             {:else}

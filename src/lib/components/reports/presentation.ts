@@ -57,17 +57,6 @@ export function isTicketStatus(value: string | undefined): boolean {
 	return Boolean(value && value in ticketStatusLabels);
 }
 
-// Get the current status from a report's statusHistory
-export function getCurrentStatus(report: Report): string | undefined {
-	const history = report.statusHistory || [];
-	return history.at(-1)?.status;
-}
-
-export function getLatestTicketStatus(statusHistory: Array<{ status: string }>): string | undefined {
-	const latestStatus = statusHistory.at(-1)?.status;
-	return isTicketStatus(latestStatus) ? latestStatus : undefined;
-}
-
 export function formatTicketDate(value: string | undefined): string {
 	if (!value) return 'Data non disponibile';
 
@@ -102,17 +91,19 @@ export function getReportOperationalContext(report: Report): ReportOperationalCo
 
 export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEvent[] {
 	return ticket.eventTimeline.map((event) => {
-		if (event.kind === 'status' || event.kind === 'closed') {
+		// map new kinds into the report timeline representation
+		if (event.kind === 'reportCompletion' || event.kind === 'validateAndClose' || event.kind === 'archiveTicket') {
+			const toStatus = event.kind === 'reportCompletion' ? 'completed' : 'closed';
 			return {
 				id: event.id,
 				at: event.at,
 				actorId: ticket.supplierId ?? ticket.creatorId,
-				toStatus: event.toStatus,
-				label: event.toStatus ? ticketStatusLabels[event.toStatus] : 'Aggiornamento stato'
+				toStatus,
+				label: ticketStatusLabels[toStatus]
 			};
 		}
 
-		if (event.kind === 'created') {
+		if (event.kind === 'createTicket') {
 			return {
 				id: event.id,
 				at: event.at,
@@ -122,7 +113,7 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 			};
 		}
 
-		if (event.kind === 'assigned') {
+		if (event.kind === 'assignToSupplier') {
 			return {
 				id: event.id,
 				at: event.at,
