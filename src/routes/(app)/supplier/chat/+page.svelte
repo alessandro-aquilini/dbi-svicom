@@ -64,7 +64,7 @@
 		const groups = new Map<string, { adminId: string, lastDate: Date, tickets: any[] }>();
 		
 		tickets.filter(t => getCurrentSupplier(t) === supplierId).forEach(t => {
-			const aid = t.adminId || 'adm-giorgio-01'; // Fallback
+			const aid = t.creatorId || 'adm-giorgio-01'; // Fallback
 			if (!groups.has(aid)) {
 				groups.set(aid, { adminId: aid, lastDate: new Date(0), tickets: [] });
 			}
@@ -236,9 +236,6 @@
 									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-xs font-semibold text-[#5D7D94] mb-1">
-								{group.bookings.length} prenotazioni
-							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
 								{lastMsg?.text || 'Inizia la conversazione...'}
 							</p>
@@ -263,9 +260,6 @@
 								{#if group.lastDate.getTime() > 0}
 									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
-							</div>
-							<div class="text-[11px] font-semibold text-primary mb-1 line-clamp-1">
-								{group.tickets.length} interventi Svicom
 							</div>
 							<p class="text-[11px] text-slate-500 line-clamp-1">
 								{lastMsg?.text || 'Vedi cronologia...'}

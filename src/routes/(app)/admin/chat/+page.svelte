@@ -117,6 +117,11 @@
 						items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
 					});
 				}
+				if (r.timeline) {
+					r.timeline.forEach((event: any) => {
+						items.push({ type: 'event', date: new Date(event.at), data: event });
+					});
+				}
 			});
 		} else {
 			const chat = activeChat as any;
@@ -230,9 +235,6 @@
 									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-xs font-semibold text-primary mb-1 truncate">
-								{group.reports.length} segnalazioni
-							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
 								{lastMsg?.text || 'Vedi cronologia...'}
 							</p>
@@ -257,9 +259,6 @@
 								{#if group.lastDate.getTime() > 0}
 									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
-							</div>
-							<div class="text-xs font-semibold text-primary mb-1 truncate">
-								{group.tickets.length} interventi
 							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
 								{lastMsg?.text || 'Vedi cronologia...'}
