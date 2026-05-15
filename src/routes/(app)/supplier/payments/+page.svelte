@@ -26,8 +26,8 @@
 				return matchesSearch && matchesFilter;
 			})
 			.sort((a, b) => {
-				const dateA = new Date(a.paidAt || a.dueDate).getTime();
-				const dateB = new Date(b.paidAt || b.dueDate).getTime();
+				const dateA = new Date(a.createdAt || a.paidAt || '').getTime();
+				const dateB = new Date(b.createdAt || b.paidAt || '').getTime();
 				return dateB - dateA;
 			});
 	});
@@ -35,7 +35,7 @@
 	const groupedPayments = $derived(() => {
 		const groups: Record<string, Payment[]> = {};
 		for (const p of filteredPayments()) {
-			const d = new Date(p.paidAt || p.dueDate);
+			const d = new Date(p.paidAt || p.createdAt || '');
 			// Example "Aprile 2024"
 			const monthYear = d.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
 			const capitalized = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
@@ -91,7 +91,7 @@
 								<div>
 									<p class="text-sm font-semibold text-foreground line-clamp-1">{user?.name ?? 'Sconosciuto'}</p>
 									<p class="text-xs text-muted-foreground mt-0.5 line-clamp-1">{payment.description}</p>
-									<p class="text-[10px] text-muted-foreground/70 mt-0.5">{new Date(payment.paidAt || payment.dueDate).toLocaleDateString('it-IT')}</p>
+									<p class="text-[10px] text-muted-foreground/70 mt-0.5">{new Date(payment.paidAt ?? payment.createdAt).toLocaleDateString('it-IT')}</p>
 								</div>
 							</div>
 							<div class="flex flex-col items-end shrink-0 pl-3">
@@ -153,7 +153,7 @@
 				</div>
 				<div class="flex justify-between items-center text-sm border-b border-border/50 pb-3">
 					<span class="text-muted-foreground">Data</span>
-					<span class="font-medium text-foreground">{new Date(selectedPayment.paidAt || selectedPayment.dueDate).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+					<span class="font-medium text-foreground">{new Date(selectedPayment.paidAt ?? selectedPayment.createdAt ?? '').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
 				</div>
 				<div class="flex justify-between items-start text-sm border-b border-border/50 pb-3">
 					<span class="text-muted-foreground pt-0.5">Causale</span>

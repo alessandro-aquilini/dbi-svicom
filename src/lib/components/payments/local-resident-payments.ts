@@ -32,6 +32,7 @@ export interface ResidentPaymentReceipt {
 	currency: string;
 	method: ResidentPaymentMethod;
 	paidAt: string;
+	createdAt?: string;
 	displayAmount: string;
 }
 
@@ -97,8 +98,9 @@ function getQuarterLabel(date: Date): string {
 	return `Q${quarter} ${date.getUTCFullYear()}`;
 }
 
-function inferNextRecurringDueDate(sourcePayment: Pick<Payment, 'dueDate'>, now = new Date()): Date {
-	const inferredDate = new Date(sourcePayment.dueDate);
+function inferNextRecurringDueDate(sourcePayment: Pick<Payment, 'paidAt'>, now = new Date()): Date {
+	// sourcePayment.paidAt is the scheduled/recurring date in the new model
+	const inferredDate = new Date(sourcePayment.paidAt as string);
 
 	while (inferredDate.getTime() <= now.getTime()) {
 		inferredDate.setUTCMonth(inferredDate.getUTCMonth() + 3);
@@ -112,14 +114,14 @@ export function getResidentPaymentReminder(
 	now = new Date()
 ): ResidentPaymentReminder | undefined {
 	const latestPersonalPayment = [...context.personalPayments]
-		.sort((left, right) => right.dueDate.localeCompare(left.dueDate))
+		.sort((left, right) => (right.paidAt ?? '').localeCompare(left.paidAt ?? ''))
 		.at(0);
 
 	if (!latestPersonalPayment || !context.currentUser || !context.resident || !context.property) {
 		return undefined;
 	}
 
-	const dueDate = inferNextRecurringDueDate(latestPersonalPayment, now);
+	const dueDate = inferNextRecurringDueDate(latestPersonalPayment as Pick<Payment, 'paidAt'>, now);
 	const dueDateIso = dueDate.toISOString();
 	const title = `Quota condominiale ${getQuarterLabel(dueDate)}`;
 
@@ -141,9 +143,9 @@ export function createResidentPaymentReceipt(input: {
 	reminder: ResidentPaymentReminder;
 	method: ResidentPaymentMethod;
 }): ResidentPaymentReceipt {
-	const paidAt = new Date().toISOString();
+	const createdAt = new Date().toISOString();
 	const receipt: ResidentPaymentReceipt = {
-		reference: `RCV-${paidAt.slice(0, 10).replaceAll('-', '')}-${Math.random()
+	reference: `RCV-${createdAt.slice(0, 10).replaceAll('-', '')}-${Math.random()
 			.toString(36)
 			.slice(2, 7)
 			.toUpperCase()}`,
@@ -156,7 +158,9 @@ export function createResidentPaymentReceipt(input: {
 		amount: input.reminder.amount,
 		currency: input.reminder.currency,
 		method: input.method,
-		paidAt,
+	// For local receipts we record the transaction date as the creation time
+	paidAt: createdAt,
+	createdAt,
 		displayAmount: input.reminder.amountLabel
 	};
 
@@ -169,7 +173,7 @@ export function getResidentLatestReceipt(residentId: string | undefined): Reside
 
 	return getStoredReceipts()
 		.filter((receipt) => receipt.residentId === residentId)
-		.sort((left, right) => right.paidAt.localeCompare(left.paidAt))
+	.sort((left, right) => (right.createdAt ?? '').localeCompare(left.createdAt ?? ''))
 		.at(0);
 }
 

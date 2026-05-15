@@ -18,7 +18,9 @@
 
 	function getPaymentStatus(payment: (typeof payments)[number]) {
 		if (payment.paidAt) return 'paid';
-		if (new Date(payment.dueDate).getTime() < Date.now()) return 'overdue';
+		// Consider payment overdue if its scheduled transaction date (paidAt) or creation date is in the past and not recorded as paid.
+		const ref = payment.paidAt ?? payment.createdAt;
+		if (ref && new Date(ref).getTime() < Date.now()) return 'overdue';
 		return 'pending';
 	}
 </script>

@@ -2,14 +2,16 @@
 
 export interface Quote {
 	id: string;
-	ticketId: string; // References Ticket.id
+	ticketId?: string;
+	bookingId?: string; 
 	supplierId: string; // References User.id
 	customerId: string; // References Admin or Resident User.id
 	propertyId: string;
 	title: string;
 	amount: number;
 	currency: string;
-	sentAt: string;
+	/** Timestamp when the quote was created/sent */
+	createdAt: string;
 	expiresAt: string;
 	description: string;
 	attachments?: string[];
@@ -25,7 +27,7 @@ export const quotes: Quote[] = [
 		title: 'Riparazione urgente collettore e valvole',
 		amount: 450.00,
 		currency: 'EUR',
-		sentAt: '2026-05-01T11:45:00',
+		createdAt: '2026-05-01T11:45:00',
 		expiresAt: '2026-05-08T11:45:00',
 		description: 'Sostituzione guarnizioni collettore principale e valvola a tre vie bloccata.',
 		attachments: ['preventivo_idroclima_001.pdf']
@@ -39,7 +41,7 @@ export const quotes: Quote[] = [
 		title: 'Sostituzione modulo telecamera',
 		amount: 280.00,
 		currency: 'EUR',
-		sentAt: '2026-05-04T09:00:00',
+		createdAt: '2026-05-04T09:00:00',
 		expiresAt: '2026-05-11T09:00:00',
 		description: 'Fornitura e posa in opera di nuovo modulo telecamera compatibile con sistema esistente.',
 		attachments: ['preventivo_secure_entry_04.pdf']
@@ -54,7 +56,7 @@ export const quotes: Quote[] = [
 		title: 'Installazione climatizzatore - preventivo completo',
 		amount: 1200.00,
 		currency: 'EUR',
-		sentAt: '2026-05-01T11:30:00',
+		createdAt: '2026-05-01T11:30:00',
 		expiresAt: '2026-05-15T11:30:00',
 		description: 'Preventivo per fornitura e installazione di climatizzatore monosplit (materiali + manodopera).',
 		attachments: ['preventivo_idroclima_003.pdf']

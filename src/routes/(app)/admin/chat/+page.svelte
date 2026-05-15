@@ -130,20 +130,21 @@
 			if (t.quoteIds) {
 				t.quoteIds.forEach((id: string) => {
 					const quote = getQuoteById(id);
-					if (quote) items.push({ type: 'quote', date: new Date(quote.sentAt), data: quote });
+					if (quote && quote.createdAt) items.push({ type: 'quote', date: new Date(quote.createdAt), data: quote });
 				});
 			}
 			if (t.invoiceIds) {
 				t.invoiceIds.forEach((id: string) => {
 					const invoice = getInvoiceById(id);
-					if (invoice) items.push({ type: 'invoice', date: new Date(invoice.issueDate), data: invoice });
+					if (invoice && invoice.createdAt) items.push({ type: 'invoice', date: new Date(invoice.createdAt), data: invoice });
 				});
 			}
 			if (t.paymentIds) {
 				t.paymentIds.forEach((id: string) => {
 					const payment = getPaymentById(id);
-					if (payment && (payment.paidAt || payment.dueDate)) {
-						items.push({ type: 'payment', date: new Date(payment.paidAt || payment.dueDate), data: payment });
+					const dateStr = payment ? (payment.createdAt ?? payment.paidAt) : undefined;
+					if (payment && dateStr) {
+						items.push({ type: 'payment', date: new Date(dateStr), data: payment });
 					}
 				});
 			}

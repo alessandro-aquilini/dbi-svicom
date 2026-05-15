@@ -21,10 +21,10 @@
 	const allDocs = $derived(() => {
 		const items: DocumentItem[] = [];
 		for (const inv of invoices) {
-			items.push({ type: 'invoice', date: new Date(inv.issueDate).getTime(), data: inv });
+			if (inv.createdAt) items.push({ type: 'invoice', date: new Date(inv.createdAt).getTime(), data: inv });
 		}
 		for (const q of quotes) {
-			items.push({ type: 'quote', date: new Date(q.sentAt).getTime(), data: q });
+			if (q.createdAt) items.push({ type: 'quote', date: new Date(q.createdAt).getTime(), data: q });
 		}
 		return items.sort((a, b) => b.date - a.date); // newest first
 	});

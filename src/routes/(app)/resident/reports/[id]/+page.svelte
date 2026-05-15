@@ -313,7 +313,7 @@
 												<div class="report-operational-panel__item">
 													<p class="report-operational-panel__label">{quote.title}</p>
 													<p class="report-operational-panel__value">
-														{quote.amount.toFixed(2)} {quote.currency} · inviato {formatTicketDate(quote.sentAt)}
+														{quote.amount.toFixed(2)} {quote.currency} · inviato {formatTicketDate(quote.createdAt)}
 													</p>
 												</div>
 											{/each}
@@ -329,7 +329,7 @@
 												<div class="report-operational-panel__item">
 													<p class="report-operational-panel__label">{invoice.number}</p>
 													<p class="report-operational-panel__value">
-														{invoice.amount.toFixed(2)} {invoice.currency} · emessa {formatTicketDate(invoice.issueDate)}
+														{invoice.amount.toFixed(2)} {invoice.currency} · emessa {formatTicketDate(invoice.createdAt)}
 													</p>
 												</div>
 											{/each}

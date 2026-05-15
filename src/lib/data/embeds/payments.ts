@@ -4,11 +4,17 @@ export interface Payment {
 	toId: string; // References User.id
 	amount: number;
 	currency: string;
-	dueDate: string;
-	/** Undefined when the payment is still outstanding. */
+	/** Optional scheduled / expected payment date (was previously "dueDate").
+	 * This field is used to determine when the payment is expected to occur.
+	 */
 	paidAt?: string;
+	/** Timestamp when the payment record was created (was previously "paidAt").
+	 * Use this to sort timeline messages and for UI ordering.
+	 */
+	createdAt?: string;
 	description: string;
 	ticketId?: string;
+	bookingId?: string;
 	propertyId?: string;
 }
 
@@ -19,8 +25,8 @@ export const payments: Payment[] = [
 		toId: 'frn-idroclima-nord',
 		amount: 450.00,
 		currency: 'EUR',
-		dueDate: '2026-06-02T00:00:00',
-		paidAt: '2026-05-03T10:15:00',
+		paidAt: '2026-06-02T00:00:00',
+		createdAt: '2026-05-03T10:15:00',
 		description: 'Saldo fattura 2026/FT/154 per intervento idraulico Marconi 14',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
@@ -32,8 +38,8 @@ export const payments: Payment[] = [
 		toId: 'frn-clean-green',
 		amount: 80.00,
 		currency: 'EUR',
-		dueDate: '2026-05-20T00:00:00',
-		paidAt: '2026-04-20T16:00:00',
+		paidAt: '2026-05-20T00:00:00',
+		createdAt: '2026-04-20T16:00:00',
 		description: 'Pagamento pulizie extra - bkg-002',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-002'
@@ -44,8 +50,8 @@ export const payments: Payment[] = [
 		toId: 'frn-idroclima-nord',
 		amount: 1200.00,
 		currency: 'EUR',
-		dueDate: '2026-06-03T00:00:00',
-		paidAt: '2026-05-04T11:00:00',
+		paidAt: '2026-06-03T00:00:00',
+		createdAt: '2026-05-04T11:00:00',
 		description: 'Acconto + saldo per installazione climatizzatore - bkg-003',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-003'
@@ -58,7 +64,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 420.00,
 		currency: 'EUR',
-		dueDate: '2026-03-27T00:00:00',
+		paidAt: '2026-03-27T00:00:00',
 		description: 'Quota condominiale Q1 2026 — Via Marconi 14',
 		propertyId: 'cnd-marconi-14'
 	},
@@ -68,7 +74,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 860.00,
 		currency: 'EUR',
-		dueDate: '2026-04-05T00:00:00',
+		paidAt: '2026-04-05T00:00:00',
 		description: 'Quota condominiale Q1 2026 — Corso Europa 7',
 		propertyId: 'cnd-europa-7'
 	},
@@ -78,7 +84,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 1240.00,
 		currency: 'EUR',
-		dueDate: '2026-03-12T00:00:00',
+		paidAt: '2026-03-12T00:00:00',
 		description: 'Quota condominiale + spese straordinarie — Via Carducci 21',
 		propertyId: 'cnd-carducci-21'
 	},
@@ -88,7 +94,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 900.00,
 		currency: 'EUR',
-		dueDate: '2026-04-10T00:00:00',
+		paidAt: '2026-04-10T00:00:00',
 		description: 'Quota condominiale Q1 2026 — Via Tortona 12',
 		propertyId: 'cnd-tortona-12'
 	}
@@ -106,16 +112,22 @@ export function getOverduePayments(options: {
 	const now = options.now ?? new Date();
 	const min = options.minDaysOverdue ?? 0;
 	return payments.filter((p) => {
-		if (p.paidAt) return false;
+		// If we have a transaction date (paidAt) and it is in the past (<= now) consider it paid
+		if (p.paidAt && new Date(p.paidAt).getTime() <= now.getTime()) return false;
 		if (options.propertyId && p.propertyId !== options.propertyId) return false;
-		const due = new Date(p.dueDate).getTime();
+		// Use the scheduled/expected payment date if present; otherwise fall back to createdAt
+		const ref = p.paidAt ?? p.createdAt;
+		if (!ref) return false;
+		const due = new Date(ref).getTime();
 		const daysOverdue = (now.getTime() - due) / 86_400_000;
 		return daysOverdue >= min;
 	});
 }
 
 export function getDaysOverdue(payment: Payment, now: Date = new Date()): number {
-	const due = new Date(payment.dueDate).getTime();
+	const ref = payment.paidAt ?? payment.createdAt;
+	if (!ref) return 0;
+	const due = new Date(ref).getTime();
 	return Math.max(0, Math.floor((now.getTime() - due) / 86_400_000));
 }
 

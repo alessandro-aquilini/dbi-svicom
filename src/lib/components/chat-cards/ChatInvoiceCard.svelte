@@ -41,7 +41,7 @@
         </div>
         
         <div class="px-4 py-2 bg-slate-50/50 text-[10px] text-slate-400">
-            Emessa il {format(new Date(invoice.issueDate), "d MMMM yyyy", { locale: it })}
+            Emessa il {format(new Date(invoice.createdAt), "d MMMM yyyy", { locale: it })}
         </div>
     </div>
 </div>

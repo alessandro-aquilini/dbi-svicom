@@ -47,17 +47,17 @@
 
 		for (const id of ticket.quoteIds ?? []) {
 			const q = getQuoteById(id);
-			if (q) items.push({ type: 'quote', id: q.id, data: q, at: q.sentAt });
+				if (q && q.createdAt) items.push({ type: 'quote', id: q.id, data: q, at: q.createdAt });
 		}
 
 		for (const id of ticket.invoiceIds ?? []) {
 			const i = getInvoiceById(id);
-			if (i) items.push({ type: 'invoice', id: i.id, data: i, at: i.issueDate });
+				if (i && i.createdAt) items.push({ type: 'invoice', id: i.id, data: i, at: i.createdAt });
 		}
 
 		for (const id of ticket.paymentIds ?? []) {
 			const p = getPaymentById(id);
-			if (p) items.push({ type: 'payment', id: p.id, data: p, at: p.paidAt || p.dueDate });
+				if (p) items.push({ type: 'payment', id: p.id, data: p, at: p.createdAt || p.paidAt });
 		}
 
 		for (const intId of ticket.interventionIds ?? []) {

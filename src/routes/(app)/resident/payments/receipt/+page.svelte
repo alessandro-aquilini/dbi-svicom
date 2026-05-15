@@ -56,7 +56,7 @@
 						<p class="payment-detail-hero__amount-label">Importo registrato</p>
 						<p class="payment-detail-hero__amount-value">{receipt.displayAmount}</p>
 						<p class="payment-detail-hero__amount-copy">
-							Registrata il {formatPaymentDateTime(receipt.paidAt)}
+							Registrata il {formatPaymentDateTime(receipt.paidAt ?? receipt.createdAt)}
 						</p>
 					</div>
 

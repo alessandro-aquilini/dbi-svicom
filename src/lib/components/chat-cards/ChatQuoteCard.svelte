@@ -41,7 +41,7 @@
         </div>
         
         <div class="px-4 py-2 bg-slate-50/50 text-[10px] text-slate-400 flex justify-between">
-            <span>Inviato il {format(new Date(quote.sentAt), "d MMM yyyy", { locale: it })}</span>
+            <span>Inviato il {format(new Date(quote.createdAt), "d MMM yyyy", { locale: it })}</span>
             <span>Scade il {format(new Date(quote.expiresAt), "d MMM", { locale: it })}</span>
         </div>
     </div>

@@ -384,7 +384,7 @@
 								</div>
 								<div class="resident-chat-mini-panel__item">
 									<p class="resident-chat-mini-panel__label">Scadenza</p>
-									<p class="resident-chat-mini-panel__value">{formatDateTime(payment.dueDate)}</p>
+									<p class="resident-chat-mini-panel__value">{formatDateTime(payment.paidAt ?? payment.createdAt)}</p>
 								</div>
 								<div class="resident-chat-payment-actions">
 									<Button href={`/resident/payments/${payment.id}`} variant="outline" size="lg">

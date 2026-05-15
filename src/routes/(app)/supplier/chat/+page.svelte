@@ -51,25 +51,24 @@
 		if (selectedBooking.quoteIds) {
 			selectedBooking.quoteIds.forEach(id => {
 				const quote = getQuoteById(id);
-				if (quote) {
-					items.push({ type: 'quote', date: new Date(quote.sentAt), data: quote });
+				if (quote && quote.createdAt) {
+					items.push({ type: 'quote', date: new Date(quote.createdAt), data: quote });
 				}
 			});
 		}
 		if (selectedBooking.invoiceIds) {
 			selectedBooking.invoiceIds.forEach(id => {
 				const invoice = getInvoiceById(id);
-				if (invoice) {
-					items.push({ type: 'invoice', date: new Date(invoice.issueDate), data: invoice });
+				if (invoice && invoice.createdAt) {
+					items.push({ type: 'invoice', date: new Date(invoice.createdAt), data: invoice });
 				}
 			});
 		}
 		if (selectedBooking.paymentIds) {
 			selectedBooking.paymentIds.forEach(id => {
 				const payment = getPaymentById(id);
-				if (payment && payment.paidAt) {
-					items.push({ type: 'payment', date: new Date(payment.paidAt), data: payment });
-				}
+				const dateStr = payment ? (payment.createdAt ?? payment.paidAt) : undefined;
+				if (payment && dateStr) items.push({ type: 'payment', date: new Date(dateStr), data: payment });
 			});
 		}
 		return items.sort((a, b) => a.date.getTime() - b.date.getTime());
