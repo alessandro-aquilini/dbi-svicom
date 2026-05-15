@@ -1,7 +1,7 @@
 export interface supplierTask {
 	id: string;
 	title: string;
-    type: 'sopralluogo' | 'intervento' | 'servizio';
+    type: 'sopralluogo' | 'intervento';
 	date: string;
 	startTime: string;
 	endTime: string;

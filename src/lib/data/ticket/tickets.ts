@@ -169,6 +169,12 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
 			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
 		],
+		messageTimeline: [
+			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B.', timestamp: '2026-05-01T10:06:00' },
+			{ id: 'msg-102', senderId: 'frn-idroclima-nord', text: 'Ricevuto Giorgio. Mando subito un tecnico per un sopralluogo. Ti aggiorno tra poco.', timestamp: '2026-05-01T10:10:00' },
+			{ id: 'msg-103', senderId: 'frn-idroclima-nord', text: 'Trovata la perdita. È il collettore principale, va sostituita anche una valvola. Ti ho caricato il preventivo.', timestamp: '2026-05-01T11:45:00' },
+			{ id: 'msg-104', senderId: 'adm-giorgio-01', text: 'Procedi pure, è urgente. Fammi sapere appena l\'acqua calda è ripristinata.', timestamp: '2026-05-01T12:05:00' }
+		],
 		adminMetadata: [
 			{
 				id: 'adm-1',
@@ -185,12 +191,6 @@ export const tickets: Ticket[] = [
 				authorId: 'adm-giorgio-01',
 				body: 'Confermata urgenza: scala B senza acqua calda. Tenere informati i residenti.'
 			}
-		],
-		messageTimeline: [
-			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B. Ti ho aperto un ticket.', timestamp: '2026-05-01T10:05:00Z' },
-			{ id: 'msg-102', senderId: 'frn-idroclima-nord', text: 'Ricevuto Giorgio. Mando subito un tecnico per un sopralluogo. Ti aggiorno tra poco.', timestamp: '2026-05-01T10:10:00Z' },
-			{ id: 'msg-103', senderId: 'frn-idroclima-nord', text: 'Trovata la perdita. È il collettore principale, va sostituita anche una valvola. Ti ho caricato il preventivo.', timestamp: '2026-05-01T11:45:00Z' },
-			{ id: 'msg-104', senderId: 'adm-giorgio-01', text: 'Procedi pure, è urgente. Fammi sapere appena l\'acqua calda è ripristinata.', timestamp: '2026-05-01T12:05:00Z' }
 		],
 		paymentIds: ['pay-001'],
 		quoteIds: ['quo-001'],
@@ -222,10 +222,9 @@ export const tickets: Ticket[] = [
 			}
 		],
 		messageTimeline: [
-			{ id: 'msg-201', senderId: 'adm-giorgio-01', text: 'Buongiorno, ci segnalano problemi al videocitofono in Corso Europa 7. Non arriva l\'immagine.', timestamp: '2026-05-03T16:40:00Z' },
-			{ id: 'msg-201-meta', senderId: 'adm-giorgio-01', text: 'Ticket aperto: tkt-002', timestamp: '2026-05-03T16:40:00Z' },
-			{ id: 'msg-202', senderId: 'frn-secure-entry', text: 'Buongiorno Giorgio, passiamo domani mattina a controllare.', timestamp: '2026-05-03T17:30:00Z' },
-			{ id: 'msg-203', senderId: 'frn-secure-entry', text: 'Telecamera guasta, va sostituito il modulo. Ti ho inviato il preventivo nel ticket.', timestamp: '2026-05-04T09:05:00Z' }
+			{ id: 'msg-201', senderId: 'adm-giorgio-01', text: 'Buongiorno, ci hanno segnalato dei problemi al videocitofono in Corso Europa 7: non arriva l\'immagine. Riesci a dare un\'occhiata? ', timestamp: '2026-05-03T16:36:00' },
+			{ id: 'msg-202', senderId: 'frn-secure-entry', text: 'Buongiorno Giorgio, passiamo domani mattina a controllare.', timestamp: '2026-05-03T17:29:00' },
+			{ id: 'msg-203', senderId: 'frn-secure-entry', text: 'La telecamera era guasta, va sostituito il modulo. Ti invio il preventivo.', timestamp: '2026-05-04T09:00:00' }
 		],
 		paymentIds: [],
 		quoteIds: ['quo-002'],

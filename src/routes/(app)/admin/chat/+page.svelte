@@ -6,6 +6,7 @@
 	import { getQuoteById } from '$lib/data/embeds/quotes';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getPaymentById } from '$lib/data/embeds/payments';
+	import { getSupplierTaskById } from '$lib/data/embeds/supplierTasks';
 	import { getCurrentUser } from '$lib/auth';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { 
@@ -25,6 +26,7 @@
 	import ChatQuoteCard from '$lib/components/chat-cards/ChatQuoteCard.svelte';
 	import ChatInvoiceCard from '$lib/components/chat-cards/ChatInvoiceCard.svelte';
 	import ChatPaymentCard from '$lib/components/chat-cards/ChatPaymentCard.svelte';
+	import ChatInterventionCard from '$lib/components/chat-cards/ChatInterventionCard.svelte';
 	import ChatTimelineEvent from '$lib/components/chat-cards/ChatTimelineEvent.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -143,6 +145,12 @@
 					if (payment && (payment.paidAt || payment.dueDate)) {
 						items.push({ type: 'payment', date: new Date(payment.paidAt || payment.dueDate), data: payment });
 					}
+				});
+			}
+			if (t.interventionIds) {
+				t.interventionIds.forEach((id: string) => {
+					const task = getSupplierTaskById(id);
+					if (task) items.push({ type: 'intervention', date: new Date(`${task.date}T${task.startTime}`), data: task });
 				});
 			}
 		}
@@ -326,6 +334,8 @@
 						/>
 					{:else if item.type === 'payment'}
 						<ChatPaymentCard payment={item.data} />
+					{:else if item.type === 'intervention'}
+						<ChatInterventionCard task={item.data} />
 					{/if}
 				{/each}
 			</div>

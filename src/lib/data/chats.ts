@@ -20,7 +20,7 @@ export const chats: Chat[] = [
 	{
 		id: 'chat-adm-res-bianchi-01',
 		participantIds: ['adm-giorgio-01', 'res-bianchi-01'],
-		lastMessageAt: '2026-05-01T09:15:00Z',
+		lastMessageAt: '2026-05-01T09:15:00',
 		messages: [
 			// messages for this conversation have been migrated into the related report.messageTimeline
 		],
@@ -29,21 +29,21 @@ export const chats: Chat[] = [
 	{
 		id: 'chat-adm-res-bellini-05',
 		participantIds: ['adm-giorgio-01', 'res-bellini-05'],
-		lastMessageAt: '2026-05-01T09:15:00Z',
+		lastMessageAt: '2026-05-01T09:15:00',
 		messages: [],
 		reportIds: ['rep-002']
 	},
 	{
 		id: 'chat-adm-res-conti-02',
 		participantIds: ['adm-giorgio-01', 'res-conti-02'],
-		lastMessageAt: '2026-05-03T16:00:00Z',
+		lastMessageAt: '2026-05-03T16:00:00',
 		messages: [],
 		reportIds: ['rep-003']
 	},
 	{
 		id: 'chat-adm-res-rossi-03',
 		participantIds: ['adm-giorgio-01', 'res-rossi-03'],
-		lastMessageAt: '2026-05-05T11:00:00Z',
+		lastMessageAt: '2026-05-05T11:00:00',
 		messages: [],
 		// Note: report rep-004 exists but chat messages were left empty; message timeline lives on the report
 		reportIds: ['rep-004']
@@ -51,7 +51,7 @@ export const chats: Chat[] = [
 	{
 		id: 'chat-adm-idroclima',
 		participantIds: ['adm-giorgio-01', 'frn-idroclima-nord'],
-		lastMessageAt: '2026-05-01T12:05:00Z',
+		lastMessageAt: '2026-05-01T12:05:00',
 		messages: [
 			// messages migrated into the ticket.messageTimeline (tkt-001)
 		],
@@ -60,7 +60,7 @@ export const chats: Chat[] = [
 	{
 		id: 'chat-adm-secure',
 		participantIds: ['adm-giorgio-01', 'frn-secure-entry'],
-		lastMessageAt: '2026-05-04T09:05:00Z',
+		lastMessageAt: '2026-05-04T09:05:00',
 		messages: [
 			// messages migrated into the ticket.messageTimeline (tkt-002)
 		],

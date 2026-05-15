@@ -19,8 +19,8 @@ export const payments: Payment[] = [
 		toId: 'frn-idroclima-nord',
 		amount: 450.00,
 		currency: 'EUR',
-		dueDate: '2026-06-02T00:00:00Z',
-		paidAt: '2026-05-03T10:15:00Z',
+		dueDate: '2026-06-02T00:00:00',
+		paidAt: '2026-05-03T10:15:00',
 		description: 'Saldo fattura 2026/FT/154 per intervento idraulico Marconi 14',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
@@ -32,8 +32,8 @@ export const payments: Payment[] = [
 		toId: 'frn-clean-green',
 		amount: 80.00,
 		currency: 'EUR',
-		dueDate: '2026-05-20T00:00:00Z',
-		paidAt: '2026-04-20T16:00:00Z',
+		dueDate: '2026-05-20T00:00:00',
+		paidAt: '2026-04-20T16:00:00',
 		description: 'Pagamento pulizie extra - bkg-002',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-002'
@@ -44,8 +44,8 @@ export const payments: Payment[] = [
 		toId: 'frn-idroclima-nord',
 		amount: 1200.00,
 		currency: 'EUR',
-		dueDate: '2026-06-03T00:00:00Z',
-		paidAt: '2026-05-04T11:00:00Z',
+		dueDate: '2026-06-03T00:00:00',
+		paidAt: '2026-05-04T11:00:00',
 		description: 'Acconto + saldo per installazione climatizzatore - bkg-003',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-003'
@@ -58,7 +58,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 420.00,
 		currency: 'EUR',
-		dueDate: '2026-03-27T00:00:00Z',
+		dueDate: '2026-03-27T00:00:00',
 		description: 'Quota condominiale Q1 2026 — Via Marconi 14',
 		propertyId: 'cnd-marconi-14'
 	},
@@ -68,7 +68,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 860.00,
 		currency: 'EUR',
-		dueDate: '2026-04-05T00:00:00Z',
+		dueDate: '2026-04-05T00:00:00',
 		description: 'Quota condominiale Q1 2026 — Corso Europa 7',
 		propertyId: 'cnd-europa-7'
 	},
@@ -78,7 +78,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 1240.00,
 		currency: 'EUR',
-		dueDate: '2026-03-12T00:00:00Z',
+		dueDate: '2026-03-12T00:00:00',
 		description: 'Quota condominiale + spese straordinarie — Via Carducci 21',
 		propertyId: 'cnd-carducci-21'
 	},
@@ -88,7 +88,7 @@ export const payments: Payment[] = [
 		toId: 'adm-giorgio-01',
 		amount: 900.00,
 		currency: 'EUR',
-		dueDate: '2026-04-10T00:00:00Z',
+		dueDate: '2026-04-10T00:00:00',
 		description: 'Quota condominiale Q1 2026 — Via Tortona 12',
 		propertyId: 'cnd-tortona-12'
 	}

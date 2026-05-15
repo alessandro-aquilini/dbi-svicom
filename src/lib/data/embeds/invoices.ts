@@ -24,8 +24,8 @@ export const invoices: Invoice[] = [
 		ticketId: 'tkt-001',
 		amount: 450.0,
 		currency: 'EUR',
-		issueDate: '2026-05-02T09:00:00Z',
-		dueDate: '2026-05-31T00:00:00Z',
+		issueDate: '2026-05-02T09:00:00',
+		dueDate: '2026-05-31T00:00:00',
 		description: 'Intervento di riparazione idraulica presso Via Marconi 14.',
 		attachments: ['fattura_idroclima_154.pdf']
 	},
@@ -38,7 +38,7 @@ export const invoices: Invoice[] = [
 		ticketId: 'bkg-002',
 		amount: 80.0,
 		currency: 'EUR',
-		issueDate: '2026-04-20T15:30:00Z',
+		issueDate: '2026-04-20T15:30:00',
 		description: 'Pulizia appartamento - servizio extra',
 		attachments: []
 	},
@@ -51,7 +51,7 @@ export const invoices: Invoice[] = [
 		ticketId: 'bkg-003',
 		amount: 1200.00,
 		currency: 'EUR',
-		issueDate: '2026-05-03T10:00:00Z',
+		issueDate: '2026-05-03T10:00:00',
 		description: 'Installazione climatizzatore - materiali e manodopera',
 		attachments: ['fattura_idroclima_210.pdf']
 	}

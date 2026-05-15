@@ -52,12 +52,12 @@ export const reports: Report[] = [
 		adminId: 'adm-giorgio-01',
 		category: 'Idraulica',
 		timeline: [
-			{ id: 'rep-001-e1', kind: 'reported', authorId: 'res-bianchi-01', at: '2026-05-01T08:30:00Z' },
-			{ id: 'rep-001-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-01T09:15:00Z' },
-			{ id: 'rep-001-e3', kind: 'resolved', authorId: 'adm-giorgio-01', at: '2026-05-01T10:00:00Z' }
+			{ id: 'rep-001-e1', kind: 'reported', authorId: 'res-bianchi-01', at: '2026-05-01T08:30:00' },
+			{ id: 'rep-001-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-01T09:15:00' },
+			{ id: 'rep-001-e3', kind: 'resolved', authorId: 'adm-giorgio-01', at: '2026-05-01T10:00:00' }
 		],
 		messageTimeline: [
-			{ id: 'msg-res-001', senderId: 'adm-giorgio-01', text: 'Grazie Marco, ho preso in carico la segnalazione. Chiamo subito Idroclima.', timestamp: '2026-05-01T09:15:00Z' }
+			{ id: 'msg-res-001', senderId: 'adm-giorgio-01', text: 'Grazie Marco, ho preso in carico la segnalazione. Chiamo subito Idroclima.', timestamp: '2026-05-01T09:15:00' }
 		]
 	},
 	{
@@ -70,14 +70,14 @@ export const reports: Report[] = [
 		reportedById: 'res-bellini-05',
 		category: 'Idraulica',
 		timeline: [
-			{ id: 'rep-002-e1', kind: 'reported', authorId: 'res-bellini-05', at: '2026-05-01T07:45:00Z' },
-			{ id: 'rep-002-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-01T09:15:00Z' },
-			{ id: 'rep-002-e3', kind: 'resolved', authorId: 'adm-giorgio-01', at: '2026-05-01T10:00:00Z' },
-			{ id: 'rep-002-e4', kind: 'archived', authorId: 'adm-giorgio-01', at: '2026-05-08T10:00:00Z' }
+			{ id: 'rep-002-e1', kind: 'reported', authorId: 'res-bellini-05', at: '2026-05-01T07:45:00' },
+			{ id: 'rep-002-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-01T09:15:00' },
+			{ id: 'rep-002-e3', kind: 'resolved', authorId: 'adm-giorgio-01', at: '2026-05-01T10:00:00' },
+			{ id: 'rep-002-e4', kind: 'archived', authorId: 'adm-giorgio-01', at: '2026-05-08T10:00:00' }
 		],
 		messageTimeline: [
-			{ id: 'msg-res-101', senderId: 'res-bellini-05', text: 'Manca l\'acqua calda nella scala B da stamattina!', timestamp: '2026-05-01T07:45:00Z' },
-			{ id: 'msg-res-102', senderId: 'adm-giorgio-01', text: 'Sì, è collegato alla perdita in caldaia. Risolveremo in mattinata.', timestamp: '2026-05-01T09:15:00Z' }
+			{ id: 'msg-res-101', senderId: 'res-bellini-05', text: 'Manca l\'acqua calda nella scala B da stamattina!', timestamp: '2026-05-01T07:45:00' },
+			{ id: 'msg-res-102', senderId: 'adm-giorgio-01', text: 'Sì, è collegato alla perdita in caldaia. Risolveremo in mattinata.', timestamp: '2026-05-01T09:15:00' }
 		]
 	},
 	{
@@ -90,12 +90,12 @@ export const reports: Report[] = [
 		reportedById: 'res-conti-02',
 		category: 'Elettrico',
 		timeline: [
-			{ id: 'rep-003-e1', kind: 'reported', authorId: 'res-conti-02', at: '2026-05-03T14:20:00Z' },
-			{ id: 'rep-003-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-03T16:00:00Z' }
+			{ id: 'rep-003-e1', kind: 'reported', authorId: 'res-conti-02', at: '2026-05-03T14:20:00' },
+			{ id: 'rep-003-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-03T16:00:00' }
 		],
 		messageTimeline: [
-			{ id: 'msg-res-201', senderId: 'res-conti-02', text: 'Ciao Giorgio, il videocitofono non funziona più bene. Non si vede nulla.', timestamp: '2026-05-03T14:20:00Z' },
-			{ id: 'msg-res-202', senderId: 'adm-giorgio-01', text: 'Ricevuto. Contatto Secure Entry per un controllo domani.', timestamp: '2026-05-03T16:00:00Z' }
+			{ id: 'msg-res-201', senderId: 'res-conti-02', text: 'Ciao Giorgio, il videocitofono non funziona più bene. Non si vede nulla.', timestamp: '2026-05-03T14:20:00' },
+			{ id: 'msg-res-202', senderId: 'adm-giorgio-01', text: 'Ricevuto. Contatto Secure Entry per un controllo domani.', timestamp: '2026-05-03T16:00:00' }
 		]
 	},
 	{
@@ -108,7 +108,7 @@ export const reports: Report[] = [
 		adminId: 'adm-giorgio-01',
 		category: 'Fabbro',
 		timeline: [
-			{ id: 'rep-004-e1', kind: 'reported', authorId: 'res-rossi-03', at: '2026-05-05T11:00:00Z' }
+			{ id: 'rep-004-e1', kind: 'reported', authorId: 'res-rossi-03', at: '2026-05-05T11:00:00' }
 		],
 		messageTimeline: []
 	},
@@ -122,11 +122,11 @@ export const reports: Report[] = [
 		adminId: 'adm-giorgio-01',
 		category: 'Elettrico',
 		timeline: [
-			{ id: 'rep-005-e1', kind: 'reported', authorId: 'res-bianchi-01', at: '2026-05-07T09:00:00Z' }
+			{ id: 'rep-005-e1', kind: 'reported', authorId: 'res-bianchi-01', at: '2026-05-07T09:00:00' }
 		],
 		messageTimeline: [
 			// message comes from the shared admin-residenct chat (mapped here)
-			{ id: 'msg-res-001-dup', senderId: 'adm-giorgio-01', text: 'Grazie Marco, ho preso in carico la segnalazione. Chiamo subito Idroclima.', timestamp: '2026-05-01T09:15:00Z' }
+			{ id: 'msg-res-001-dup', senderId: 'adm-giorgio-01', text: 'Grazie Marco, ho preso in carico la segnalazione. Chiamo subito Idroclima.', timestamp: '2026-05-01T09:15:00' }
 		]
 	}
 ];

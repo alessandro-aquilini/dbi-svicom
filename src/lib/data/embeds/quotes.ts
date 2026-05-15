@@ -25,8 +25,8 @@ export const quotes: Quote[] = [
 		title: 'Riparazione urgente collettore e valvole',
 		amount: 450.00,
 		currency: 'EUR',
-		sentAt: '2026-05-01T11:45:00Z',
-		expiresAt: '2026-05-08T11:45:00Z',
+		sentAt: '2026-05-01T11:45:00',
+		expiresAt: '2026-05-08T11:45:00',
 		description: 'Sostituzione guarnizioni collettore principale e valvola a tre vie bloccata.',
 		attachments: ['preventivo_idroclima_001.pdf']
 	},
@@ -39,8 +39,8 @@ export const quotes: Quote[] = [
 		title: 'Sostituzione modulo telecamera',
 		amount: 280.00,
 		currency: 'EUR',
-		sentAt: '2026-05-04T09:00:00Z',
-		expiresAt: '2026-05-11T09:00:00Z',
+		sentAt: '2026-05-04T09:00:00',
+		expiresAt: '2026-05-11T09:00:00',
 		description: 'Fornitura e posa in opera di nuovo modulo telecamera compatibile con sistema esistente.',
 		attachments: ['preventivo_secure_entry_04.pdf']
 	}
@@ -54,8 +54,8 @@ export const quotes: Quote[] = [
 		title: 'Installazione climatizzatore - preventivo completo',
 		amount: 1200.00,
 		currency: 'EUR',
-		sentAt: '2026-05-01T11:30:00Z',
-		expiresAt: '2026-05-15T11:30:00Z',
+		sentAt: '2026-05-01T11:30:00',
+		expiresAt: '2026-05-15T11:30:00',
 		description: 'Preventivo per fornitura e installazione di climatizzatore monosplit (materiali + manodopera).',
 		attachments: ['preventivo_idroclima_003.pdf']
 	}
