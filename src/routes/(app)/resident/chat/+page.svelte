@@ -17,6 +17,8 @@
 	import { getReportById } from '$lib/data/ticket/reports';
 	import { getTicketById } from '$lib/data/ticket/tickets';
 	import { getUserById } from '$lib/data/users';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 
 	const currentUser = getCurrentUser();
 	const residentId = currentUser?.id ?? '';
@@ -24,7 +26,7 @@
 		? [...getChatsByUserId(residentId)].sort((left, right) => right.lastMessageAt.localeCompare(left.lastMessageAt))
 		: [];
 
-	let selectedChatId = $state(baseChats[0]?.id ?? '');
+	const selectedChatId = $derived(page.url.searchParams.get('id') ?? baseChats[0]?.id ?? '');
 	let composerText = $state('');
 	let localMessagesByChat = $state<Record<string, Message[]>>({});
 	let messagesEndEl: HTMLDivElement | null = $state(null);
@@ -149,10 +151,8 @@
 		}));
 	});
 
-	function selectChat(chatId: string) {
-		selectedChatId = chatId;
-		composerText = '';
-		queueMicrotask(scrollToBottom);
+	function selectChat(id: string) {
+		goto(`?id=${id}`, { replaceState: true });
 	}
 
 	async function scrollToBottom() {

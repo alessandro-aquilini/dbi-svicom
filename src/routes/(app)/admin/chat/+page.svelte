@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { reports, inferReportStatus } from '$lib/data/ticket/reports';
-	import { tickets, getCurrentStatus, getCurrentSupplier, getSupplierRelevantTimeline, getSuppliersForTicket } from '$lib/data/ticket/tickets';
+	import { tickets, getCurrentStatus, getCurrentSupplier, getSupplierRelevantTimeline } from '$lib/data/ticket/tickets';
 	import { users } from '$lib/data/users';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { services } from '$lib/data/services';
 	import { getQuoteById } from '$lib/data/embeds/quotes';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
@@ -38,52 +40,53 @@
 	// State for active view and selection
 	type ChatType = 'resident' | 'supplier';
 	let activeTab = $state<ChatType>('resident');
-	let selectedId = $state<string | null>(null);
+	
+	// Synchronization with URL
+	const selectedId = $derived(page.url.searchParams.get('id'));
 
 	// Filter data for the sidebar
 	const adminReports = $derived(reports.filter(r => r.adminId === adminId));
 
-	// Build supplier-specific chat entries from all tickets: one chat per (ticket, supplier).
+	// Build supplier-specific chat entries from all tickets: one chat per ticket.
 	const supplierChats = $derived.by(() => {
 		const chats: any[] = [];
 		for (const t of tickets) {
-			// get suppliers that appear in the ticket's timeline
-			const suppliers = getSuppliersForTicket(t);
-			for (const sid of suppliers) {
-				// compute supplier-relevant timeline; skip chats with empty relevance
-				const rel = getSupplierRelevantTimeline(t, sid);
-				if (rel.length === 0) continue;
-				// find last activity (message from supplier/admin or last event)
-				const msgs = (t.messageTimeline ?? []).filter(m => m.senderId === sid || m.senderId === adminId);
-				let lastDate: Date | null = null;
-				let lastMsgText: string | null = null;
+			const sid = getCurrentSupplier(t);
+			if (!sid) continue;
+			
+			const rel = getSupplierRelevantTimeline(t, sid);
+			// find last activity (message from supplier/admin or last event)
+			const msgs = (t.messageTimeline ?? []).filter(m => m.senderId === sid || m.senderId === adminId);
+			let lastDate: Date | null = null;
+			let lastMsgText: string | null = null;
 
-				if (msgs.length) {
-					const lastMsg = msgs[msgs.length - 1];
-					lastDate = new Date(lastMsg.timestamp);
-					lastMsgText = lastMsg.text;
-				} else if (rel.length) {
-					const lastEv = rel[rel.length - 1];
-					lastDate = new Date(lastEv.at);
-					lastMsgText = lastEv.body || lastEv.kind;
-				}
-
-				chats.push({ 
-					id: `${t.id}::${sid}`, 
-					ticket: t, 
-					supplierId: sid, 
-					lastDate, 
-					lastMessageText: lastMsgText,
-					rel 
-				});
+			if (msgs.length) {
+				const lastMsg = msgs[msgs.length - 1];
+				lastDate = new Date(lastMsg.timestamp);
+				lastMsgText = lastMsg.text;
+			} else if (rel.length) {
+				const lastEv = rel[rel.length - 1];
+				lastDate = new Date(lastEv.at);
+				lastMsgText = lastEv.body || lastEv.kind;
 			}
+
+			chats.push({ 
+				id: t.id, 
+				ticket: t, 
+				supplierId: sid, 
+				lastDate, 
+				lastMessageText: lastMsgText,
+				rel 
+			});
 		}
 		// sort by lastDate desc
 		return chats.sort((a, b) => (b.lastDate?.getTime() ?? 0) - (a.lastDate?.getTime() ?? 0));
 	});
 
-	// Keep convenience view for admin-owned tickets if still needed elsewhere
-	const adminTickets = $derived(tickets.filter(t => t.creatorId === adminId));
+	function selectChat(id: string, type: ChatType) {
+		activeTab = type;
+		goto(`?id=${id}`, { replaceState: true });
+	}
 
 	// Derived selection
 	const selectedReport = $derived(activeTab === 'resident' ? adminReports.find(r => r.id === selectedId) : null);
@@ -197,13 +200,13 @@
 			
 			<div class="flex p-1 bg-slate-100 rounded-xl mb-4">
 				<button 
-					onclick={() => { activeTab = 'resident'; selectedId = null; }}
+					onclick={() => { activeTab = 'resident'; goto('?', { replaceState: true }); }}
 					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab === 'resident' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
 				>
 					Residenti
 				</button>
 				<button 
-					onclick={() => { activeTab = 'supplier'; selectedId = null; }}
+					onclick={() => { activeTab = 'supplier'; goto('?', { replaceState: true }); }}
 					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab === 'supplier' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
 				>
 					Fornitori
@@ -227,7 +230,7 @@
 					{@const lastMsg = getLastMessage(report)}
 					{@const status = inferReportStatus(report)}
 					<button 
-						onclick={() => selectedId = report.id}
+						onclick={() => selectChat(report.id, 'resident')}
 						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === report.id ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -253,8 +256,8 @@
 					{@const lastMsgText = chat.lastMessageText ?? (chat.rel?.length ? chat.rel[chat.rel.length-1].body : null)}
 					{@const status = getCurrentStatus(chat.ticket)}
 					<button 
-						onclick={() => selectedId = chat.id}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === chat.id ? 'bg-white shadow-sm' : ''}"
+						onclick={() => selectChat(chat.ticket.id, 'supplier')}
+						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === chat.ticket.id ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
 							<HugeiconsIcon icon={CustomerServiceIcon} size={28} />
@@ -282,7 +285,7 @@
 		{#if selectedId}
 			<header class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10">
 				<button 
-					onclick={() => selectedId = null}
+					onclick={() => goto('?', { replaceState: true })}
 					class="p-2 -ml-2 rounded-full hover:bg-slate-100 md:hidden"
 				>
 					<HugeiconsIcon icon={ArrowLeft01Icon} size={20} />

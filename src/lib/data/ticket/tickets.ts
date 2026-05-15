@@ -1,3 +1,5 @@
+// NOTE: For each ticket there is a chat. 
+
 // ─── ticket-admin.ts ──────────────────────────────────────────────────────────
 
 export type TicketStatus =
@@ -105,19 +107,7 @@ export function getCurrentSupplier(ticket: Ticket): string | undefined {
  * Return the ordered list of supplier ids that appear in a ticket's timeline.
  * Each supplierId appears once in the order they were first assigned.
  */
-export function getSuppliersForTicket(ticket: Ticket): string[] {
-	const seen = new Set<string>();
-	const result: string[] = [];
-	for (const ev of ticket.eventTimeline) {
-		if (ev.kind === 'assignToSupplier' && ev.supplierId) {
-			if (!seen.has(ev.supplierId)) {
-				seen.add(ev.supplierId);
-				result.push(ev.supplierId);
-			}
-		}
-	}
-	return result;
-}
+// Removed getSuppliersForTicket as requested.
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
