@@ -30,7 +30,8 @@
 	const reporter = $derived(ticket ? getUserById(ticket.creatorId) : undefined); // creatorId is always Admin
 	const currentSupplierId = $derived(ticket ? getCurrentSupplier(ticket) : undefined);
 	const supplier = $derived(currentSupplierId ? getUserById(currentSupplierId) : undefined);
-	const aiSummary = $derived(ticket?.adminMetadata.find((ev) => ev.kind === 'ai')?.body);
+	// Prefer explicit ticket.aiSummary, fallback to adminMetadata.ai body
+	const aiSummary = $derived(ticket ? (ticket.aiSummary ?? ticket.adminMetadata.find((ev) => ev.kind === 'ai')?.body) : undefined);
 	const aiNextStep = $derived(ticket ? getTicketNextStep(ticket.id) : undefined);
 	const currentStatus = $derived(ticket ? getCurrentStatus(ticket) : 'opened');
 	const firstEvent = $derived(ticket?.eventTimeline[0]);
@@ -111,6 +112,55 @@
 		month: 'short',
 		year: 'numeric'
 	});
+
+// Typing animation helpers for short AI text blocks.
+// Renders text one char at a time at a fast rate.
+let typedSintesi = $state('');
+let typedNextTitle = $state('');
+let typedNextDetail = $state('');
+let typingSpeed = 14; // milliseconds per character (fast)
+
+function typeInto(source: string | undefined, setter: (v: string) => void) {
+	if (!source) {
+		setter('');
+		return () => {};
+	}
+	setter('');
+	let i = 0;
+	const id = setInterval(() => {
+		i++;
+		setter(source.slice(0, i));
+		if (i >= source.length) clearInterval(id);
+	}, typingSpeed);
+	return () => clearInterval(id);
+}
+
+// Svelte 5 rune: effect when aiSummary changes
+$effect(() => {
+	let stop: () => void = () => {};
+	if (aiSummary) {
+		stop = typeInto(aiSummary, (v) => (typedSintesi = v));
+	} else {
+		typedSintesi = '';
+	}
+	return () => stop();
+});
+
+$effect(() => {
+	let stop1: () => void = () => {};
+	let stop2: () => void = () => {};
+	if (aiNextStep) {
+		stop1 = typeInto(aiNextStep.title ?? '', (v) => (typedNextTitle = v));
+		stop2 = typeInto(aiNextStep.detail ?? '', (v) => (typedNextDetail = v));
+	} else {
+		typedNextTitle = '';
+		typedNextDetail = '';
+	}
+	return () => {
+		stop1();
+		stop2();
+	};
+});
 
 	function formatDate(iso: string): string {
 		return dateFmt.format(new Date(iso));
@@ -203,8 +253,8 @@
 							<h2 class="block__title">Sintesi</h2>
 						</div>
 						{#if aiSummary}
-						<p class="mt-3 text-[0.9375rem] leading-relaxed text-foreground">{aiSummary}</p>
-					{/if}
+						<p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{typedSintesi}</p>
+						{/if}
 					</section>
 
 					<!-- Prossimo passo -->
@@ -218,10 +268,10 @@
 						</div>
 						{#if aiNextStep}
 							<p class="mt-3 text-[0.9375rem] font-medium leading-snug text-foreground">
-								{aiNextStep.title}
+								{typedNextTitle}
 							</p>
 							<p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-								{aiNextStep.detail}
+								{typedNextDetail}
 							</p>
 						{/if}
 					</section>

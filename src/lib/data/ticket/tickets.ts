@@ -87,6 +87,9 @@ export interface Ticket {
 	quoteIds: string[];
 	invoiceIds: string[];
 	interventionIds: string[];
+
+	/** Short AI-generated summary of the ticket (read-only). */
+	aiSummary?: string;
 }
 
 /** Infers the current supplier for a ticket by scanning the timeline for the latest assignment/rea ssignment event.
@@ -186,6 +189,8 @@ export const tickets: Ticket[] = [
 		quoteIds: ['quo-001'],
 		invoiceIds: ['inv-001'],
 		interventionIds: ['int-001', 'int-002']
+		,
+		aiSummary: 'Perdita urgente al collettore principale nella scala B: installazione valvola e sostituzione collettore. Fornitore idroclima ha accettato e completato i lavori;'
 	},
 	{
 		id: 'tkt-002',
@@ -220,6 +225,8 @@ export const tickets: Ticket[] = [
 		quoteIds: ['quo-002'],
 		invoiceIds: [],
 		interventionIds: []
+		,
+		aiSummary: 'Problema all\'unità videocitofonica esterna: modulo telecamera guasto. Fornitore Secure Entry ha programmato sopralluogo e inviato preventivo.'
 	},
 	{
 		id: 'tkt-003',
@@ -257,78 +264,6 @@ export const tickets: Ticket[] = [
 		invoiceIds: [],
 		interventionIds: []
 	},
-	{
-		id: 'tkt-005',
-		title: 'Revisione annuale impianto antincendio',
-		description: 'Scadenza prevista entro fine maggio. Necessario coordinarsi con il fornitore certificato.',
-		priority: 'media',
-		category: 'Sicurezza',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-pacini-44',
-		cc: ['res-esposito-06'],
-		eventTimeline: [
-			{ id: 'ev-501', kind: 'createTicket', at: '2026-05-06T09:00:00' }
-		],
-		adminMetadata: [],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	},
-	{
-		id: 'tkt-006',
-		title: 'Ripristino citofono interno 3',
-		description: 'Citofono non riceve chiamate dall\'esterno. Da verificare integrazione con videocitofonia centralizzata.',
-		priority: 'media',
-		category: 'Elettrico',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-verdi-3',
-		cc: ['res-rossi-03'],
-		eventTimeline: [
-			{ id: 'ev-601', kind: 'createTicket', at: '2026-05-09T14:00:00' }
-		],
-		adminMetadata: [],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	},
-	{
-		id: 'tkt-007',
-		title: 'Pulizia straordinaria parti comuni',
-		description: 'Richiesta intervento di pulizia per garage e vano scale dopo lavori condominiali.',
-		priority: 'bassa',
-		category: 'Pulizie',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-tortona-12',
-		cc: ['res-bruno-08'],
-		eventTimeline: [
-			{ id: 'ev-701', kind: 'createTicket', at: '2026-05-10T07:30:00' }
-		],
-		adminMetadata: [],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	},
-	{
-		id: 'tkt-008',
-		title: 'Richiesta informazioni polizza globale fabbricato',
-		description: 'Un condomino chiede dettagli sulla copertura per danni da acqua. Da girare al broker.',
-		priority: 'bassa',
-		category: 'Amministrativo',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-carducci-21',
-		cc: ['res-greco-04'],
-		eventTimeline: [
-			{ id: 'ev-801', kind: 'createTicket', at: '2026-05-12T10:15:00' }
-		],
-		adminMetadata: [],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	}
 ];
 
 /** Tickets that are still active (not paid, completed or closed). */

@@ -100,6 +100,32 @@
 		? getUserInfo(selectedReport?.reportedById || '') 
 		: getUserInfo(selectedSupplierChat?.supplierId || ''));
 
+// Typing animation for AI summary in chat header (fast, one-letter animation)
+let chatTypedSummary = $state('');
+let chatTypingSpeed = 12;
+
+function chatTypeInto(source: string | undefined, setter: (v: string) => void) {
+	if (!source) { setter(''); return () => {}; }
+	setter('');
+	let i = 0;
+	const id = setInterval(() => {
+		i++;
+		setter(source.slice(0, i));
+		if (i >= source.length) clearInterval(id);
+	}, chatTypingSpeed);
+	return () => clearInterval(id);
+}
+
+$effect(() => {
+	let stop = () => {};
+	if (activeItem && activeItem.aiSummary) {
+		stop = chatTypeInto(activeItem.aiSummary, (v) => (chatTypedSummary = v));
+	} else {
+		chatTypedSummary = '';
+	}
+	return () => stop();
+});
+
 	// Unified timeline for the selected conversation
 	const timelineItems = $derived.by(() => {
 		const items: any[] = [];
@@ -308,6 +334,9 @@
 						{/if}
 					</div>
 					<p class="text-[11px] text-slate-500 truncate">{activeItem?.title}</p>
+					{#if chatTypedSummary}
+						<p class="text-xs text-muted-foreground truncate mt-0.5">{chatTypedSummary}</p>
+					{/if}
 				</div>
 
 				<div class="flex items-center gap-1">
