@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { bookings, inferBookingStatus, getBookingById } from '$lib/data/ticket/booking';
+	import { bookings, inferBookingStatus, getBookingById, lastBookingEvent } from '$lib/data/ticket/booking';
 	import { tickets, getCurrentSupplier, getCurrentStatus, getSupplierRelevantTimeline, getTicketById } from '$lib/data/ticket/tickets';
 	import { services } from '$lib/data/services';
 	import { residents } from '$lib/data/residents';
@@ -15,6 +15,7 @@
 		Search01Icon,
 		Message01Icon,
 		UserCircleIcon,
+		CustomerServiceIcon,
 		SentIcon
 	} from '@hugeicons/core-free-icons';
 	import { format } from 'date-fns';
@@ -31,70 +32,55 @@
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 
-	// Filter bookings for this supplier
-	const supplierBookings = bookings.filter(b => {
-		const service = services.find(s => s.id === b.serviceId);
-		return service?.supplierId === supplierId;
-	});
-
-	// Filter tickets for this supplier
-	const supplierTickets = tickets.filter(t => getCurrentSupplier(t) === supplierId);
-
-	type ChatType = 'booking' | 'ticket';
-	let activeTab = $state<ChatType>('booking');
+	// Grouped Chats: either with administration (tickets) or with residents (bookings)
+	type ChatType = 'admin' | 'resident';
+	let activeTab = $state<ChatType>('resident');
 	const selectedId = $derived(page.url.searchParams.get('id'));
 
-	const selectedBooking = $derived(activeTab === 'booking' && selectedId ? getBookingById(selectedId) : null);
-	const selectedTicket = $derived(activeTab === 'ticket' && selectedId ? getTicketById(selectedId) : null);
-	
-	const timelineItems = $derived.by(() => {
-		const items: any[] = [];
-		const activeObj = selectedBooking || selectedTicket;
-		if (!activeObj) return [];
+	// Resident Chats: group bookings by residentId
+	const residentChats = $derived.by(() => {
+		const groups = new Map<string, { userId: string, lastDate: Date, bookings: any[] }>();
+		
+		bookings.forEach(b => {
+			const service = services.find(s => s.id === b.serviceId);
+			if (service?.supplierId !== supplierId) return;
 
-		if (activeObj.messageTimeline) {
-			activeObj.messageTimeline.forEach(msg => {
-				items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
-			});
-		}
-
-		if (activeTab === 'booking' && selectedBooking) {
-			if (selectedBooking.timeline) {
-				selectedBooking.timeline.forEach(event => {
-					items.push({ type: 'event', date: new Date(event.at), data: event });
-				});
+			if (!groups.has(b.residentId)) {
+				groups.set(b.residentId, { userId: b.residentId, lastDate: new Date(0), bookings: [] });
 			}
-		} else if (activeTab === 'ticket' && selectedTicket) {
-			const rel = getSupplierRelevantTimeline(selectedTicket, supplierId);
-			rel.forEach(event => {
-				items.push({ type: 'event', date: new Date(event.at), data: event });
-			});
-		}
+			const g = groups.get(b.residentId)!;
+			g.bookings.push(b);
+			
+			const lastEv = lastBookingEvent(b);
+			const updatedAt = new Date(lastEv?.at || 0);
+			if (updatedAt > g.lastDate) g.lastDate = updatedAt;
+		});
 
-		if (activeObj.quoteIds) {
-			activeObj.quoteIds.forEach(id => {
-				const quote = getQuoteById(id);
-				if (quote && quote.createdAt) {
-					items.push({ type: 'quote', date: new Date(quote.createdAt), data: quote });
-				}
-			});
-		}
-		if (activeObj.invoiceIds) {
-			activeObj.invoiceIds.forEach(id => {
-				const invoice = getInvoiceById(id);
-				if (invoice && invoice.createdAt) {
-					items.push({ type: 'invoice', date: new Date(invoice.createdAt), data: invoice });
-				}
-			});
-		}
-		if (activeObj.paymentIds) {
-			activeObj.paymentIds.forEach(id => {
-				const payment = getPaymentById(id);
-				const dateStr = payment ? (payment.createdAt ?? payment.paidAt) : undefined;
-				if (payment && dateStr) items.push({ type: 'payment', date: new Date(dateStr), data: payment });
-			});
-		}
-		return items.sort((a, b) => a.date.getTime() - b.date.getTime());
+		return Array.from(groups.values()).sort((a, b) => b.lastDate.getTime() - a.lastDate.getTime());
+	});
+
+	// Admin Chats: group tickets by adminId (usually only one admin per property, but we group by adminId for consistency)
+	const adminChats = $derived.by(() => {
+		const groups = new Map<string, { adminId: string, lastDate: Date, tickets: any[] }>();
+		
+		tickets.filter(t => getCurrentSupplier(t) === supplierId).forEach(t => {
+			const aid = t.adminId || 'adm-giorgio-01'; // Fallback
+			if (!groups.has(aid)) {
+				groups.set(aid, { adminId: aid, lastDate: new Date(0), tickets: [] });
+			}
+			const g = groups.get(aid)!;
+			g.tickets.push(t);
+			
+			const rel = getSupplierRelevantTimeline(t, supplierId);
+			const msgs = (t.messageTimeline ?? []).filter(m => m.senderId === supplierId || m.senderId === aid);
+			let lastActivity = new Date(0);
+			if (msgs.length) lastActivity = new Date(msgs[msgs.length - 1].timestamp);
+			else if (rel.length) lastActivity = new Date(rel[rel.length - 1].at);
+			
+			if (lastActivity > g.lastDate) g.lastDate = lastActivity;
+		});
+
+		return Array.from(groups.values()).sort((a, b) => b.lastDate.getTime() - a.lastDate.getTime());
 	});
 
 	function selectChat(id: string, type: ChatType) {
@@ -102,12 +88,86 @@
 		goto(`?id=${id}`, { replaceState: true });
 	}
 
-	function getResidentInfo(residentId: string) {
-		const user = users.find(u => u.id === residentId);
-		return user;
+	const activeChat = $derived.by(() => {
+		if (!selectedId) return null;
+		if (activeTab === 'resident') return residentChats.find(c => c.userId === selectedId);
+		return adminChats.find(c => c.adminId === selectedId);
+	});
+
+	const counterparty = $derived(activeChat 
+		? (activeTab === 'resident' ? getResidentInfo((activeChat as any).userId) : getResidentInfo((activeChat as any).adminId))
+		: null);
+	
+	const timelineItems = $derived.by(() => {
+		const items: any[] = [];
+		if (!activeChat) return [];
+
+		if (activeTab === 'resident') {
+			const chat = activeChat as any;
+			chat.bookings.forEach((b: any) => {
+				if (b.messageTimeline) {
+					b.messageTimeline.forEach((msg: any) => {
+						items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
+					});
+				}
+				if (b.timeline) {
+					b.timeline.forEach((event: any) => {
+						items.push({ type: 'event', date: new Date(event.at), data: event });
+					});
+				}
+				// Embeds
+				if (b.quoteIds) b.quoteIds.forEach((id: string) => {
+					const quote = getQuoteById(id);
+					if (quote && quote.createdAt) items.push({ type: 'quote', date: new Date(quote.createdAt), data: quote });
+				});
+				if (b.invoiceIds) b.invoiceIds.forEach((id: string) => {
+					const invoice = getInvoiceById(id);
+					if (invoice && invoice.createdAt) items.push({ type: 'invoice', date: new Date(invoice.createdAt), data: invoice });
+				});
+				if (b.paymentIds) b.paymentIds.forEach((id: string) => {
+					const payment = getPaymentById(id);
+					const dateStr = payment ? (payment.createdAt ?? payment.paidAt) : undefined;
+					if (payment && dateStr) items.push({ type: 'payment', date: new Date(dateStr), data: payment });
+				});
+			});
+		} else {
+			const chat = activeChat as any;
+			const aid = chat.adminId;
+			chat.tickets.forEach((t: any) => {
+				if (t.messageTimeline) {
+					t.messageTimeline.filter((m: any) => m.senderId === supplierId || m.senderId === aid).forEach((msg: any) => {
+						items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
+					});
+				}
+				const rel = getSupplierRelevantTimeline(t, supplierId);
+				rel.forEach((event: any) => {
+					items.push({ type: 'event', date: new Date(event.at), data: event });
+				});
+				// Embeds
+				if (t.quoteIds) t.quoteIds.forEach((id: string) => {
+					const quote = getQuoteById(id);
+					if (quote && quote.createdAt) items.push({ type: 'quote', date: new Date(quote.createdAt), data: quote });
+				});
+				if (t.invoiceIds) t.invoiceIds.forEach((id: string) => {
+					const invoice = getInvoiceById(id);
+					if (invoice && invoice.createdAt) items.push({ type: 'invoice', date: new Date(invoice.createdAt), data: invoice });
+				});
+				if (t.paymentIds) t.paymentIds.forEach((id: string) => {
+					const payment = getPaymentById(id);
+					const dateStr = payment ? (payment.createdAt ?? payment.paidAt) : undefined;
+					if (payment && dateStr) items.push({ type: 'payment', date: new Date(dateStr), data: payment });
+				});
+			});
+		}
+		
+		return items.sort((a, b) => a.date.getTime() - b.date.getTime());
+	});
+
+	function getResidentInfo(userId: string) {
+		return users.find(u => u.id === userId);
 	}
 
-	const statusColors = {
+	const statusColors: Record<string, string> = {
 		requested: 'bg-amber-100 text-amber-700',
 		confirmed: 'bg-emerald-100 text-emerald-700',
 		timeslot_updated: 'bg-blue-100 text-blue-700',
@@ -116,7 +176,6 @@
 		closed: 'bg-slate-100 text-slate-500',
 		declined: 'bg-red-100 text-red-700',
 		unknown: 'bg-slate-100 text-slate-400',
-		// Ticket statuses
 		opened: 'bg-amber-100 text-amber-700',
 		estimating: 'bg-blue-100 text-blue-700',
 		approved: 'bg-emerald-100 text-emerald-700',
@@ -134,16 +193,16 @@
 			
 			<div class="flex p-1 bg-slate-100 rounded-xl mb-4">
 				<button 
-					onclick={() => { activeTab = 'booking'; if(selectedId) goto('?', { replaceState: true }); }}
-					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab === 'booking' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
+					onclick={() => { activeTab = 'resident'; if(selectedId) goto('?', { replaceState: true }); }}
+					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab === 'resident' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
 				>
-					Servizi
+					Residenti
 				</button>
 				<button 
-					onclick={() => { activeTab = 'ticket'; if(selectedId) goto('?', { replaceState: true }); }}
-					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab === 'ticket' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
+					onclick={() => { activeTab = 'admin'; if(selectedId) goto('?', { replaceState: true }); }}
+					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab === 'admin' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}"
 				>
-					Interventi
+					Amministrazione
 				</button>
 			</div>
 
@@ -158,14 +217,14 @@
 		</div>
 
 		<div class="flex-1 overflow-y-auto">
-			{#if activeTab === 'booking'}
-				{#each supplierBookings as b}
-					{@const resident = getResidentInfo(b.residentId)}
-					{@const service = services.find(s => s.id === b.serviceId)}
-					{@const lastMsg = b.messageTimeline?.[b.messageTimeline.length - 1]}
+			{#if activeTab === 'resident'}
+				{#each residentChats as group}
+					{@const resident = getResidentInfo(group.userId)}
+					{@const lastBkg = group.bookings[group.bookings.length - 1]}
+					{@const lastMsg = lastBkg?.messageTimeline?.[lastBkg.messageTimeline.length - 1]}
 					<button 
-						onclick={() => selectChat(b.id, 'booking')}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === b.id ? 'bg-white shadow-sm' : ''}"
+						onclick={() => selectChat(group.userId, 'resident')}
+						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === group.userId ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-[#5D7D94]/10 flex items-center justify-center text-[#5D7D94] shrink-0 border border-[#5D7D94]/5">
 							<HugeiconsIcon icon={UserCircleIcon} size={28} />
@@ -173,11 +232,13 @@
 						<div class="flex-1 min-w-0">
 							<div class="flex justify-between items-baseline mb-0.5">
 								<span class="font-bold text-slate-900 truncate">{resident?.name || 'Residente'}</span>
-								{#if lastMsg}
-									<span class="text-[10px] text-slate-400">{format(new Date(lastMsg.timestamp), "HH:mm")}</span>
+								{#if group.lastDate.getTime() > 0}
+									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-xs font-semibold text-[#5D7D94] mb-1">{service?.name}</div>
+							<div class="text-xs font-semibold text-[#5D7D94] mb-1">
+								{group.bookings.length} prenotazioni
+							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
 								{lastMsg?.text || 'Inizia la conversazione...'}
 							</p>
@@ -185,23 +246,27 @@
 					</button>
 				{/each}
 			{:else}
-				{#each supplierTickets as t}
-					{@const lastMsg = t.messageTimeline?.[t.messageTimeline.length - 1]}
+				{#each adminChats as group}
+					{@const admin = getResidentInfo(group.adminId)}
+					{@const lastTkt = group.tickets[group.tickets.length - 1]}
+					{@const lastMsg = lastTkt?.messageTimeline?.[lastTkt.messageTimeline.length - 1]}
 					<button 
-						onclick={() => selectChat(t.id, 'ticket')}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === t.id ? 'bg-white shadow-sm' : ''}"
+						onclick={() => selectChat(group.adminId, 'admin')}
+						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === group.adminId ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
-							<HugeiconsIcon icon={UserCircleIcon} size={28} />
+							<HugeiconsIcon icon={CustomerServiceIcon} size={28} />
 						</div>
 						<div class="flex-1 min-w-0">
 							<div class="flex justify-between items-baseline mb-0.5">
-								<span class="font-bold text-slate-900 truncate text-sm">Amministrazione</span>
-								{#if lastMsg}
-									<span class="text-[10px] text-slate-400">{format(new Date(lastMsg.timestamp), "HH:mm")}</span>
+								<span class="font-bold text-slate-900 truncate text-sm">{admin?.name || 'Amministrazione'}</span>
+								{#if group.lastDate.getTime() > 0}
+									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-[11px] font-semibold text-primary mb-1 line-clamp-1">{t.title}</div>
+							<div class="text-[11px] font-semibold text-primary mb-1 line-clamp-1">
+								{group.tickets.length} interventi Svicom
+							</div>
 							<p class="text-[11px] text-slate-500 line-clamp-1">
 								{lastMsg?.text || 'Vedi cronologia...'}
 							</p>
@@ -214,12 +279,7 @@
 
 	<!-- Main: Chat Conversation -->
 	<main class="flex-1 flex flex-col bg-slate-50/50 {selectedId ? 'flex' : 'hidden md:flex'}">
-		{#if selectedBooking || selectedTicket}
-			{@const activeObj = selectedBooking || selectedTicket}
-			{@const residentName = selectedBooking ? getResidentInfo(selectedBooking.residentId)?.name : 'Amministrazione'}
-			{@const subtitle = selectedBooking ? services.find(s => s.id === selectedBooking.serviceId)?.name : selectedTicket?.title}
-			{@const status = selectedBooking ? inferBookingStatus(selectedBooking) : getCurrentStatus(selectedTicket!)}
-			
+		{#if activeChat && counterparty}
 			<header class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10 transition-shadow">
 				<button 
 					onclick={() => goto('?', { replaceState: true })}
@@ -228,18 +288,17 @@
 					<HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
 				</button>
 				
-				<div class="w-10 h-10 rounded-full {selectedBooking ? 'bg-[#5D7D94]/10 text-[#5D7D94]' : 'bg-amber-50 text-amber-600'} flex items-center justify-center border border-current/5 shrink-0 ml-1">
-					<HugeiconsIcon icon={UserCircleIcon} size={24} />
+				<div class="w-10 h-10 rounded-full {activeTab === 'resident' ? 'bg-[#5D7D94]/10 text-[#5D7D94]' : 'bg-amber-50 text-amber-600'} flex items-center justify-center border border-current/5 shrink-0 ml-1">
+					<HugeiconsIcon icon={activeTab === 'resident' ? UserCircleIcon : CustomerServiceIcon} size={24} />
 				</div>
 				
 				<div class="flex-1 min-w-0">
 					<div class="flex items-center gap-2">
-						<h2 class="font-bold text-slate-900 text-sm truncate">{residentName}</h2>
-						<Badge variant="secondary" class="text-[10px] uppercase {statusColors[status]}">
-							{status.replace(/_/g, ' ')}
-						</Badge>
+						<h2 class="font-bold text-slate-900 text-sm truncate">{counterparty.name}</h2>
 					</div>
-					<p class="text-[11px] text-[#5D7D94] font-medium truncate">{subtitle}</p>
+					<p class="text-[11px] text-[#5D7D94] font-medium truncate">
+						{activeTab === 'resident' ? 'Residente' : 'Amministratore'}
+					</p>
 				</div>
 
 				<div class="flex items-center gap-1">

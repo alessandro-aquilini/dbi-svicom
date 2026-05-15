@@ -44,43 +44,48 @@
 	// Synchronization with URL
 	const selectedId = $derived(page.url.searchParams.get('id'));
 
-	// Filter data for the sidebar
-	const adminReports = $derived(reports.filter(r => r.adminId === adminId));
+	// Grouped Resident Chats: all reports and tickets for a resident
+	const residentChats = $derived.by(() => {
+		const groups = new Map<string, { userId: string, lastDate: Date, reports: any[] }>();
+		
+		reports.filter(r => r.adminId === adminId).forEach(r => {
+			const userId = r.reportedById;
+			if (!groups.has(userId)) {
+				groups.set(userId, { userId, lastDate: new Date(0), reports: [] });
+			}
+			const g = groups.get(userId)!;
+			g.reports.push(r);
+			const updatedAt = new Date(r.timeline?.[r.timeline.length - 1]?.at || 0);
+			if (updatedAt > g.lastDate) g.lastDate = updatedAt;
+		});
 
-	// Build supplier-specific chat entries from all tickets: one chat per ticket.
+		return Array.from(groups.values()).sort((a, b) => b.lastDate.getTime() - a.lastDate.getTime());
+	});
+
+	// Grouped Supplier Chats: all tickets for a supplier
 	const supplierChats = $derived.by(() => {
-		const chats: any[] = [];
+		const groups = new Map<string, { supplierId: string, lastDate: Date, tickets: any[] }>();
+		
 		for (const t of tickets) {
 			const sid = getCurrentSupplier(t);
 			if (!sid) continue;
 			
-			const rel = getSupplierRelevantTimeline(t, sid);
-			// find last activity (message from supplier/admin or last event)
-			const msgs = (t.messageTimeline ?? []).filter(m => m.senderId === sid || m.senderId === adminId);
-			let lastDate: Date | null = null;
-			let lastMsgText: string | null = null;
-
-			if (msgs.length) {
-				const lastMsg = msgs[msgs.length - 1];
-				lastDate = new Date(lastMsg.timestamp);
-				lastMsgText = lastMsg.text;
-			} else if (rel.length) {
-				const lastEv = rel[rel.length - 1];
-				lastDate = new Date(lastEv.at);
-				lastMsgText = lastEv.body || lastEv.kind;
+			if (!groups.has(sid)) {
+				groups.set(sid, { supplierId: sid, lastDate: new Date(0), tickets: [] });
 			}
-
-			chats.push({ 
-				id: t.id, 
-				ticket: t, 
-				supplierId: sid, 
-				lastDate, 
-				lastMessageText: lastMsgText,
-				rel 
-			});
+			const g = groups.get(sid)!;
+			g.tickets.push(t);
+			
+			const rel = getSupplierRelevantTimeline(t, sid);
+			const msgs = (t.messageTimeline ?? []).filter(m => m.senderId === sid || m.senderId === adminId);
+			let lastActivity = new Date(0);
+			if (msgs.length) lastActivity = new Date(msgs[msgs.length - 1].timestamp);
+			else if (rel.length) lastActivity = new Date(rel[rel.length - 1].at);
+			
+			if (lastActivity > g.lastDate) g.lastDate = lastActivity;
 		}
-		// sort by lastDate desc
-		return chats.sort((a, b) => (b.lastDate?.getTime() ?? 0) - (a.lastDate?.getTime() ?? 0));
+
+		return Array.from(groups.values()).sort((a, b) => b.lastDate.getTime() - a.lastDate.getTime());
 	});
 
 	function selectChat(id: string, type: ChatType) {
@@ -89,113 +94,69 @@
 	}
 
 	// Derived selection
-	const selectedReport = $derived(activeTab === 'resident' ? adminReports.find(r => r.id === selectedId) : null);
-	const selectedSupplierChat = $derived.by(() => {
-		if (activeTab !== 'supplier' || !selectedId) return null;
-		return supplierChats.find((c: any) => c.id === selectedId) || null;
+	const activeChat = $derived.by(() => {
+		if (!selectedId) return null;
+		if (activeTab === 'resident') return residentChats.find(c => c.userId === selectedId);
+		return supplierChats.find(c => c.supplierId === selectedId);
 	});
 
-	const activeItem = $derived(activeTab === 'resident' ? selectedReport : selectedSupplierChat?.ticket);
-	const counterparty = $derived(activeTab === 'resident' 
-		? getUserInfo(selectedReport?.reportedById || '') 
-		: getUserInfo(selectedSupplierChat?.supplierId || ''));
-
-// Typing animation for AI summary in chat header (fast, one-letter animation)
-let chatTypedSummary = $state('');
-let chatTypingSpeed = 12;
-
-function chatTypeInto(source: string | undefined, setter: (v: string) => void) {
-	if (!source) { setter(''); return () => {}; }
-	setter('');
-	let i = 0;
-	const id = setInterval(() => {
-		i++;
-		setter(source.slice(0, i));
-		if (i >= source.length) clearInterval(id);
-	}, chatTypingSpeed);
-	return () => clearInterval(id);
-}
-
-$effect(() => {
-	let stop = () => {};
-	if (activeItem && activeItem.aiSummary) {
-		stop = chatTypeInto(activeItem.aiSummary, (v) => (chatTypedSummary = v));
-	} else {
-		chatTypedSummary = '';
-	}
-	return () => stop();
-});
+	const counterparty = $derived(activeChat 
+		? getUserInfo(activeTab === 'resident' ? (activeChat as any).userId : (activeChat as any).supplierId) 
+		: null);
 
 	// Unified timeline for the selected conversation
 	const timelineItems = $derived.by(() => {
 		const items: any[] = [];
-		if (activeTab === 'resident' && selectedReport) {
-			if (selectedReport.messageTimeline) {
-				selectedReport.messageTimeline.forEach(msg => {
-					items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
-				});
-			}
-			if (selectedReport.timeline) {
-				selectedReport.timeline.forEach(event => {
-					items.push({ type: 'event', date: new Date(event.at), data: { kind: event.kind, at: event.at, authorId: event.authorId } });
-				});
-			}
-		} else if (activeTab === 'supplier' && selectedSupplierChat) {
-			const t = selectedSupplierChat.ticket;
-			const sid = selectedSupplierChat.supplierId;
+		if (!activeChat) return [];
 
-			// messages between admin and this supplier
-			if (t.messageTimeline) {
-				t.messageTimeline.filter((m: any) => m.senderId === sid || m.senderId === adminId).forEach((msg: any) => {
-					items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
-				});
-			}
-
-			// supplier-relevant events
-			selectedSupplierChat.rel.forEach((event: any) => {
-				items.push({ type: 'event', date: new Date(event.at), data: event });
+		if (activeTab === 'resident') {
+			const chat = activeChat as any;
+			chat.reports.forEach((r: any) => {
+				if (r.messageTimeline) {
+					r.messageTimeline.forEach((msg: any) => {
+						items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
+					});
+				}
 			});
-
-			if (t.quoteIds) {
-				t.quoteIds.forEach((id: string) => {
+		} else {
+			const chat = activeChat as any;
+			const sid = chat.supplierId;
+			chat.tickets.forEach((t: any) => {
+				if (t.messageTimeline) {
+					t.messageTimeline.filter((m: any) => m.senderId === sid || m.senderId === adminId).forEach((msg: any) => {
+						items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
+					});
+				}
+				// Events
+				const rel = getSupplierRelevantTimeline(t, sid);
+				rel.forEach((event: any) => {
+					items.push({ type: 'event', date: new Date(event.at), data: event });
+				});
+				// Embeds
+				if (t.quoteIds) t.quoteIds.forEach((id: string) => {
 					const quote = getQuoteById(id);
 					if (quote && quote.createdAt) items.push({ type: 'quote', date: new Date(quote.createdAt), data: quote });
 				});
-			}
-			if (t.invoiceIds) {
-				t.invoiceIds.forEach((id: string) => {
+				if (t.invoiceIds) t.invoiceIds.forEach((id: string) => {
 					const invoice = getInvoiceById(id);
 					if (invoice && invoice.createdAt) items.push({ type: 'invoice', date: new Date(invoice.createdAt), data: invoice });
 				});
-			}
-			if (t.paymentIds) {
-				t.paymentIds.forEach((id: string) => {
+				if (t.paymentIds) t.paymentIds.forEach((id: string) => {
 					const payment = getPaymentById(id);
 					const dateStr = payment ? (payment.createdAt ?? payment.paidAt) : undefined;
-					if (payment && dateStr) {
-						items.push({ type: 'payment', date: new Date(dateStr), data: payment });
-					}
+					if (payment && dateStr) items.push({ type: 'payment', date: new Date(dateStr), data: payment });
 				});
-			}
-			if (t.interventionIds) {
-				t.interventionIds.forEach((id: string) => {
+				if (t.interventionIds) t.interventionIds.forEach((id: string) => {
 					const task = getSupplierTaskById(id);
 					if (task) items.push({ type: 'intervention', date: new Date(`${task.date}T${task.startTime}`), data: task });
 				});
-			}
+			});
 		}
 		return items.sort((a, b) => a.date.getTime() - b.date.getTime());
 	});
 
 	function getUserInfo(userId: string) {
 		return users.find(u => u.id === userId);
-	}
-
-	function getLastMessage(item: any) {
-		if (item.messageTimeline && item.messageTimeline.length > 0) {
-			return item.messageTimeline[item.messageTimeline.length - 1];
-		}
-		return null;
 	}
 
 	const statusColors: Record<string, string> = {
@@ -251,13 +212,13 @@ $effect(() => {
 
 		<div class="flex-1 overflow-y-auto">
 			{#if activeTab === 'resident'}
-				{#each adminReports as report}
-					{@const resident = getUserInfo(report.reportedById)}
-					{@const lastMsg = getLastMessage(report)}
-					{@const status = inferReportStatus(report)}
+				{#each residentChats as group}
+					{@const resident = getUserInfo(group.userId)}
+					{@const lastReport = group.reports[group.reports.length - 1]}
+					{@const lastMsg = lastReport?.messageTimeline?.[lastReport.messageTimeline.length - 1]}
 					<button 
-						onclick={() => selectChat(report.id, 'resident')}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === report.id ? 'bg-white shadow-sm' : ''}"
+						onclick={() => selectChat(group.userId, 'resident')}
+						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === group.userId ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
 							<HugeiconsIcon icon={UserCircleIcon} size={28} />
@@ -265,25 +226,27 @@ $effect(() => {
 						<div class="flex-1 min-w-0">
 							<div class="flex justify-between items-baseline mb-0.5">
 								<span class="font-bold text-slate-900 truncate">{resident?.name || 'Residente'}</span>
-								{#if lastMsg}
-									<span class="text-[10px] text-slate-400">{format(new Date(lastMsg.timestamp), "HH:mm")}</span>
+								{#if group.lastDate.getTime() > 0}
+									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-xs font-semibold text-primary mb-1 truncate">{report.title}</div>
+							<div class="text-xs font-semibold text-primary mb-1 truncate">
+								{group.reports.length} segnalazioni
+							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
-								{lastMsg?.text || 'Nessun messaggio...'}
+								{lastMsg?.text || 'Vedi cronologia...'}
 							</p>
 						</div>
 					</button>
 				{/each}
 			{:else}
-				{#each supplierChats as chat}
-					{@const supplier = getUserInfo(chat.supplierId)}
-					{@const lastMsgText = chat.lastMessageText ?? (chat.rel?.length ? chat.rel[chat.rel.length-1].body : null)}
-					{@const status = getCurrentStatus(chat.ticket)}
+				{#each supplierChats as group}
+					{@const supplier = getUserInfo(group.supplierId)}
+					{@const lastTicket = group.tickets[group.tickets.length - 1]}
+					{@const lastMsg = lastTicket?.messageTimeline?.[lastTicket.messageTimeline.length - 1]}
 					<button 
-						onclick={() => selectChat(chat.ticket.id, 'supplier')}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === chat.ticket.id ? 'bg-white shadow-sm' : ''}"
+						onclick={() => selectChat(group.supplierId, 'supplier')}
+						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === group.supplierId ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
 							<HugeiconsIcon icon={CustomerServiceIcon} size={28} />
@@ -291,13 +254,15 @@ $effect(() => {
 						<div class="flex-1 min-w-0">
 							<div class="flex justify-between items-baseline mb-0.5">
 								<span class="font-bold text-slate-900 truncate">{supplier?.name || 'Fornitore'}</span>
-								{#if chat.lastDate}
-									<span class="text-[10px] text-slate-400">{format(new Date(chat.lastDate), "HH:mm")}</span>
+								{#if group.lastDate.getTime() > 0}
+									<span class="text-[10px] text-slate-400">{format(group.lastDate, "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-xs font-semibold text-primary mb-1 truncate">{chat.ticket.title}</div>
+							<div class="text-xs font-semibold text-primary mb-1 truncate">
+								{group.tickets.length} interventi
+							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
-								{lastMsgText ?? 'Attesa aggiornamenti...'}
+								{lastMsg?.text || 'Vedi cronologia...'}
 							</p>
 						</div>
 					</button>
@@ -308,7 +273,7 @@ $effect(() => {
 
 	<!-- Main Chat Area -->
 	<main class="flex-1 flex flex-col bg-slate-50/50 {selectedId ? 'flex' : 'hidden md:flex'}">
-		{#if selectedId}
+		{#if selectedId && counterparty}
 			<header class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10">
 				<button 
 					onclick={() => goto('?', { replaceState: true })}
@@ -323,20 +288,11 @@ $effect(() => {
 				
 				<div class="flex-1 min-w-0">
 					<div class="flex items-center gap-2">
-						<h2 class="font-bold text-slate-900 text-sm truncate">{counterparty?.name || 'Caricamento...'}</h2>
-						{#if activeItem}
-							{@const status = activeTab === 'resident' 
-								? inferReportStatus(activeItem as any) 
-								: getCurrentStatus(activeItem as any)}
-							<Badge variant="secondary" class="text-[10px] uppercase {statusColors[status]}">
-								{status.replace(/_/g, ' ')}
-							</Badge>
-						{/if}
+						<h2 class="font-bold text-slate-900 truncate">{counterparty.name}</h2>
 					</div>
-					<p class="text-[11px] text-slate-500 truncate">{activeItem?.title}</p>
-					{#if chatTypedSummary}
-						<p class="text-xs text-muted-foreground truncate mt-0.5">{chatTypedSummary}</p>
-					{/if}
+					<p class="text-[11px] text-slate-500 truncate">
+						{activeTab === 'resident' ? 'Residente' : 'Fornitore'}
+					</p>
 				</div>
 
 				<div class="flex items-center gap-1">
