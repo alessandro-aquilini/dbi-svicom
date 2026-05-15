@@ -26,7 +26,7 @@
 		{ label: 'Fornitori', href: '/admin/suppliers', icon: Wrench01Icon },
 		{ label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
 		{ label: 'Chat', href: '/admin/chat', icon: BubbleChatIcon },
-		{ label: 'Pagamenti', href: '/admin/payments', icon: CreditCardIcon },
+		{ label: 'Contabilità', href: '/admin/finances', icon: CreditCardIcon },
 		{ label: 'Impostazioni', href: '/admin/settings', icon: Settings02Icon }
 	];
 

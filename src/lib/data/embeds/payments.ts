@@ -27,7 +27,7 @@ export const payments: Payment[] = [
 		currency: 'EUR',
 		paidAt: '2026-06-02T00:00:00',
 		createdAt: '2026-05-03T10:15:00',
-		description: 'Saldo fattura 2026/FT/154 per intervento idraulico Marconi 14',
+		description: 'Saldo fattura 2026/FT/154 per intervento idraulico',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
 	}
@@ -40,7 +40,7 @@ export const payments: Payment[] = [
 		currency: 'EUR',
 		paidAt: '2026-05-20T00:00:00',
 		createdAt: '2026-04-20T16:00:00',
-		description: 'Pagamento pulizie extra - bkg-002',
+		description: 'Pagamento pulizie extra',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-002'
 	},
@@ -52,7 +52,7 @@ export const payments: Payment[] = [
 		currency: 'EUR',
 		paidAt: '2026-06-03T00:00:00',
 		createdAt: '2026-05-04T11:00:00',
-		description: 'Acconto + saldo per installazione climatizzatore - bkg-003',
+		description: 'Acconto + saldo per installazione climatizzatore',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-003'
 	},
@@ -65,7 +65,7 @@ export const payments: Payment[] = [
 		amount: 420.00,
 		currency: 'EUR',
 		paidAt: '2026-03-27T00:00:00',
-		description: 'Quota condominiale Q1 2026 — Via Marconi 14',
+		description: 'Quota condominiale Q1 2026',
 		propertyId: 'cnd-marconi-14'
 	},
 	{
@@ -75,28 +75,8 @@ export const payments: Payment[] = [
 		amount: 860.00,
 		currency: 'EUR',
 		paidAt: '2026-04-05T00:00:00',
-		description: 'Quota condominiale Q1 2026 — Corso Europa 7',
+		description: 'Quota condominiale Q1 2026',
 		propertyId: 'cnd-europa-7'
-	},
-	{
-		id: 'pay-quota-greco-q1',
-		fromId: 'res-greco-04',
-		toId: 'adm-giorgio-01',
-		amount: 1240.00,
-		currency: 'EUR',
-		paidAt: '2026-03-12T00:00:00',
-		description: 'Quota condominiale + spese straordinarie — Via Carducci 21',
-		propertyId: 'cnd-carducci-21'
-	},
-	{
-		id: 'pay-quota-bruno-q1',
-		fromId: 'res-bruno-08',
-		toId: 'adm-giorgio-01',
-		amount: 900.00,
-		currency: 'EUR',
-		paidAt: '2026-04-10T00:00:00',
-		description: 'Quota condominiale Q1 2026 — Via Tortona 12',
-		propertyId: 'cnd-tortona-12'
 	}
 ];
 
