@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tickets, getCurrentStatus, type Ticket } from '$lib/data/ticket/tickets';
+	import { tickets, getCurrentStatus, getCurrentSupplier, type Ticket } from '$lib/data/ticket/tickets';
 	import { bookings, inferBookingStatus } from '$lib/data/ticket/booking';
 	import { quotes } from '$lib/data/embeds/quotes';
 	import { getCurrentUser } from '$lib/auth';
@@ -18,7 +18,7 @@
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
 
 	// Filters
-	const myTickets = tickets.filter((t) => t.supplierId === supplierId);
+	const myTickets = tickets.filter((t) => getCurrentSupplier(t) === supplierId);
 	const myBookings = bookings.filter((b) => {
 		const service = services.find((s) => s.id === b.serviceId);
 		return service?.supplierId === supplierId;

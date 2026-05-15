@@ -2,7 +2,7 @@
 
 export type BookingEventKind =
     | 'request_created'
-    | 'accepted'
+    | 'confirmed'
     | 'declined'
     | 'timeslot_updated'
     | 'performed'
@@ -77,13 +77,13 @@ export function inferBookingStatus(booking: Booking): BookingStatus {
     switch (last.kind) {
         case 'request_created':
             return 'requested';
-        case 'accepted':
+        case 'confirmed':
             return 'confirmed';
         case 'timeslot_updated': {
             // If a timeslot update exists, fallback to confirmed if a confirmed event exists earlier
             const timeline = booking.timeline || [];
-            const hasAccepted = timeline.some((ev) => ev.kind === 'accepted');
-            return hasAccepted ? 'confirmed' : 'requested';
+            const hasConfirmed = timeline.some((ev) => ev.kind === 'confirmed');
+            return hasConfirmed ? 'confirmed' : 'requested';
         }
         case 'performed':
             return 'performed';
@@ -107,7 +107,7 @@ export const bookings: Booking[] = [
         serviceId: 'srv-pet-sitting-premium',
         timeline: [
             { id: 'bkg-001-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-06T08:00:00', slot: { start: '2026-05-06T09:30:00', end: '2026-05-06T11:00:00' } },
-            { id: 'bkg-001-e2', kind: 'accepted', authorId: 'frn-pet-care-h24', at: '2026-05-06T09:00:00' },
+            { id: 'bkg-001-e2', kind: 'confirmed', authorId: 'frn-pet-care-h24', at: '2026-05-06T09:00:00' },
             { id: 'bkg-001-e3', kind: 'cancelled', authorId: 'frn-pet-care-h24', at: '2026-05-06T10:00:00' }
         ],
         messageTimeline: [
@@ -124,7 +124,7 @@ export const bookings: Booking[] = [
         serviceId: 'srv-pulizie-extra',
         timeline: [
             { id: 'bkg-002-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-04-20T09:00:00', slot: { start: '2026-04-20T10:00:00', end: '2026-04-20T13:00:00' } },
-            { id: 'bkg-002-e2', kind: 'accepted', authorId: 'frn-clean-green', at: '2026-04-20T10:00:00' },
+            { id: 'bkg-002-e2', kind: 'confirmed', authorId: 'frn-clean-green', at: '2026-04-20T10:00:00' },
             { id: 'bkg-002-e3', kind: 'performed', authorId: 'frn-clean-green', at: '2026-04-20T13:00:00' },
             { id: 'bkg-002-e4', kind: 'closed', authorId: 'adm-giorgio-01', at: '2026-04-20T15:00:00' }
         ],
@@ -145,7 +145,7 @@ export const bookings: Booking[] = [
         serviceId: 'srv-installazione-climatizzatore',
         timeline: [
             { id: 'bkg-003-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-01T09:00:00', slot: { start: '2026-05-02T09:00:00', end: '2026-05-02T17:00:00' } },
-            { id: 'bkg-003-e2', kind: 'accepted', authorId: 'frn-idroclima-nord', at: '2026-05-01T11:45:00' },
+            { id: 'bkg-003-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-01T11:45:00' },
             { id: 'bkg-003-e3', kind: 'timeslot_updated', authorId: 'res-bianchi-01', at: '2026-05-02T08:00:00', slot: { start: '2026-05-02T10:00:00', end: '2026-05-02T18:00:00' } },
             { id: 'bkg-003-e4', kind: 'performed', authorId: 'frn-idroclima-nord', at: '2026-05-02T14:00:00' },
             { id: 'bkg-003-e5', kind: 'closed', authorId: 'adm-giorgio-01', at: '2026-05-03T09:00:00' }
@@ -183,7 +183,7 @@ export const bookings: Booking[] = [
         serviceId: 'srv-installazione-climatizzatore',
         timeline: [
             { id: 'bkg-005-e1', kind: 'request_created', authorId: 'res-rossi-01', at: '2026-05-12T09:00:00', slot: { start: '2026-05-20T09:00:00', end: '2026-05-20T12:00:00' } },
-            { id: 'bkg-005-e2', kind: 'accepted', authorId: 'frn-idroclima-nord', at: '2026-05-13T08:30:00' }
+            { id: 'bkg-005-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-13T08:30:00' }
         ],
         messageTimeline: [
             { id: 'msg-bkg-005-1', senderId: 'res-rossi-01', text: 'Preventivo per climatizzatore in camera da letto.', timestamp: '2026-05-12T09:00:00' },

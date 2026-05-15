@@ -14,7 +14,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getChatsByUserId, type Message } from '$lib/data/chats';
 	import { getPaymentById } from '$lib/data/embeds/payments';
-	import { getReportById } from '$lib/data/ticket/reports';
+	import { getReportById, inferReportStatus } from '$lib/data/ticket/reports';
 	import { getTicketById } from '$lib/data/ticket/tickets';
 	import { getUserById } from '$lib/data/users';
 	import { page } from '$app/state';
@@ -345,7 +345,7 @@
 								</div>
 								<div class="resident-chat-reference-card__meta">
 									<p class="resident-chat-reference-card__meta-copy">
-										Stato: {report.status.replaceAll('_', ' ')}
+										Stato: {inferReportStatus(report).replaceAll('_', ' ')}
 									</p>
 									<Button href={`/resident/reports/${report.id}`} variant="outline" size="sm">
 										Apri segnalazione
@@ -384,7 +384,7 @@
 								</div>
 								<div class="resident-chat-mini-panel__item">
 									<p class="resident-chat-mini-panel__label">Scadenza</p>
-									<p class="resident-chat-mini-panel__value">{formatDateTime(payment.paidAt ?? payment.createdAt)}</p>
+									<p class="resident-chat-mini-panel__value">{formatDateTime((payment.paidAt ?? payment.createdAt) as string)}</p>
 								</div>
 								<div class="resident-chat-payment-actions">
 									<Button href={`/resident/payments/${payment.id}`} variant="outline" size="lg">

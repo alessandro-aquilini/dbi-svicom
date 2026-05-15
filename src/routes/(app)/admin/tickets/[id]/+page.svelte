@@ -15,6 +15,7 @@
 		getTicketById,
 		getTicketNextStep,
 		getCurrentStatus,
+		getCurrentSupplier,
 		type TicketStatus
 	} from '$lib/data/ticket/tickets';
 	import { getPropertyById } from '$lib/data/properties';
@@ -27,7 +28,8 @@
 	const ticket = $derived(getTicketById(page.params.id ?? ''));
 	const property = $derived(ticket ? getPropertyById(ticket.propertyId) : undefined);
 	const reporter = $derived(ticket ? getUserById(ticket.creatorId) : undefined); // creatorId is always Admin
-	const supplier = $derived(ticket?.supplierId ? getUserById(ticket.supplierId) : undefined);
+	const currentSupplierId = $derived(ticket ? getCurrentSupplier(ticket) : undefined);
+	const supplier = $derived(currentSupplierId ? getUserById(currentSupplierId) : undefined);
 	const aiSummary = $derived(ticket?.adminMetadata.find((ev) => ev.kind === 'ai')?.body);
 	const aiNextStep = $derived(ticket ? getTicketNextStep(ticket.id) : undefined);
 	const currentStatus = $derived(ticket ? getCurrentStatus(ticket) : 'opened');
@@ -57,7 +59,7 @@
 
 		for (const id of ticket.paymentIds ?? []) {
 			const p = getPaymentById(id);
-				if (p) items.push({ type: 'payment', id: p.id, data: p, at: p.createdAt || p.paidAt });
+				if (p) items.push({ type: 'payment', id: p.id, data: p, at: (p.createdAt || p.paidAt) as string });
 		}
 
 		for (const intId of ticket.interventionIds ?? []) {

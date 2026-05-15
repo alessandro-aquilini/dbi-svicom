@@ -1,4 +1,10 @@
-import type { Report } from '$lib/data/ticket/reports';
+import type { Report, ReportStatus } from '$lib/data/ticket/reports';
+import {
+	inferReportStatus,
+	getReportCreatedAt,
+	getReportUpdatedAt,
+	reports
+} from '$lib/data/ticket/reports';
 import {
 	getCurrentStatus as getOperationalTicketStatus,
 	tickets,
@@ -52,6 +58,10 @@ export interface ReportTimelineEvent {
 	toStatus?: string;
 	note?: string;
 	label?: string;
+}
+
+export function getCurrentStatus(report: Report): ReportStatus {
+	return inferReportStatus(report);
 }
 
 export function isTicketStatus(value: string | undefined): boolean {
