@@ -28,15 +28,15 @@ export function getResidentPaymentsContext(userId: string | undefined): Resident
 	const admin = property ? getUserById(property.adminId) : undefined;
 
 	const personalPayments = currentUser
-		? getPaymentsByUserId(currentUser.id).sort((left, right) => right.dueDate.localeCompare(left.dueDate))
+		? getPaymentsByUserId(currentUser.id).sort((left, right) => (right.createdAt ?? right.paidAt ?? '').localeCompare(left.createdAt ?? left.paidAt ?? ''))
 		: [];
 	const propertyPayments = property
-		? getPaymentsByPropertyId(property.id).sort((left, right) => right.dueDate.localeCompare(left.dueDate))
+		? getPaymentsByPropertyId(property.id).sort((left, right) => (right.createdAt ?? right.paidAt ?? '').localeCompare(left.createdAt ?? left.paidAt ?? ''))
 		: [];
 	const personalIds = new Set(personalPayments.map((payment) => payment.id));
 	const propertyOperationalPayments = propertyPayments.filter((payment) => !personalIds.has(payment.id));
 	const allVisiblePayments = [...personalPayments, ...propertyOperationalPayments].sort((left, right) =>
-		right.dueDate.localeCompare(left.dueDate)
+		(right.createdAt ?? right.paidAt ?? '').localeCompare(left.createdAt ?? left.paidAt ?? '')
 	);
 
 	const propertyDocuments = property

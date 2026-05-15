@@ -38,7 +38,7 @@ export const services: Service[] = [
 		comments: [
 			{
 				authorId: 'res-conti-02',
-				date: '2026-05-01T10:00:00Z',
+				date: '2026-05-01T10:00:00',
 				text: 'Servizio eccellente, il mio cane è felicissimo!'
 			}
 		]
@@ -60,7 +60,7 @@ export const services: Service[] = [
 		comments: [
 			{
 				authorId: 'res-bianchi-01',
-				date: '2026-04-15T09:30:00Z',
+				date: '2026-04-15T09:30:00',
 				text: 'Tutto perfetto e profumato.'
 			}
 		]

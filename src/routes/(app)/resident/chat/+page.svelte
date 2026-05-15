@@ -14,9 +14,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getChatsByUserId, type Message } from '$lib/data/chats';
 	import { getPaymentById } from '$lib/data/embeds/payments';
-	import { getReportById } from '$lib/data/ticket/reports';
+	import { getReportById, inferReportStatus } from '$lib/data/ticket/reports';
 	import { getTicketById } from '$lib/data/ticket/tickets';
 	import { getUserById } from '$lib/data/users';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 
 	const currentUser = getCurrentUser();
 	const residentId = currentUser?.id ?? '';
@@ -24,7 +26,7 @@
 		? [...getChatsByUserId(residentId)].sort((left, right) => right.lastMessageAt.localeCompare(left.lastMessageAt))
 		: [];
 
-	let selectedChatId = $state(baseChats[0]?.id ?? '');
+	const selectedChatId = $derived(page.url.searchParams.get('id') ?? baseChats[0]?.id ?? '');
 	let composerText = $state('');
 	let localMessagesByChat = $state<Record<string, Message[]>>({});
 	let messagesEndEl: HTMLDivElement | null = $state(null);
@@ -149,10 +151,8 @@
 		}));
 	});
 
-	function selectChat(chatId: string) {
-		selectedChatId = chatId;
-		composerText = '';
-		queueMicrotask(scrollToBottom);
+	function selectChat(id: string) {
+		goto(`?id=${id}`, { replaceState: true });
 	}
 
 	async function scrollToBottom() {
@@ -345,7 +345,7 @@
 								</div>
 								<div class="resident-chat-reference-card__meta">
 									<p class="resident-chat-reference-card__meta-copy">
-										Stato: {report.status.replaceAll('_', ' ')}
+										Stato: {inferReportStatus(report).replaceAll('_', ' ')}
 									</p>
 									<Button href={`/resident/reports/${report.id}`} variant="outline" size="sm">
 										Apri segnalazione
@@ -384,7 +384,7 @@
 								</div>
 								<div class="resident-chat-mini-panel__item">
 									<p class="resident-chat-mini-panel__label">Scadenza</p>
-									<p class="resident-chat-mini-panel__value">{formatDateTime(payment.dueDate)}</p>
+									<p class="resident-chat-mini-panel__value">{formatDateTime((payment.paidAt ?? payment.createdAt) as string)}</p>
 								</div>
 								<div class="resident-chat-payment-actions">
 									<Button href={`/resident/payments/${payment.id}`} variant="outline" size="lg">

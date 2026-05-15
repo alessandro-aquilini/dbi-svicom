@@ -4,7 +4,8 @@
 	import { page } from '$app/state';
 	import {
 		getCurrentStatus as getTicketCurrentStatus,
-		getTicketById
+		getTicketById,
+		getCurrentSupplier
 	} from '$lib/data/ticket/tickets';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getQuoteById } from '$lib/data/embeds/quotes';
@@ -226,7 +227,7 @@
 							</div>
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Registrata il</p>
-								<p class="payment-detail-card__fact-value">{formatPaymentDateTime(latestReceipt.paidAt)}</p>
+								<p class="payment-detail-card__fact-value">{formatPaymentDateTime(latestReceipt.paidAt ?? latestReceipt.createdAt)}</p>
 							</div>
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Importo</p>
@@ -274,8 +275,8 @@
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Fornitore assegnato</p>
 								<p class="payment-detail-card__fact-value">
-									{relatedTicket.supplierId
-										? (getUserById(relatedTicket.supplierId)?.name ?? 'Non disponibile')
+									{getCurrentSupplier(relatedTicket)
+										? (getUserById(getCurrentSupplier(relatedTicket)!)?.name ?? 'Non disponibile')
 										: 'Da assegnare'}
 								</p>
 							</div>
@@ -312,7 +313,7 @@
 												<div class="payment-ticket-chain__item">
 													<p class="payment-ticket-chain__label">{invoice.number}</p>
 													<p class="payment-ticket-chain__value">
-														{formatMoney(invoice.amount, invoice.currency)} · emessa {formatPaymentDate(invoice.issueDate)}
+														{formatMoney(invoice.amount, invoice.currency)} · emessa {formatPaymentDate(invoice.createdAt)}
 													</p>
 												</div>
 											{/each}
@@ -399,11 +400,11 @@
 						<div class="payment-detail-card__facts">
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Scadenza</p>
-								<p class="payment-detail-card__fact-value">{formatPaymentDate(payment.dueDate)}</p>
+								<p class="payment-detail-card__fact-value">{formatPaymentDate(payment.paidAt ?? payment.createdAt)}</p>
 							</div>
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Registrazione</p>
-								<p class="payment-detail-card__fact-value">{formatPaymentDateTime(payment.paidAt)}</p>
+								<p class="payment-detail-card__fact-value">{formatPaymentDateTime(payment.paidAt ?? payment.createdAt)}</p>
 							</div>
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Email beneficiario</p>

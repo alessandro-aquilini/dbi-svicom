@@ -190,11 +190,8 @@ export function createResidentLocalTicket(input: ResidentTicketDraftInput): Repo
 		propertyId: input.propertyId,
 		adminId: property?.adminId ?? 'adm-giorgio-01',
 		category: input.category,
-		status: 'nuova',
-		createdAt: now,
-		updatedAt: now,
-		statusHistory: [
-			{ status: 'nuova', at: now }
+		timeline: [
+			{ id: `ev-${Date.now()}-1`, kind: 'reported', authorId: input.reportedById, at: now }
 		]
 	};
 
@@ -212,8 +209,8 @@ export function createResidentLocalTicketWithPresentation(
 		const metaItems = getResidentLocalTicketMetaStorage().filter((item) => item.ticketId !== ticket.id);
 		const meta: ResidentTicketPresentationMeta = {
 			ticketId: ticket.id,
-			submittedAt: ticket.statusHistory[0]?.at ?? new Date().toISOString(),
-			attachments: presentation.attachments ?? [],
+			submittedAt: ticket.timeline?.[0]?.at ?? new Date().toISOString(),
+			attachments: presentation?.attachments ?? [],
 			fieldAnswers: presentation.fieldAnswers ?? []
 		};
 

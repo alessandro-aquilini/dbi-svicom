@@ -53,7 +53,7 @@
 				context.property.address.street,
 				context.admin ? `Admin: ${context.admin.name}` : 'Admin non disponibile',
 				lastVisibleMovement
-					? `Ultimo movimento ${formatPaymentDate(lastVisibleMovement.dueDate)}`
+					? `Ultimo movimento ${formatPaymentDate(lastVisibleMovement.paidAt ?? lastVisibleMovement.createdAt)}`
 					: 'Nessun movimento visibile'
 			]
 		: [];
@@ -249,7 +249,7 @@
 					<ResidentPaymentCard
 						eyebrow="Quota residente"
 						title={payment.description}
-						description={`Operazione prevista per ${formatPaymentDate(payment.dueDate)}.`}
+						description={`Operazione prevista per ${formatPaymentDate(payment.paidAt ?? payment.createdAt)}.`}
 						amountLabel={formatMoney(payment.amount, payment.currency)}
 						status={getResidentPaymentStatus(payment)}
 						facts={[

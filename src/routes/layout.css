@@ -3019,9 +3019,6 @@
 	.payment-status-badge--pending {
 		@apply border-transparent bg-primary/12 text-primary;
 	}
-	.payment-status-badge--overdue {
-		@apply border-transparent bg-destructive/15 text-destructive;
-	}
 	.payment-support-grid,
 	.payment-detail-panels {
 		@apply grid gap-3;

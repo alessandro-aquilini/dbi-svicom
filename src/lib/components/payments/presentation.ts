@@ -1,19 +1,22 @@
 import type { Payment } from '$lib/data/embeds/payments';
 
-export type ResidentPaymentStatus = 'paid' | 'pending' | 'overdue';
+export type ResidentPaymentStatus = 'paid' | 'pending';
 
 export const residentPaymentStatusLabels: Record<ResidentPaymentStatus, string> = {
 	paid: 'Registrato',
-	pending: 'In attesa',
-	overdue: 'Scaduto'
+	pending: 'In attesa'
 };
 
 export function getResidentPaymentStatus(
-	payment: Pick<Payment, 'dueDate' | 'paidAt'>,
+	payment: Pick<Payment, 'paidAt' | 'createdAt'>,
 	now = new Date()
 ): ResidentPaymentStatus {
-	if (payment.paidAt) return 'paid';
-	return new Date(payment.dueDate).getTime() < now.getTime() ? 'overdue' : 'pending';
+	// paidAt is the transaction date (may be empty). If it's set and in the past (<= now) it's paid.
+	if (payment.paidAt) {
+		return new Date(payment.paidAt).getTime() <= now.getTime() ? 'paid' : 'pending';
+	}
+	// No transaction date: treat as pending (not yet paid).
+	return 'pending';
 }
 
 export function formatPaymentDate(value: string | undefined): string {
@@ -43,27 +46,22 @@ export function formatMoney(amount: number, currency: string): string {
 }
 
 export function getPaymentFootnote(
-	payment: Pick<Payment, 'dueDate' | 'paidAt'>,
+	payment: Pick<Payment, 'paidAt' | 'createdAt'>,
 	now = new Date()
 ): { label: string; value: string } {
 	const status = getResidentPaymentStatus(payment, now);
 
 	if (status === 'paid') {
+		// Show the transaction date (paidAt) when available; fall back to createdAt
 		return {
 			label: 'Registrato il',
-			value: formatPaymentDateTime(payment.paidAt)
+			value: formatPaymentDateTime(payment.paidAt ?? payment.createdAt)
 		};
 	}
 
-	if (status === 'overdue') {
-		return {
-			label: 'Scaduto il',
-			value: formatPaymentDate(payment.dueDate)
-		};
-	}
-
+	// pending: show scheduled/transaction date if present, otherwise creation date
 	return {
-		label: 'In scadenza il',
-		value: formatPaymentDate(payment.dueDate)
+		label: 'Da pagare il',
+		value: formatPaymentDate(payment.paidAt ?? payment.createdAt)
 	};
 }

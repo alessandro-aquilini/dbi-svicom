@@ -63,7 +63,7 @@
 				if (quote) {
 					items.push({
 						type: 'quote',
-						date: new Date(quote.sentAt),
+						date: quote.createdAt ? new Date(quote.createdAt) : undefined,
 						data: quote
 					});
 				}
@@ -74,10 +74,10 @@
 		if (booking.invoiceIds) {
 			booking.invoiceIds.forEach(id => {
 				const invoice = getInvoiceById(id);
-				if (invoice) {
+				if (invoice && invoice.createdAt) {
 					items.push({
 						type: 'invoice',
-						date: new Date(invoice.issueDate),
+						date: new Date(invoice.createdAt),
 						data: invoice
 					});
 				}

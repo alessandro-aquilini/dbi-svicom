@@ -53,7 +53,7 @@
 		<div class="report-card-shell__meta">
 			<span class="report-chip">{ticket.category}</span>
 			<TicketPriorityBadge priority={ticket.priority} />
-			<span class="report-chip">{ticket.statusHistory.length} step</span>
+			<span class="report-chip">{(ticket.timeline || []).length} step</span>
 		</div>
 
 		{#if operationalTicketId}

@@ -1,7 +1,7 @@
 export interface supplierTask {
 	id: string;
 	title: string;
-    type: 'sopralluogo' | 'intervento' | 'servizio';
+    type: 'sopralluogo' | 'intervento';
 	date: string;
 	startTime: string;
 	endTime: string;
@@ -9,7 +9,10 @@ export interface supplierTask {
 	supplierId: string; // References User.id
 	customerId: string; // References User.id (Admin or Resident)
 	propertyId: string;
-	ticketId: string; // Reference to a ticket
+	ticketId?: string; // Reference to a ticket
+	bookingId?: string; // Reference to a ticket
+	/** Timestamp when the task was created */
+	createdAt?: string;
 }
 
 export const supplierTasks: supplierTask[] = [
@@ -25,6 +28,7 @@ export const supplierTasks: supplierTask[] = [
 		customerId: 'adm-giorgio-01',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
+		,createdAt: '2026-05-01T10:45:00'
 	},
 	{
 		id: 'int-002',
@@ -38,6 +42,7 @@ export const supplierTasks: supplierTask[] = [
 		customerId: 'adm-giorgio-01',
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
+		,createdAt: '2026-05-01T14:30:00'
 	}
 ];
 

@@ -20,7 +20,7 @@ export const announcements: Announcement[] = [
 		category: 'official',
 		propertyId: 'cnd-marconi-14',
 		createdBy: 'adm-giorgio-01',
-		createdAt: '2024-04-20T09:20:00Z',
+		createdAt: '2024-04-20T09:20:00',
 		pinned: true,
 		tags: ['Assemblea', 'Ufficiale']
 	},
@@ -31,7 +31,7 @@ export const announcements: Announcement[] = [
 		category: 'service',
 		propertyId: 'cnd-marconi-14',
 		createdBy: 'adm-giorgio-01',
-		createdAt: '2024-04-28T08:10:00Z',
+		createdAt: '2024-04-28T08:10:00',
 		tags: ['Manutenzione', 'Acqua']
 	},
 	{
@@ -41,7 +41,7 @@ export const announcements: Announcement[] = [
 		category: 'proposal',
 		propertyId: 'cnd-marconi-14',
 		createdBy: 'res-bianchi-01',
-		createdAt: '2024-04-27T18:40:00Z',
+		createdAt: '2024-04-27T18:40:00',
 		tags: ['Proposta', 'Bici']
 	}
 ];

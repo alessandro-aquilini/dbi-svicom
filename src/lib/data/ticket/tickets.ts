@@ -1,3 +1,5 @@
+// NOTE: For each ticket there is a chat. 
+
 // ─── ticket-admin.ts ──────────────────────────────────────────────────────────
 
 export type TicketStatus =
@@ -14,32 +16,49 @@ export type TicketPriority = 'bassa' | 'media' | 'alta' | 'critica';
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
 export type TicketEventKind =
-	| 'created'   // ticket opened by admin
-	| 'status'    // any status transition
-	| 'assigned'  // first supplier assignment
-	| 'reassigned'// supplier replaced by another
-	| 'note'      // free-text comment
-	| 'ai'        // system-generated narrative
-	| 'closed';   // ticket explicitly closed
+	| 'createTicket'
+	| 'assignToSupplier'
+	| 'accepted'
+	| 'declined'
+	| 'reportCompletion'
+	| 'validateAndClose'
+	| 'archiveTicket'
+	| 'closed';
+
+export type TicketAdminMetadataKind = 'updatePriority' | 'addInternalNote' | 'ai';
 
 export interface TicketEvent {
 	id: string;
 	kind: TicketEventKind;
-	at: string;          // ISO 8601
+	at: string; // ISO 8601
+	authorId?: string; // user who produced the event
 
-	// ── status / closed events ──
-	fromStatus?: TicketStatus;
-	toStatus?: TicketStatus;
-
-	// ── assigned / reassigned events ──
-	supplierId?: string;          // incoming supplier
-	previousSupplierId?: string;  // outgoing supplier (reassigned only)
-
-	// ── note / ai events ──
+	// optional payloads for certain kinds
+	supplierId?: string; // assignToSupplier (may appear multiple times for reassignments)
 	body?: string;
+	// updatePriority payload
+	fromPriority?: string;
+	toPriority?: string;
+}
+
+export interface TicketAdminMetadata {
+	id: string;
+	kind: TicketAdminMetadataKind;
+	at: string; // ISO 8601
+	authorId?: string; // admin who produced the event
+	body?: string; // addInternalNote, ai
+	fromPriority?: string;
+	toPriority?: string;
 }
 
 // ─── Ticket ───────────────────────────────────────────────────────────────────
+
+export interface TicketMessage {
+	id: string;
+	senderId: string; // References User.id
+	text: string;
+	timestamp: string; // ISO datetime
+}
 
 export interface Ticket {
 	id: string;
@@ -48,32 +67,76 @@ export interface Ticket {
 	priority: TicketPriority;
 	category: string;
 
-	creatorId: string;    // Always an Admin User.id
-	supplierId?: string;  // Current active supplier User.id (mirrors last 'assigned'/'reassigned' event)
-	propertyId: string;   // The condominium
+	creatorId: string; // Always an Admin User.id
+	propertyId: string; // The condominium
 
 	/** Resident User IDs who can view this ticket (read-only observers). */
 	cc: string[];
 
-	/** Ordered activity log. Replaces statusHistory — derive current status
-	 *  from the `toStatus` of the last 'status' or 'closed' event. */
+	/** Ordered activity log (timeline-driven). */
 	eventTimeline: TicketEvent[];
 
-	// ── Document links (ID-only — timestamps live in their own modules) ──
-	paymentIds: string[];  // References Payment.id  (payments.ts)
-	quoteIds: string[];    // References Quote.id    (quotes.ts)
-	invoiceIds: string[];  // References Invoice.id  (invoices.ts)
-	interventionIds: string[]; // References Intervento.id (intervento.ts)
+	/** Admin-only timeline events (notes, priority changes, AI summaries). */
+	adminMetadata: TicketAdminMetadata[];
+
+	/** Conversation messages related to the ticket (migrated from chats). */
+	messageTimeline?: TicketMessage[];
+
+	// Document links (ID-only)
+	paymentIds: string[];
+	quoteIds: string[];
+	invoiceIds: string[];
+	interventionIds: string[];
+
+	/** Short AI-generated summary of the ticket (read-only). */
+	aiSummary?: string;
 }
+
+/** Infers the current supplier for a ticket by scanning the timeline for the latest assignment/rea ssignment event.
+ * Returns the supplierId string when present, otherwise undefined (unassigned).
+ */
+export function getCurrentSupplier(ticket: Ticket): string | undefined {
+	// Walk backwards and pick the last assignToSupplier event that contains a supplierId.
+	for (let i = ticket.eventTimeline.length - 1; i >= 0; i--) {
+		const ev = ticket.eventTimeline[i];
+		if (ev.kind === 'assignToSupplier' && ev.supplierId) {
+			return ev.supplierId;
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Return the ordered list of supplier ids that appear in a ticket's timeline.
+ * Each supplierId appears once in the order they were first assigned.
+ */
+// Removed getSuppliersForTicket as requested.
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Derives current status by walking the timeline. O(n) but n is tiny. */
 export function getCurrentStatus(ticket: Ticket): TicketStatus {
+	// Walk backwards through timeline and pick the first event that maps to a public status.
 	for (let i = ticket.eventTimeline.length - 1; i >= 0; i--) {
 		const ev = ticket.eventTimeline[i];
-		if ((ev.kind === 'status' || ev.kind === 'closed') && ev.toStatus) {
-			return ev.toStatus;
+		switch (ev.kind) {
+			case 'reportCompletion':
+				return 'completed';
+			case 'validateAndClose':
+				return 'closed';
+			case 'archiveTicket':
+				return 'closed';
+			case 'assignToSupplier':
+				return 'in_progress';
+			case 'accepted':
+				return 'estimating';
+			case 'declined':
+				return 'estimating';
+			case 'createTicket':
+				return 'opened';
+			// Legacy support
+			case 'closed':
+				return 'closed';
 		}
 	}
 	return 'opened';
@@ -89,23 +152,45 @@ export const tickets: Ticket[] = [
 		priority: 'critica',
 		category: 'Idraulica',
 		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-idroclima-nord',
+		/* supplier inferred from eventTimeline */
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-bianchi-01', 'res-bellini-05'],
 		eventTimeline: [
-			{ id: 'ev-1', kind: 'created', at: '2026-05-01T10:00:00' },
-			{ id: 'ev-2', kind: 'status', at: '2026-05-01T10:05:00', fromStatus: 'opened', toStatus: 'estimating' },
-			{ id: 'ev-3', kind: 'assigned', at: '2026-05-01T10:05:00', supplierId: 'frn-idroclima-nord' },
-			{ id: 'ev-4', kind: 'note', at: '2026-05-01T10:30:00', body: 'Idroclina Nord ha risposto subito ed è disponibile.' },
-			{ id: 'ev-5', kind: 'status', at: '2026-05-01T12:40:00', fromStatus: 'estimating', toStatus: 'approved' },
-			{ id: 'ev-6', kind: 'status', at: '2026-05-01T14:00:00', fromStatus: 'approved', toStatus: 'in_progress' },
-			{ id: 'ev-7', kind: 'status', at: '2026-05-01T18:00:00', fromStatus: 'in_progress', toStatus: 'completed' },
-			{ id: 'ev-8', kind: 'status', at: '2026-05-03T19:00:00', fromStatus: 'completed', toStatus: 'paid' }
+			{ id: 'ev-1', kind: 'createTicket', at: '2026-05-01T10:00:00', authorId: 'adm-giorgio-01' },
+			{ id: 'ev-3', kind: 'assignToSupplier', at: '2026-05-01T10:05:00', authorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord'},
+			{ id: 'ev-4', kind: 'accepted', at: '2026-05-01T11:45:00', authorId: 'frn-idroclima-nord' },
+			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
+			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
+		],
+		messageTimeline: [
+			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B.', timestamp: '2026-05-01T10:06:00' },
+			{ id: 'msg-102', senderId: 'frn-idroclima-nord', text: 'Ricevuto Giorgio. Mando subito un tecnico per un sopralluogo. Ti aggiorno tra poco.', timestamp: '2026-05-01T10:10:00' },
+			{ id: 'msg-103', senderId: 'frn-idroclima-nord', text: 'Trovata la perdita. È il collettore principale, va sostituita anche una valvola. Ti ho caricato il preventivo.', timestamp: '2026-05-01T11:45:00' },
+			{ id: 'msg-104', senderId: 'adm-giorgio-01', text: 'Procedi pure, è urgente. Fammi sapere appena l\'acqua calda è ripristinata.', timestamp: '2026-05-01T12:05:00' }
+		],
+		adminMetadata: [
+			{
+				id: 'adm-1',
+				kind: 'updatePriority',
+				at: '2026-05-01T10:02:00',
+				authorId: 'adm-giorgio-01',
+				fromPriority: 'alta',
+				toPriority: 'critica'
+			},
+			{
+				id: 'adm-2',
+				kind: 'addInternalNote',
+				at: '2026-05-01T10:20:00',
+				authorId: 'adm-giorgio-01',
+				body: 'Confermata urgenza: scala B senza acqua calda. Tenere informati i residenti.'
+			}
 		],
 		paymentIds: ['pay-001'],
 		quoteIds: ['quo-001'],
 		invoiceIds: ['inv-001'],
 		interventionIds: ['int-001', 'int-002']
+		,
+		aiSummary: 'Perdita urgente al collettore principale nella scala B: installazione valvola e sostituzione collettore. Fornitore idroclima ha accettato e completato i lavori;'
 	},
 	{
 		id: 'tkt-002',
@@ -114,18 +199,34 @@ export const tickets: Ticket[] = [
 		priority: 'media',
 		category: 'Elettrico',
 		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-secure-entry',
+		/* supplier inferred from eventTimeline */
 		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
 		eventTimeline: [
-			{ id: 'ev-201', kind: 'created', at: '2026-05-03T16:30:00' },
-			{ id: 'ev-202', kind: 'assigned', at: '2026-05-03T16:35:00', supplierId: 'frn-secure-entry' },
-			{ id: 'ev-203', kind: 'status', at: '2026-05-03T16:35:00', fromStatus: 'opened', toStatus: 'estimating' }
+			{ id: 'ev-201', kind: 'createTicket', at: '2026-05-03T16:30:00', authorId: 'adm-giorgio-01' },
+			{ id: 'ev-202', kind: 'assignToSupplier', at: '2026-05-03T16:35:00', authorId: 'adm-giorgio-01', supplierId: 'frn-secure-entry' },
+			{ id: 'ev-203', kind: 'accepted', at: '2026-05-03T17:30:00', authorId: 'frn-secure-entry', body: 'Passiamo domani mattina a controllare.' }
+		],
+		adminMetadata: [
+			{
+				id: 'adm-201',
+				kind: 'addInternalNote',
+				at: '2026-05-03T16:50:00',
+				authorId: 'adm-giorgio-01',
+				body: 'Segnalazione da portineria. Necessario aggiornare il consiglio dopo sopralluogo.'
+			}
+		],
+		messageTimeline: [
+			{ id: 'msg-201', senderId: 'adm-giorgio-01', text: 'Buongiorno, ci hanno segnalato dei problemi al videocitofono in Corso Europa 7: non arriva l\'immagine. Riesci a dare un\'occhiata? ', timestamp: '2026-05-03T16:36:00' },
+			{ id: 'msg-202', senderId: 'frn-secure-entry', text: 'Buongiorno Giorgio, passiamo domani mattina a controllare.', timestamp: '2026-05-03T17:29:00' },
+			{ id: 'msg-203', senderId: 'frn-secure-entry', text: 'La telecamera era guasta, va sostituito il modulo. Ti invio il preventivo.', timestamp: '2026-05-04T09:00:00' }
 		],
 		paymentIds: [],
 		quoteIds: ['quo-002'],
 		invoiceIds: [],
 		interventionIds: []
+		,
+		aiSummary: 'Problema all\'unità videocitofonica esterna: modulo telecamera guasto. Fornitore Secure Entry ha programmato sopralluogo e inviato preventivo.'
 	},
 	{
 		id: 'tkt-003',
@@ -137,8 +238,9 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
 		eventTimeline: [
-			{ id: 'ev-301', kind: 'created', at: '2026-05-11T08:15:00' }
+			{ id: 'ev-301', kind: 'createTicket', at: '2026-05-11T08:15:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
@@ -154,81 +256,14 @@ export const tickets: Ticket[] = [
 		propertyId: 'cnd-solari-30',
 		cc: ['res-moretti-07'],
 		eventTimeline: [
-			{ id: 'ev-401', kind: 'created', at: '2026-05-08T11:20:00' }
+			{ id: 'ev-401', kind: 'createTicket', at: '2026-05-08T11:20:00' }
 		],
+		adminMetadata: [],
 		paymentIds: [],
 		quoteIds: [],
 		invoiceIds: [],
 		interventionIds: []
 	},
-	{
-		id: 'tkt-005',
-		title: 'Revisione annuale impianto antincendio',
-		description: 'Scadenza prevista entro fine maggio. Necessario coordinarsi con il fornitore certificato.',
-		priority: 'media',
-		category: 'Sicurezza',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-pacini-44',
-		cc: ['res-esposito-06'],
-		eventTimeline: [
-			{ id: 'ev-501', kind: 'created', at: '2026-05-06T09:00:00' }
-		],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	},
-	{
-		id: 'tkt-006',
-		title: 'Ripristino citofono interno 3',
-		description: 'Citofono non riceve chiamate dall\'esterno. Da verificare integrazione con videocitofonia centralizzata.',
-		priority: 'media',
-		category: 'Elettrico',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-verdi-3',
-		cc: ['res-rossi-03'],
-		eventTimeline: [
-			{ id: 'ev-601', kind: 'created', at: '2026-05-09T14:00:00' }
-		],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	},
-	{
-		id: 'tkt-007',
-		title: 'Pulizia straordinaria parti comuni',
-		description: 'Richiesta intervento di pulizia per garage e vano scale dopo lavori condominiali.',
-		priority: 'bassa',
-		category: 'Pulizie',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-tortona-12',
-		cc: ['res-bruno-08'],
-		eventTimeline: [
-			{ id: 'ev-701', kind: 'created', at: '2026-05-10T07:30:00' }
-		],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	},
-	{
-		id: 'tkt-008',
-		title: 'Richiesta informazioni polizza globale fabbricato',
-		description: 'Un condomino chiede dettagli sulla copertura per danni da acqua. Da girare al broker.',
-		priority: 'bassa',
-		category: 'Amministrativo',
-		creatorId: 'adm-giorgio-01',
-		propertyId: 'cnd-carducci-21',
-		cc: ['res-greco-04'],
-		eventTimeline: [
-			{ id: 'ev-801', kind: 'created', at: '2026-05-12T10:15:00' }
-		],
-		paymentIds: [],
-		quoteIds: [],
-		invoiceIds: [],
-		interventionIds: []
-	}
 ];
 
 /** Tickets that are still active (not paid, completed or closed). */
@@ -248,27 +283,28 @@ export function getTicketById(id: string): Ticket | undefined {
 
 /**
  * Returns the timeline events that are relevant to a specific supplier.
- * This includes events from when they were assigned until they were reassigned or the ticket closed.
+ * This includes events from when they were assigned until they were assigned to someone else or the ticket closed.
  */
 export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string): TicketEvent[] {
 	let relevant = false;
 	const result: TicketEvent[] = [];
 
 	for (const ev of ticket.eventTimeline) {
-		if (ev.kind === 'assigned' || ev.kind === 'reassigned') {
+		// Start relevant when an assignment event targets the supplier
+		if (ev.kind === 'assignToSupplier') {
 			if (ev.supplierId === supplierId) {
 				relevant = true;
 			} else if (relevant) {
-				// Reassigned to someone else
+				// Assigned to someone else -> stop being relevant
 				relevant = false;
 			}
 		}
 
-		if (relevant && ev.kind != 'note') {
+		if (relevant) {
 			result.push(ev);
 		}
 
-		if (ev.kind === 'closed') {
+		if (ev.kind === 'closed' || ev.kind === 'archiveTicket') {
 			relevant = false;
 		}
 	}
@@ -280,7 +316,7 @@ export function getTicketsByPropertyId(propertyId: string): Ticket[] {
 }
 
 export function getTicketsBySupplierId(supplierId: string): Ticket[] {
-	return tickets.filter((t) => t.supplierId === supplierId);
+	return tickets.filter((t) => getCurrentSupplier(t) === supplierId);
 }
 
 export function getTicketsByResidentCc(residentId: string): Ticket[] {

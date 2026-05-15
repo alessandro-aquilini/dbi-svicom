@@ -38,12 +38,12 @@ export const suppliers: Supplier[] = [
 		comments: [
 			{
 				authorId: 'adm-giorgio-01',
-				date: '2026-04-20T10:15:00Z',
+				date: '2026-04-20T10:15:00',
 				text: 'Intervento rapido e pulito durante l’urgenza in reparto caldaie.'
 			},
 			{
 				authorId: 'adm-ludovica-03',
-				date: '2026-04-22T09:40:00Z',
+				date: '2026-04-22T09:40:00',
 				text: 'Personale professionale, ci hanno spiegato tutto chiaramente.'
 			}
 		],
@@ -61,12 +61,12 @@ export const suppliers: Supplier[] = [
 		comments: [
 			{
 				authorId: 'adm-matteo-02',
-				date: '2026-03-10T14:05:00Z',
+				date: '2026-03-10T14:05:00',
 				text: 'Installazione svolta in giornata, ottimo supporto post-installazione.'
 			},
 			{
 				authorId: 'adm-ludovica-03',
-				date: '2026-03-12T11:20:00Z',
+				date: '2026-03-12T11:20:00',
 				text: 'Sistema integrato con app: pratico e sicuro.'
 			}
 		],
@@ -84,7 +84,7 @@ export const suppliers: Supplier[] = [
 		comments: [
 			{
 				authorId: 'adm-matteo-02',
-				date: '2026-05-02T15:00:00Z',
+				date: '2026-05-02T15:00:00',
 				text: 'Molto professionali e amanti degli animali.'
 			}
 		]
@@ -112,7 +112,7 @@ export const suppliers: Supplier[] = [
 		comments: [
 			{
 				authorId: 'adm-giorgio-01',
-				date: '2026-02-14T08:30:00Z',
+				date: '2026-02-14T08:30:00',
 				text: 'Intervento risolutivo in brevissimo tempo.'
 			}
 		]

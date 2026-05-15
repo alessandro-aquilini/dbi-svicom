@@ -1,9 +1,16 @@
-import type { Report } from '$lib/data/ticket/reports';
+import type { Report, ReportStatus } from '$lib/data/ticket/reports';
+import {
+	inferReportStatus,
+	getReportCreatedAt,
+	getReportUpdatedAt,
+	reports
+} from '$lib/data/ticket/reports';
 import {
 	getCurrentStatus as getOperationalTicketStatus,
 	tickets,
 	type Ticket,
-	type TicketEvent
+	type TicketEvent,
+	getCurrentSupplier
 } from '$lib/data/ticket/tickets';
 import { getUserById } from '$lib/data/users';
 
@@ -53,19 +60,12 @@ export interface ReportTimelineEvent {
 	label?: string;
 }
 
+export function getCurrentStatus(report: Report): ReportStatus {
+	return inferReportStatus(report);
+}
+
 export function isTicketStatus(value: string | undefined): boolean {
 	return Boolean(value && value in ticketStatusLabels);
-}
-
-// Get the current status from a report's statusHistory
-export function getCurrentStatus(report: Report): string | undefined {
-	const history = report.statusHistory || [];
-	return history.at(-1)?.status;
-}
-
-export function getLatestTicketStatus(statusHistory: Array<{ status: string }>): string | undefined {
-	const latestStatus = statusHistory.at(-1)?.status;
-	return isTicketStatus(latestStatus) ? latestStatus : undefined;
 }
 
 export function formatTicketDate(value: string | undefined): string {
@@ -94,35 +94,37 @@ export function getReportOperationalContext(report: Report): ReportOperationalCo
 	return {
 		ticket,
 		status: getOperationalTicketStatus(ticket),
-		supplierLabel: ticket.supplierId
-			? (getUserById(ticket.supplierId)?.name ?? 'Fornitore assegnato')
-			: 'Da assegnare'
+			supplierLabel: getCurrentSupplier(ticket)
+				? (getUserById(getCurrentSupplier(ticket)!)?.name ?? 'Fornitore assegnato')
+				: 'Da assegnare'
 	};
 }
 
 export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEvent[] {
 	return ticket.eventTimeline.map((event) => {
-		if (event.kind === 'status' || event.kind === 'closed') {
+		// map new kinds into the report timeline representation
+		if (event.kind === 'reportCompletion' || event.kind === 'validateAndClose' || event.kind === 'archiveTicket') {
+			const toStatus = event.kind === 'reportCompletion' ? 'completed' : 'closed';
 			return {
 				id: event.id,
 				at: event.at,
-				actorId: ticket.supplierId ?? ticket.creatorId,
-				toStatus: event.toStatus,
-				label: event.toStatus ? ticketStatusLabels[event.toStatus] : 'Aggiornamento stato'
+				actorId: getCurrentSupplier(ticket) ?? ticket.adminId,
+				toStatus,
+				label: ticketStatusLabels[toStatus]
 			};
 		}
 
-		if (event.kind === 'created') {
+		if (event.kind === 'createTicket') {
 			return {
 				id: event.id,
 				at: event.at,
-				actorId: ticket.creatorId,
+				actorId: ticket.adminId,
 				label: 'Pratica operativa aperta',
 				note: 'L amministrazione ha trasformato la segnalazione in una pratica operativa.'
 			};
 		}
 
-		if (event.kind === 'assigned') {
+		if (event.kind === 'assignToSupplier') {
 			return {
 				id: event.id,
 				at: event.at,
@@ -134,17 +136,6 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 			};
 		}
 
-		if (event.kind === 'reassigned') {
-			return {
-				id: event.id,
-				at: event.at,
-				actorId: event.supplierId,
-				label: 'Fornitore riassegnato',
-				note: event.supplierId
-					? `La pratica e stata riallocata a ${getUserById(event.supplierId)?.name ?? 'un altro fornitore'}.`
-					: 'La pratica e stata riassegnata.'
-			};
-		}
 
 		return buildOperationalNarrativeEvent(event);
 	});
@@ -155,7 +146,7 @@ function buildOperationalNarrativeEvent(event: TicketEvent): ReportTimelineEvent
 		id: event.id,
 		at: event.at,
 		actorId: event.supplierId ?? undefined,
-		label: event.kind === 'ai' ? 'Aggiornamento automatico' : 'Aggiornamento operativo',
+		label: 'Aggiornamento operativo',
 		note: event.body ?? 'Nuovo aggiornamento registrato sulla pratica operativa.'
 	};
 }

@@ -5,6 +5,10 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { page } from '$app/state';
 	import {
+		getReportUpdatedAt,
+		inferReportStatus
+	} from '$lib/data/ticket/reports';
+	import {
 		TicketPriorityBadge,
 		TicketProgressSteps,
 		TicketStatusBadge,
@@ -32,7 +36,7 @@
 	const presentationMeta = $derived(ticket ? getResidentTicketPresentationMetaById(ticket.id) : undefined);
 	const isOwnedTicket = $derived(Boolean(ticket && currentUser && ticket.reportedById === currentUser.id));
 	const latestStatus = $derived(ticket ? getCurrentStatus(ticket) : undefined);
-	const latestUpdateAt = $derived(ticket?.updatedAt ?? ticket?.statusHistory.at(-1)?.at);
+	const latestUpdateAt = $derived(ticket ? getReportUpdatedAt(ticket) : undefined);
 	const progressValue = $derived(latestStatus ? ticketProgressValues[latestStatus] : 0);
 	const isJustCreated = $derived(page.url.searchParams.get('created') === '1');
 	const operationalContext = $derived(ticket ? getReportOperationalContext(ticket) : undefined);
@@ -69,14 +73,18 @@
 		return authorId ? (getUserById(authorId)?.name ?? 'Operatore Svicom') : 'Operatore Svicom';
 	}
 
-	// Build a lightweight timeline from statusHistory so TicketTimeline can render it
-	const timelineEvents = $derived(ticket ? (ticket.statusHistory || []).map((h, idx) => ({
-		id: `st-${idx}-${ticket?.id}`,
-		kind: 'status',
-		at: h.at,
-		actorId: ticket?.reportedById,
-		toStatus: h.status
-	})) : []);
+	// Build a lightweight timeline from timeline so TicketTimeline can render it
+	const timelineEvents = $derived(
+		ticket
+			? (ticket.timeline || []).map((ev, idx) => ({
+					id: ev.id,
+					kind: 'status',
+					at: ev.at,
+					actorId: ev.authorId,
+					toStatus: inferReportStatus(ticket) // Placeholder as individual status history is now derived
+				}))
+			: []
+	);
 </script>
 
 <svelte:head>
@@ -196,7 +204,7 @@
 						</div>
 						<div class="report-fact-card">
 							<p class="report-fact-card__label">Step registrati</p>
-							<p class="report-fact-card__value">{ticket.statusHistory.length}</p>
+							<p class="report-fact-card__value">{(ticket.timeline || []).length}</p>
 						</div>
 					</div>
 				</CardContent>
@@ -313,7 +321,7 @@
 												<div class="report-operational-panel__item">
 													<p class="report-operational-panel__label">{quote.title}</p>
 													<p class="report-operational-panel__value">
-														{quote.amount.toFixed(2)} {quote.currency} · inviato {formatTicketDate(quote.sentAt)}
+														{quote.amount.toFixed(2)} {quote.currency} · inviato {formatTicketDate(quote.createdAt)}
 													</p>
 												</div>
 											{/each}
@@ -329,7 +337,7 @@
 												<div class="report-operational-panel__item">
 													<p class="report-operational-panel__label">{invoice.number}</p>
 													<p class="report-operational-panel__value">
-														{invoice.amount.toFixed(2)} {invoice.currency} · emessa {formatTicketDate(invoice.issueDate)}
+														{invoice.amount.toFixed(2)} {invoice.currency} · emessa {formatTicketDate(invoice.createdAt)}
 													</p>
 												</div>
 											{/each}
