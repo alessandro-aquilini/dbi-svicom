@@ -3,7 +3,8 @@ import {
 	getCurrentStatus as getOperationalTicketStatus,
 	tickets,
 	type Ticket,
-	type TicketEvent
+	type TicketEvent,
+	getCurrentSupplier
 } from '$lib/data/ticket/tickets';
 import { getUserById } from '$lib/data/users';
 
@@ -83,9 +84,9 @@ export function getReportOperationalContext(report: Report): ReportOperationalCo
 	return {
 		ticket,
 		status: getOperationalTicketStatus(ticket),
-		supplierLabel: ticket.supplierId
-			? (getUserById(ticket.supplierId)?.name ?? 'Fornitore assegnato')
-			: 'Da assegnare'
+			supplierLabel: getCurrentSupplier(ticket)
+				? (getUserById(getCurrentSupplier(ticket)!)?.name ?? 'Fornitore assegnato')
+				: 'Da assegnare'
 	};
 }
 
@@ -97,7 +98,7 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 			return {
 				id: event.id,
 				at: event.at,
-				actorId: ticket.supplierId ?? ticket.creatorId,
+				actorId: getCurrentSupplier(ticket) ?? ticket.creatorId,
 				toStatus,
 				label: ticketStatusLabels[toStatus]
 			};
@@ -125,17 +126,6 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 			};
 		}
 
-		if (event.kind === 'reassigned') {
-			return {
-				id: event.id,
-				at: event.at,
-				actorId: event.supplierId,
-				label: 'Fornitore riassegnato',
-				note: event.supplierId
-					? `La pratica e stata riallocata a ${getUserById(event.supplierId)?.name ?? 'un altro fornitore'}.`
-					: 'La pratica e stata riassegnata.'
-			};
-		}
 
 		return buildOperationalNarrativeEvent(event);
 	});

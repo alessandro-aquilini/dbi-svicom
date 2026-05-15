@@ -16,7 +16,6 @@ export type TicketPriority = 'bassa' | 'media' | 'alta' | 'critica';
 export type TicketEventKind =
 	| 'createTicket'
 	| 'assignToSupplier'
-	| 'reassigned'
 	| 'accepted'
 	| 'declined'
 	| 'reportCompletion'
@@ -33,9 +32,8 @@ export interface TicketEvent {
 	authorId?: string; // user who produced the event
 
 	// optional payloads for certain kinds
-	supplierId?: string; // assignToSupplier
+	supplierId?: string; // assignToSupplier (may appear multiple times for reassignments)
 	body?: string;
-	previousSupplierId?: string; // reassigned
 	// updatePriority payload
 	fromPriority?: string;
 	toPriority?: string;
@@ -68,7 +66,6 @@ export interface Ticket {
 	category: string;
 
 	creatorId: string; // Always an Admin User.id
-	supplierId?: string; // Current active supplier User.id (mirrors last assignToSupplier/reassigned event)
 	propertyId: string; // The condominium
 
 	/** Resident User IDs who can view this ticket (read-only observers). */
@@ -88,6 +85,38 @@ export interface Ticket {
 	quoteIds: string[];
 	invoiceIds: string[];
 	interventionIds: string[];
+}
+
+/** Infers the current supplier for a ticket by scanning the timeline for the latest assignment/rea ssignment event.
+ * Returns the supplierId string when present, otherwise undefined (unassigned).
+ */
+export function getCurrentSupplier(ticket: Ticket): string | undefined {
+	// Walk backwards and pick the last assignToSupplier event that contains a supplierId.
+	for (let i = ticket.eventTimeline.length - 1; i >= 0; i--) {
+		const ev = ticket.eventTimeline[i];
+		if (ev.kind === 'assignToSupplier' && ev.supplierId) {
+			return ev.supplierId;
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Return the ordered list of supplier ids that appear in a ticket's timeline.
+ * Each supplierId appears once in the order they were first assigned.
+ */
+export function getSuppliersForTicket(ticket: Ticket): string[] {
+	const seen = new Set<string>();
+	const result: string[] = [];
+	for (const ev of ticket.eventTimeline) {
+		if (ev.kind === 'assignToSupplier' && ev.supplierId) {
+			if (!seen.has(ev.supplierId)) {
+				seen.add(ev.supplierId);
+				result.push(ev.supplierId);
+			}
+		}
+	}
+	return result;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -130,7 +159,7 @@ export const tickets: Ticket[] = [
 		priority: 'critica',
 		category: 'Idraulica',
 		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-idroclima-nord',
+		/* supplier inferred from eventTimeline */
 		propertyId: 'cnd-marconi-14',
 		cc: ['res-bianchi-01', 'res-bellini-05'],
 		eventTimeline: [
@@ -175,7 +204,7 @@ export const tickets: Ticket[] = [
 		priority: 'media',
 		category: 'Elettrico',
 		creatorId: 'adm-giorgio-01',
-		supplierId: 'frn-secure-entry',
+		/* supplier inferred from eventTimeline */
 		propertyId: 'cnd-europa-7',
 		cc: ['res-conti-02'],
 		eventTimeline: [
@@ -330,18 +359,19 @@ export function getTicketById(id: string): Ticket | undefined {
 
 /**
  * Returns the timeline events that are relevant to a specific supplier.
- * This includes events from when they were assigned until they were reassigned or the ticket closed.
+ * This includes events from when they were assigned until they were assigned to someone else or the ticket closed.
  */
 export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string): TicketEvent[] {
 	let relevant = false;
 	const result: TicketEvent[] = [];
 
 	for (const ev of ticket.eventTimeline) {
-		if (ev.kind === 'assignToSupplier' || ev.kind === 'reassigned') {
+		// Start relevant when an assignment event targets the supplier
+		if (ev.kind === 'assignToSupplier') {
 			if (ev.supplierId === supplierId) {
 				relevant = true;
 			} else if (relevant) {
-				// Reassigned to someone else
+				// Assigned to someone else -> stop being relevant
 				relevant = false;
 			}
 		}
@@ -362,7 +392,7 @@ export function getTicketsByPropertyId(propertyId: string): Ticket[] {
 }
 
 export function getTicketsBySupplierId(supplierId: string): Ticket[] {
-	return tickets.filter((t) => t.supplierId === supplierId);
+	return tickets.filter((t) => getCurrentSupplier(t) === supplierId);
 }
 
 export function getTicketsByResidentCc(residentId: string): Ticket[] {

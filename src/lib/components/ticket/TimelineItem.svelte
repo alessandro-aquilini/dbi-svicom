@@ -33,8 +33,6 @@
 						return { icon: CircleIcon, color: 'text-primary', label: 'Ticket aperto' };
 					case 'assignToSupplier':
 						return { icon: Wrench01Icon, color: 'text-warning', label: 'Assegnazione' };
-					case 'reassigned':
-						return { icon: Exchange01Icon, color: 'text-warning', label: 'Riassegnato' };
 					case 'accepted':
 						return { icon: Tick01Icon, color: 'text-emerald-500', label: 'Accettato' };
 					case 'declined':
@@ -133,8 +131,7 @@
 				switch (current.data.kind) {
 					case 'assignToSupplier':
 						return 'Assegnato al fornitore';
-					case 'reassigned':
-						return 'Riassegnato';
+
 					case 'accepted':
 						return 'Accettazione';
 					case 'declined':
@@ -177,6 +174,7 @@
 			maximumFractionDigits: 2
 		}).format(value);
 	}
+
 </script>
 
 <li class="relative pl-10 after:absolute after:left-[0.65rem] after:top-7 after:bottom-0 after:w-px after:bg-border/80 last:after:hidden">

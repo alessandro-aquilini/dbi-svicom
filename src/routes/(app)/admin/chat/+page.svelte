@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { reports, inferReportStatus } from '$lib/data/ticket/reports';
-	import { tickets, getCurrentStatus } from '$lib/data/ticket/tickets';
+	import { tickets, getCurrentStatus, getCurrentSupplier, getSupplierRelevantTimeline, getSuppliersForTicket } from '$lib/data/ticket/tickets';
 	import { users } from '$lib/data/users';
 	import { services } from '$lib/data/services';
 	import { getQuoteById } from '$lib/data/embeds/quotes';
@@ -40,11 +40,60 @@
 
 	// Filter data for the sidebar
 	const adminReports = $derived(reports.filter(r => r.adminId === adminId));
+
+	// Build supplier-specific chat entries from all tickets: one chat per (ticket, supplier).
+	const supplierChats = $derived.by(() => {
+		const chats: any[] = [];
+		for (const t of tickets) {
+			// get suppliers that appear in the ticket's timeline
+			const suppliers = getSuppliersForTicket(t);
+			for (const sid of suppliers) {
+				// compute supplier-relevant timeline; skip chats with empty relevance
+				const rel = getSupplierRelevantTimeline(t, sid);
+				if (rel.length === 0) continue;
+				// find last activity (message from supplier/admin or last event)
+				const msgs = (t.messageTimeline ?? []).filter(m => m.senderId === sid || m.senderId === adminId);
+				let lastDate: Date | null = null;
+				let lastMsgText: string | null = null;
+
+				if (msgs.length) {
+					const lastMsg = msgs[msgs.length - 1];
+					lastDate = new Date(lastMsg.timestamp);
+					lastMsgText = lastMsg.text;
+				} else if (rel.length) {
+					const lastEv = rel[rel.length - 1];
+					lastDate = new Date(lastEv.at);
+					lastMsgText = lastEv.body || lastEv.kind;
+				}
+
+				chats.push({ 
+					id: `${t.id}::${sid}`, 
+					ticket: t, 
+					supplierId: sid, 
+					lastDate, 
+					lastMessageText: lastMsgText,
+					rel 
+				});
+			}
+		}
+		// sort by lastDate desc
+		return chats.sort((a, b) => (b.lastDate?.getTime() ?? 0) - (a.lastDate?.getTime() ?? 0));
+	});
+
+	// Keep convenience view for admin-owned tickets if still needed elsewhere
 	const adminTickets = $derived(tickets.filter(t => t.creatorId === adminId));
 
 	// Derived selection
 	const selectedReport = $derived(activeTab === 'resident' ? adminReports.find(r => r.id === selectedId) : null);
-	const selectedTicket = $derived(activeTab === 'supplier' ? adminTickets.find(t => t.id === selectedId) : null);
+	const selectedSupplierChat = $derived.by(() => {
+		if (activeTab !== 'supplier' || !selectedId) return null;
+		return supplierChats.find((c: any) => c.id === selectedId) || null;
+	});
+
+	const activeItem = $derived(activeTab === 'resident' ? selectedReport : selectedSupplierChat?.ticket);
+	const counterparty = $derived(activeTab === 'resident' 
+		? getUserInfo(selectedReport?.reportedById || '') 
+		: getUserInfo(selectedSupplierChat?.supplierId || ''));
 
 	// Unified timeline for the selected conversation
 	const timelineItems = $derived.by(() => {
@@ -60,39 +109,39 @@
 					items.push({ type: 'event', date: new Date(event.at), data: { kind: event.kind, at: event.at, authorId: event.authorId } });
 				});
 			}
-		} else if (activeTab === 'supplier' && selectedTicket) {
-			if (selectedTicket.messageTimeline) {
-				selectedTicket.messageTimeline.forEach(msg => {
+		} else if (activeTab === 'supplier' && selectedSupplierChat) {
+			const t = selectedSupplierChat.ticket;
+			const sid = selectedSupplierChat.supplierId;
+
+			// messages between admin and this supplier
+			if (t.messageTimeline) {
+				t.messageTimeline.filter((m: any) => m.senderId === sid || m.senderId === adminId).forEach((msg: any) => {
 					items.push({ type: 'message', date: new Date(msg.timestamp), data: msg });
 				});
 			}
-			if (selectedTicket.eventTimeline) {
-				// We show events relative to the current supplier
-				selectedTicket.eventTimeline.forEach(event => {
-					items.push({ type: 'event', date: new Date(event.at), data: event });
-				});
-			}
-			if (selectedTicket.quoteIds) {
-				selectedTicket.quoteIds.forEach(id => {
+
+			// supplier-relevant events
+			selectedSupplierChat.rel.forEach((event: any) => {
+				items.push({ type: 'event', date: new Date(event.at), data: event });
+			});
+
+			if (t.quoteIds) {
+				t.quoteIds.forEach((id: string) => {
 					const quote = getQuoteById(id);
-					if (quote) {
-						items.push({ type: 'quote', date: new Date(quote.sentAt), data: quote });
-					}
+					if (quote) items.push({ type: 'quote', date: new Date(quote.sentAt), data: quote });
 				});
 			}
-			if (selectedTicket.invoiceIds) {
-				selectedTicket.invoiceIds.forEach(id => {
+			if (t.invoiceIds) {
+				t.invoiceIds.forEach((id: string) => {
 					const invoice = getInvoiceById(id);
-					if (invoice) {
-						items.push({ type: 'invoice', date: new Date(invoice.issueDate), data: invoice });
-					}
+					if (invoice) items.push({ type: 'invoice', date: new Date(invoice.issueDate), data: invoice });
 				});
 			}
-			if (selectedTicket.paymentIds) {
-				selectedTicket.paymentIds.forEach(id => {
+			if (t.paymentIds) {
+				t.paymentIds.forEach((id: string) => {
 					const payment = getPaymentById(id);
-					if (payment && payment.paidAt) {
-						items.push({ type: 'payment', date: new Date(payment.paidAt), data: payment });
+					if (payment && (payment.paidAt || payment.dueDate)) {
+						items.push({ type: 'payment', date: new Date(payment.paidAt || payment.dueDate), data: payment });
 					}
 				});
 			}
@@ -190,27 +239,27 @@
 					</button>
 				{/each}
 			{:else}
-				{#each adminTickets as ticket}
-					{@const supplier = getUserInfo(ticket.supplierId || '')}
-					{@const lastMsg = getLastMessage(ticket)}
-					{@const status = getCurrentStatus(ticket)}
+				{#each supplierChats as chat}
+					{@const supplier = getUserInfo(chat.supplierId)}
+					{@const lastMsgText = chat.lastMessageText ?? (chat.rel?.length ? chat.rel[chat.rel.length-1].body : null)}
+					{@const status = getCurrentStatus(chat.ticket)}
 					<button 
-						onclick={() => selectedId = ticket.id}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === ticket.id ? 'bg-white shadow-sm' : ''}"
+						onclick={() => selectedId = chat.id}
+						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId === chat.id ? 'bg-white shadow-sm' : ''}"
 					>
 						<div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
 							<HugeiconsIcon icon={CustomerServiceIcon} size={28} />
 						</div>
 						<div class="flex-1 min-w-0">
 							<div class="flex justify-between items-baseline mb-0.5">
-								<span class="font-bold text-slate-900 truncate">{supplier?.name || 'Fornitore non assegnato'}</span>
-								{#if lastMsg}
-									<span class="text-[10px] text-slate-400">{format(new Date(lastMsg.timestamp), "HH:mm")}</span>
+								<span class="font-bold text-slate-900 truncate">{supplier?.name || 'Fornitore'}</span>
+								{#if chat.lastDate}
+									<span class="text-[10px] text-slate-400">{format(new Date(chat.lastDate), "HH:mm")}</span>
 								{/if}
 							</div>
-							<div class="text-xs font-semibold text-primary mb-1 truncate">{ticket.title}</div>
+							<div class="text-xs font-semibold text-primary mb-1 truncate">{chat.ticket.title}</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
-								{lastMsg?.text || 'Attesa aggiornamenti...'}
+								{lastMsgText ?? 'Attesa aggiornamenti...'}
 							</p>
 						</div>
 					</button>
@@ -222,11 +271,6 @@
 	<!-- Main Chat Area -->
 	<main class="flex-1 flex flex-col bg-slate-50/50 {selectedId ? 'flex' : 'hidden md:flex'}">
 		{#if selectedId}
-			{@const activeItem = activeTab === 'resident' ? selectedReport : selectedTicket}
-			{@const counterparty = activeTab === 'resident' 
-				? getUserInfo(selectedReport?.reportedById || '') 
-				: getUserInfo(selectedTicket?.supplierId || '')}
-			
 			<header class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10">
 				<button 
 					onclick={() => selectedId = null}
@@ -261,7 +305,7 @@
 				</div>
 			</header>
 
-			<div class="flex-1 overflow-y-auto p-4 space-y-6">
+			<div class="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col">
 				{#each timelineItems as item}
 					{#if item.type === 'message'}
 						<ChatBubble 

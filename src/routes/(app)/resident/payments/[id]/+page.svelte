@@ -4,7 +4,8 @@
 	import { page } from '$app/state';
 	import {
 		getCurrentStatus as getTicketCurrentStatus,
-		getTicketById
+		getTicketById,
+		getCurrentSupplier
 	} from '$lib/data/ticket/tickets';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getQuoteById } from '$lib/data/embeds/quotes';
@@ -274,8 +275,8 @@
 							<div class="payment-detail-card__fact">
 								<p class="payment-detail-card__fact-label">Fornitore assegnato</p>
 								<p class="payment-detail-card__fact-value">
-									{relatedTicket.supplierId
-										? (getUserById(relatedTicket.supplierId)?.name ?? 'Non disponibile')
+									{getCurrentSupplier(relatedTicket)
+										? (getUserById(getCurrentSupplier(relatedTicket)!)?.name ?? 'Non disponibile')
 										: 'Da assegnare'}
 								</p>
 							</div>
