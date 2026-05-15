@@ -104,32 +104,7 @@ export const payments: Payment[] = [
  * Returns payments that are past their due date and not yet paid.
  * Optionally restricted to a single property and/or to a minimum number of days overdue.
  */
-export function getOverduePayments(options: {
-	now?: Date;
-	propertyId?: string | null;
-	minDaysOverdue?: number;
-} = {}): Payment[] {
-	const now = options.now ?? new Date();
-	const min = options.minDaysOverdue ?? 0;
-	return payments.filter((p) => {
-		// If we have a transaction date (paidAt) and it is in the past (<= now) consider it paid
-		if (p.paidAt && new Date(p.paidAt).getTime() <= now.getTime()) return false;
-		if (options.propertyId && p.propertyId !== options.propertyId) return false;
-		// Use the scheduled/expected payment date if present; otherwise fall back to createdAt
-		const ref = p.paidAt ?? p.createdAt;
-		if (!ref) return false;
-		const due = new Date(ref).getTime();
-		const daysOverdue = (now.getTime() - due) / 86_400_000;
-		return daysOverdue >= min;
-	});
-}
-
-export function getDaysOverdue(payment: Payment, now: Date = new Date()): number {
-	const ref = payment.paidAt ?? payment.createdAt;
-	if (!ref) return 0;
-	const due = new Date(ref).getTime();
-	return Math.max(0, Math.floor((now.getTime() - due) / 86_400_000));
-}
+// Overdue/due-date based logic removed: payments use `paidAt` as transaction date and `createdAt` for record timestamp.
 
 export function getPaymentById(id: string): Payment | undefined {
 	return payments.find((p) => p.id === id);

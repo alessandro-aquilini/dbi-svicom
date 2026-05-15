@@ -2,6 +2,7 @@
 	import { getPaymentsByUserId, type Payment } from '$lib/data/embeds/payments';
 	import { getUserById } from '$lib/data/users';
 	import { getCurrentUser } from '$lib/auth';
+	import { formatPaymentDate, formatPaymentDateTime } from '$lib/components/payments/presentation';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
@@ -91,7 +92,7 @@
 								<div>
 									<p class="text-sm font-semibold text-foreground line-clamp-1">{user?.name ?? 'Sconosciuto'}</p>
 									<p class="text-xs text-muted-foreground mt-0.5 line-clamp-1">{payment.description}</p>
-									<p class="text-[10px] text-muted-foreground/70 mt-0.5">{new Date(payment.paidAt ?? payment.createdAt).toLocaleDateString('it-IT')}</p>
+									<p class="text-[10px] text-muted-foreground/70 mt-0.5">{formatPaymentDate(payment.paidAt ?? payment.createdAt)}</p>
 								</div>
 							</div>
 							<div class="flex flex-col items-end shrink-0 pl-3">
@@ -153,7 +154,7 @@
 				</div>
 				<div class="flex justify-between items-center text-sm border-b border-border/50 pb-3">
 					<span class="text-muted-foreground">Data</span>
-					<span class="font-medium text-foreground">{new Date(selectedPayment.paidAt ?? selectedPayment.createdAt ?? '').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+								<span class="font-medium text-foreground">{formatPaymentDateTime(selectedPayment.paidAt ?? selectedPayment.createdAt)}</span>
 				</div>
 				<div class="flex justify-between items-start text-sm border-b border-border/50 pb-3">
 					<span class="text-muted-foreground pt-0.5">Causale</span>

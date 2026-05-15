@@ -1,11 +1,10 @@
 import type { Payment } from '$lib/data/embeds/payments';
 
-export type ResidentPaymentStatus = 'paid' | 'pending' | 'overdue';
+export type ResidentPaymentStatus = 'paid' | 'pending';
 
 export const residentPaymentStatusLabels: Record<ResidentPaymentStatus, string> = {
 	paid: 'Registrato',
-	pending: 'In attesa',
-	overdue: 'Scaduto'
+	pending: 'In attesa'
 };
 
 export function getResidentPaymentStatus(
@@ -16,7 +15,7 @@ export function getResidentPaymentStatus(
 	if (payment.paidAt) {
 		return new Date(payment.paidAt).getTime() <= now.getTime() ? 'paid' : 'pending';
 	}
-	// No transaction date: treat as pending (not yet paid). Overdue logic is handled elsewhere.
+	// No transaction date: treat as pending (not yet paid).
 	return 'pending';
 }
 
@@ -62,7 +61,7 @@ export function getPaymentFootnote(
 
 	// pending: show scheduled/transaction date if present, otherwise creation date
 	return {
-		label: 'In scadenza il',
+		label: 'Da pagare il',
 		value: formatPaymentDate(payment.paidAt ?? payment.createdAt)
 	};
 }

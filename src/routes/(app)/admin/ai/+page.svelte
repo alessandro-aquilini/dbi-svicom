@@ -18,7 +18,7 @@
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getUserById } from '$lib/data/users';
-	import { getOverduePayments, getDaysOverdue } from '$lib/data/embeds/payments';
+	import { payments } from '$lib/data/embeds/payments';
 	import { getOpenTickets } from '$lib/data/ticket/tickets';
 	import { getUpcomingMeetings } from '$lib/data/events/meetings';
 
@@ -186,15 +186,22 @@
 	}
 
 	function formatRowsForMorosi(scope: Scope) {
-		const overdue = getOverduePayments({
-			now: TODAY,
-			propertyId: scope?.id,
-			minDaysOverdue: 30
+		// The payments module no longer exposes overdue helpers. Approximate "morosi"
+		// as payments without a recorded transaction date (no paidAt) whose creation
+		// date is older than the threshold.
+		const minDays = 30;
+		const cutoff = new Date(TODAY.getTime() - minDays * 24 * 60 * 60 * 1000).getTime();
+		const overdue = payments.filter((p) => {
+			if (scope?.id && p.propertyId !== scope.id) return false;
+			if (p.paidAt) return false; // already paid
+			if (!p.createdAt) return false;
+			return new Date(p.createdAt).getTime() <= cutoff;
 		});
+
 		const rows = overdue.map((p) => {
 			const u = getUserById(p.fromId);
 			const property = p.propertyId ? getPropertyById(p.propertyId) : undefined;
-			const days = getDaysOverdue(p, TODAY);
+			const days = Math.floor((TODAY.getTime() - new Date(p.createdAt!).getTime()) / (24 * 60 * 60 * 1000));
 			const amount = `€${p.amount.toLocaleString('it-IT', { minimumFractionDigits: 0 })}`;
 			return `${u?.name ?? p.fromId} · ${property?.name ?? '—'} · ${amount} · ${days} gg`;
 		});
@@ -537,11 +544,12 @@
 			run: (b) => {
 				const last = b[b.length - 1] as ToolBlock;
 				const openTickets = getOpenTickets(scope?.id);
-				const overdue = getOverduePayments({
-					now: TODAY,
-					propertyId: scope?.id
+				// Payments module no longer exports overdue helpers. Use unpaid payments for aggregation.
+				const overdue = payments.filter((p) => {
+					if (scope?.id && p.propertyId !== scope.id) return false;
+					return !p.paidAt;
 				});
-				const owedTotal = overdue.reduce((s, p) => s + p.amount, 0);
+				const owedTotal = overdue.reduce((s: number, p: typeof payments[number]) => s + p.amount, 0);
 				const upcoming = getUpcomingMeetings({
 					now: TODAY,
 					withinDays: 30,

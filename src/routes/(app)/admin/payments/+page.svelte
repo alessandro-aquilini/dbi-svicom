@@ -5,22 +5,19 @@
 	const statusColors: Record<string, string> = {
 		paid: 'bg-success/15 text-success',
 		pending: 'bg-warning/15 text-warning',
-		overdue: 'bg-destructive/15 text-destructive',
 		cancelled: 'bg-muted text-muted-foreground'
 	};
 
 	const statusLabels: Record<string, string> = {
 		paid: 'Pagato',
 		pending: 'In attesa',
-		overdue: 'Scaduto',
 		cancelled: 'Annullato'
 	};
 
 	function getPaymentStatus(payment: (typeof payments)[number]) {
-		if (payment.paidAt) return 'paid';
-		// Consider payment overdue if its scheduled transaction date (paidAt) or creation date is in the past and not recorded as paid.
-		const ref = payment.paidAt ?? payment.createdAt;
-		if (ref && new Date(ref).getTime() < Date.now()) return 'overdue';
+		// If the payment has a recorded transaction date and it's in the past, consider it paid.
+		if (payment.paidAt) return new Date(payment.paidAt).getTime() <= Date.now() ? 'paid' : 'pending';
+		// Otherwise it's pending (no overdue semantics in the domain)
 		return 'pending';
 	}
 </script>
