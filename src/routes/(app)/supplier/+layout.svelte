@@ -14,7 +14,7 @@
 	const navItems = [
 		{ label: 'Home', href: '/supplier', icon: DashboardSquare01Icon },
 		{ label: 'Chat', href: '/supplier/chat', icon: BubbleChatIcon },
-		{ label: 'Interventi', href: '/supplier/jobs', icon: Wrench01Icon },
+		{ label: 'Calendario', href: '/supplier/calendar', icon: Wrench01Icon },
 		{ label: 'Pagamenti', href: '/supplier/payments', icon: CreditCardIcon },
 		{ label: 'Documenti', href: '/supplier/documents', icon: File01Icon }
 	];
