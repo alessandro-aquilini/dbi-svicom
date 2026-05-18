@@ -13,6 +13,8 @@ export interface CalendarEvent {
 	end: Date;
 	type: EventType;
 	location: string;
+	customerId?: string;
+	customerName?: string;
 	propertyId?: string;
 	ticketId?: string;
 	bookingId?: string;

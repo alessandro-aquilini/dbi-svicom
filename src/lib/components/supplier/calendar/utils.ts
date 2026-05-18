@@ -1,6 +1,7 @@
-import { bookings, inferBookingStatus, lastBookingEvent } from '$lib/data/ticket/booking';
-import { supplierTasks } from '$lib/data/embeds/supplierTasks';
+import { bookings, inferBookingStatus, lastBookingEvent, type Booking } from '$lib/data/ticket/booking';
+import { supplierTasks, type supplierTask } from '$lib/data/embeds/supplierTasks';
 import { services } from '$lib/data/services';
+import { users } from '$lib/data/users';
 import type { CalendarEvent, EventType, CalendarView } from './types';
 
 export function getSupplierEvents(supplierId: string): CalendarEvent[] {
@@ -11,6 +12,7 @@ export function getSupplierEvents(supplierId: string): CalendarEvent[] {
 	for (const task of filteredTasks) {
 		const start = new Date(`${task.date}T${task.startTime}`);
 		const end = new Date(`${task.date}T${task.endTime}`);
+		const customer = users.find((u) => u.id === task.customerId);
 		events.push({
 			id: task.id,
 			title: task.title,
@@ -18,6 +20,8 @@ export function getSupplierEvents(supplierId: string): CalendarEvent[] {
 			end,
 			type: task.type as EventType,
 			location: task.location,
+			customerId: task.customerId,
+			customerName: customer?.name || 'Cliente',
 			propertyId: task.propertyId,
 			ticketId: task.ticketId,
 			bookingId: task.bookingId,
@@ -36,6 +40,7 @@ export function getSupplierEvents(supplierId: string): CalendarEvent[] {
 		
 		if (slot) {
 			const service = services.find(s => s.id === b.serviceId);
+			const customer = users.find((u) => u.id === b.residentId);
 			events.push({
 				id: b.id,
 				title: service?.name || 'Servizio',
@@ -43,6 +48,8 @@ export function getSupplierEvents(supplierId: string): CalendarEvent[] {
 				end: new Date(slot.end),
 				type: 'servizio',
 				location: 'Presso Residente',
+				customerId: b.residentId,
+				customerName: customer?.name || 'Residente',
 				bookingId: b.id,
 				raw: b
 			});

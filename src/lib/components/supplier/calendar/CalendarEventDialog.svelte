@@ -7,7 +7,8 @@
 		Ticket01Icon,
 		Message01Icon,
 		Tag01Icon,
-		Note01Icon
+		Note01Icon,
+		UserIcon
 	} from '@hugeicons/core-free-icons';
 	import type { CalendarEvent, EventType } from './types';
 	import { EVENT_COLORS_DOT, EVENT_COLORS } from './types';
@@ -64,6 +65,16 @@
 			<!-- Content -->
 			<div class="px-8 pb-8 space-y-6">
 				<div class="space-y-4">
+					<div class="flex items-center gap-4 text-slate-600">
+						<div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+							<HugeiconsIcon icon={UserIcon} size="20" />
+						</div>
+						<div>
+							<div class="text-sm font-semibold text-slate-900">Cliente</div>
+							<div class="text-xs text-slate-500 font-medium">{event.customerName || 'N/D'}</div>
+						</div>
+					</div>
+
 					<div class="flex items-center gap-4 text-slate-600">
 						<div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
 							<HugeiconsIcon icon={Clock01Icon} size="20" />

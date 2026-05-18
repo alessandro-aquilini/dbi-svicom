@@ -34,29 +34,19 @@
 </script>
 
 <div class="flex flex-col h-full bg-white overflow-hidden">
-	<!-- Topbar: title + view controls -->
-	<div class="border-b border-slate-100 bg-white">
-		<div class="px-4 py-3 flex items-center gap-4">
-			<button class="text-sm text-slate-600 hover:text-slate-900" onclick={() => (sidebarCollapsed = !sidebarCollapsed)}>
-				{#if sidebarCollapsed}
-					Apri barra
-				{:else}
-					Chiudi barra
-				{/if}
-			</button>
-
-			<div class="flex-1">
-				<CalendarToolbar bind:view bind:currentDate onToday={handleToday} />
-			</div>
-		</div>
+	<div class="flex-none border-b border-slate-100">
+		<CalendarToolbar bind:view bind:currentDate onToday={handleToday} bind:sidebarCollapsed />
 	</div>
 
-	<!-- Main content: sidebar + view -->
 	<div class="flex-1 flex overflow-hidden">
-		<CalendarSidebar bind:selectedTypes onCreateEvent={() => (isCreateOpen = true)} collapsed={sidebarCollapsed} onToggle={() => (sidebarCollapsed = !sidebarCollapsed)} />
+		<CalendarSidebar
+			bind:selectedTypes
+			onCreateEvent={() => (isCreateOpen = true)}
+			collapsed={sidebarCollapsed}
+			onToggle={() => (sidebarCollapsed = !sidebarCollapsed)}
+		/>
 
-		<div class="flex-1 flex flex-col min-w-0">
-			<div class="flex-1 relative overflow-hidden flex flex-col">
+		<div class="flex-1 relative overflow-hidden flex flex-col">
 				{#if view === 'day'}
 					<CalendarDayView {currentDate} events={filteredEvents} onEventClick={handleEventClick} />
 				{:else if view === 'week'}
@@ -67,7 +57,6 @@
 			</div>
 		</div>
 	</div>
-</div>
 
 <CalendarEventDialog bind:open={isDialogOpen} event={selectedEvent} />
 
