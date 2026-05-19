@@ -1,0 +1,231 @@
+<script lang="ts">
+	import { getInvoicesBySupplierId, type Invoice } from '$lib/data/embeds/invoices';
+	import { getQuotesBySupplierId, type Quote } from '$lib/data/embeds/quotes';
+	import { getCurrentUser } from '$lib/auth';
+	import { getUserById } from '$lib/data/users';
+	import { Button } from '$lib/components/ui/button';
+	import {
+		ArrowLeft02Icon,
+		Search01Icon,
+		Invoice01Icon,
+		Agreement01Icon,
+		Download01Icon,
+		FilterIcon
+	} from '@hugeicons/core-free-icons';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import DocumentRow from '$lib/components/supplier/finances/documents/DocumentRow.svelte';
+	import DayGroup from '$lib/components/supplier/finances/payments/DayGroup.svelte';
+
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
+
+	const invoices = getInvoicesBySupplierId(supplierId);
+	const quotes = getQuotesBySupplierId(supplierId);
+
+	type DocumentItem =
+		| { type: 'invoice'; date: number; data: Invoice }
+		| { type: 'quote'; date: number; data: Quote };
+
+	let searchQuery = $state('');
+	let selectedFilter = $state('all'); // all, invoices, quotes
+	let selectedDocument: DocumentItem | null = $state(null);
+
+	const allDocs = $derived(() => {
+		const items: DocumentItem[] = [];
+		for (const inv of invoices) {
+			if (inv.createdAt) items.push({ type: 'invoice', date: new Date(inv.createdAt).getTime(), data: inv });
+		}
+		for (const q of quotes) {
+			if (q.createdAt) items.push({ type: 'quote', date: new Date(q.createdAt).getTime(), data: q });
+		}
+		return items.sort((a, b) => b.date - a.date); // newest first
+	});
+
+	const filteredDocs = $derived(() => {
+		return allDocs().filter((doc) => {
+			const data = doc.data;
+			let isMatch = true;
+
+			// Search
+			if (searchQuery) {
+				const search = searchQuery.toLowerCase();
+				const textMatch = data.description.toLowerCase().includes(search);
+
+				let idMatch = false;
+				if (doc.type === 'invoice') idMatch = (doc.data as Invoice).number.toLowerCase().includes(search);
+				if (doc.type === 'quote') idMatch = (doc.data as Quote).title.toLowerCase().includes(search);
+
+				isMatch = textMatch || idMatch || data.amount.toString().includes(search);
+			}
+
+			// Filter
+			if (selectedFilter !== 'all') {
+				if (selectedFilter === 'invoices' && doc.type !== 'invoice') isMatch = false;
+				if (selectedFilter === 'quotes' && doc.type !== 'quote') isMatch = false;
+			}
+
+			return isMatch;
+		});
+	});
+
+	const groupedDocs = $derived(() => {
+		const groups: Record<string, DocumentItem[]> = {};
+		for (const doc of filteredDocs()) {
+			const d = new Date(doc.date);
+			const dateKey = d.toISOString().split('T')[0];
+			if (!groups[dateKey]) groups[dateKey] = [];
+			groups[dateKey].push(doc);
+		}
+		return groups;
+	});
+</script>
+
+<svelte:head>
+	<title>Documenti — Fornitore — Svicom Living Hub</title>
+</svelte:head>
+
+<!-- Sticky Header -->
+<div class="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-md">
+	<div class="mx-auto max-w-2xl px-4 py-4">
+		<div class="flex items-center gap-3">
+			<Button variant="ghost" size="icon" href="/supplier/finances" class="h-10 w-10 shrink-0 rounded-full">
+				<HugeiconsIcon icon={ArrowLeft02Icon} size={22} />
+			</Button>
+			<h1 class="text-xl font-bold tracking-tight">Documenti</h1>
+		</div>
+
+		<div class="mt-4 flex flex-col gap-3">
+			<!-- Search Bar -->
+			<div class="relative">
+				<div class="absolute inset-y-0 left-3 flex items-center text-muted-foreground/60">
+					<HugeiconsIcon icon={Search01Icon} size={18} />
+				</div>
+				<input
+					type="text"
+					bind:value={searchQuery}
+					placeholder="Cerca titolo, numero o importo..."
+					class="h-11 w-full rounded-2xl border-none bg-muted/60 pl-10 pr-4 text-[15px] transition-all focus:bg-muted focus:ring-2 focus:ring-primary/20"
+				/>
+			</div>
+
+			<!-- Filters -->
+			<div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+				<button
+					onclick={() => (selectedFilter = 'all')}
+					class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all {selectedFilter ===
+					'all'
+						? 'bg-foreground text-background shadow-md'
+						: 'bg-muted/60 text-muted-foreground hover:bg-muted'}"
+				>
+					Tutti
+				</button>
+				<button
+					onclick={() => (selectedFilter = 'invoices')}
+					class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all {selectedFilter ===
+					'invoices'
+						? 'bg-foreground text-background shadow-md'
+						: 'bg-muted/60 text-muted-foreground hover:bg-muted'}"
+				>
+					Fatture
+				</button>
+				<button
+					onclick={() => (selectedFilter = 'quotes')}
+					class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all {selectedFilter ===
+					'quotes'
+						? 'bg-foreground text-background shadow-md'
+						: 'bg-muted/60 text-muted-foreground hover:bg-muted'}"
+				>
+					Preventivi
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- List -->
+<div class="mx-auto max-w-2xl p-4 pb-20">
+	{#each Object.entries(groupedDocs()) as [dateKey, ds]}
+		<DayGroup date={new Date(dateKey)}>
+			{#each ds as doc}
+				<DocumentRow {doc} type={doc.type} onclick={() => (selectedDocument = doc)} />
+			{/each}
+		</DayGroup>
+	{/each}
+
+	{#if filteredDocs().length === 0}
+		<div class="flex flex-col items-center justify-center py-20 text-center">
+			<div class="mb-4 rounded-full bg-muted/40 p-5 text-muted-foreground/40">
+				<HugeiconsIcon icon={FilterIcon} size={32} />
+			</div>
+			<h3 class="text-base font-semibold text-foreground">Nessun documento</h3>
+			<p class="mt-1 text-sm text-muted-foreground">La tua ricerca non ha prodotto risultati.</p>
+		</div>
+	{/if}
+</div>
+
+<!-- Details Modal -->
+{#if selectedDocument}
+	{@const doc = selectedDocument}
+	{@const isInv = doc.type === 'invoice'}
+	{@const customerName = getUserById(doc.data.customerId)?.name ?? 'Sconosciuto'}
+	<div
+		class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
+	>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="absolute inset-0" onclick={() => (selectedDocument = null)}></div>
+		<div
+			class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto rounded-t-[2.5rem] bg-background p-8 shadow-2xl animate-in slide-in-from-bottom duration-300 sm:max-w-sm sm:rounded-[2.5rem]"
+		>
+			<div class="mx-auto mb-8 h-1.5 w-12 rounded-full bg-muted-foreground/20 sm:hidden"></div>
+
+			<div class="flex flex-col items-center border-b border-border/50 pb-8 text-center">
+				<div
+					class="mb-6 flex h-20 w-20 items-center justify-center rounded-full {isInv
+						? 'bg-blue-500/5 text-blue-600'
+						: 'bg-purple-500/5 text-purple-600'}"
+				>
+					<HugeiconsIcon icon={isInv ? Invoice01Icon : Agreement01Icon} size={32} />
+				</div>
+				<h2 class="text-xl font-bold text-foreground">{isInv ? doc.data.number : doc.data.title}</h2>
+				<h3 class="mt-2 font-mono text-3xl font-bold tracking-tight text-foreground">
+					{doc.data.amount.toLocaleString('it-IT', { style: 'currency', currency: doc.data.currency })}
+				</h3>
+			</div>
+
+			<div class="space-y-5 py-8">
+				<div class="flex items-center justify-between text-[15px]">
+					<span class="text-muted-foreground">Tipo</span>
+					<span class="font-semibold text-foreground">{isInv ? 'Fattura' : 'Preventivo'}</span>
+				</div>
+				<div class="flex items-center justify-between text-[15px]">
+					<span class="text-muted-foreground">Cliente</span>
+					<span class="font-semibold text-foreground">{customerName}</span>
+				</div>
+				<div class="flex items-center justify-between text-[15px]">
+					<span class="text-muted-foreground">Emissione</span>
+					<span class="font-semibold text-foreground">{new Date(doc.date).toLocaleDateString('it-IT')}</span>
+				</div>
+				<div class="flex flex-col gap-1.5 pt-2 text-[15px]">
+					<span class="text-muted-foreground">Descrizione</span>
+					<span class="font-medium leading-relaxed text-foreground">{doc.data.description}</span>
+				</div>
+			</div>
+
+			<div class="mt-auto flex flex-col gap-3">
+				<Button class="h-14 rounded-2xl text-[15px] font-bold shadow-lg">
+					<HugeiconsIcon icon={Download01Icon} size={20} class="mr-2" />
+					Scarica PDF
+				</Button>
+				<Button
+					variant="ghost"
+					class="h-14 rounded-2xl text-[15px] font-bold"
+					onclick={() => (selectedDocument = null)}
+				>
+					Chiudi
+				</Button>
+			</div>
+		</div>
+	</div>
+{/if}
+

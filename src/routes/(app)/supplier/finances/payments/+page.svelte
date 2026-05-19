@@ -1,0 +1,200 @@
+<script lang="ts">
+	import { getPaymentsByUserId, type Payment } from '$lib/data/embeds/payments';
+	import { getUserById } from '$lib/data/users';
+	import { getCurrentUser } from '$lib/auth';
+	import { Button } from '$lib/components/ui/button';
+	import { ArrowLeft02Icon, FilterIcon, Search01Icon } from '@hugeicons/core-free-icons';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import PaymentRow from '$lib/components/supplier/finances/payments/PaymentRow.svelte';
+	import DayGroup from '$lib/components/supplier/finances/payments/DayGroup.svelte';
+
+	const currentUser = getCurrentUser();
+	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
+	const allPayments = getPaymentsByUserId(supplierId);
+
+	let searchQuery = $state('');
+	let selectedFilter = $state('all'); // all, admin, resident
+
+	// Selected payment for the modal sheet
+	let selectedPayment: Payment | null = $state(null);
+
+	// Derived visible payments
+	const filteredPayments = $derived(() => {
+		return allPayments
+			.filter((p) => {
+				const user = getUserById(p.fromId);
+				const userName = user?.name.toLowerCase() ?? '';
+				const search = searchQuery.toLowerCase();
+				const matchesSearch =
+					p.description.toLowerCase().includes(search) ||
+					userName.includes(search) ||
+					p.amount.toString().includes(search) ||
+					p.id.toLowerCase().includes(search);
+
+				let matchesFilter = true;
+				if (selectedFilter === 'admin' && user?.role !== 'admin') matchesFilter = false;
+				if (selectedFilter === 'resident' && user?.role !== 'resident') matchesFilter = false;
+
+				return matchesSearch && matchesFilter;
+			})
+			.sort((a, b) => {
+				const dateA = new Date(a.createdAt || a.paidAt || '').getTime();
+				const dateB = new Date(b.createdAt || b.paidAt || '').getTime();
+				return dateB - dateA;
+			});
+	});
+
+	const groupedPayments = $derived(() => {
+		const groups: Record<string, Payment[]> = {};
+		for (const p of filteredPayments()) {
+			const d = new Date(p.paidAt || p.createdAt || '');
+			const dateKey = d.toISOString().split('T')[0];
+			if (!groups[dateKey]) groups[dateKey] = [];
+			groups[dateKey].push(p);
+		}
+		return groups;
+	});
+</script>
+
+<svelte:head>
+	<title>Movimenti — Fornitore — Svicom Living Hub</title>
+</svelte:head>
+
+<!-- Sticky Header -->
+<div class="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-md">
+	<div class="mx-auto max-w-2xl px-4 py-4">
+		<div class="flex items-center gap-3">
+			<Button variant="ghost" size="icon" href="/supplier/finances" class="h-10 w-10 shrink-0 rounded-full">
+				<HugeiconsIcon icon={ArrowLeft02Icon} size={22} />
+			</Button>
+			<h1 class="text-xl font-bold tracking-tight">Movimenti</h1>
+		</div>
+
+		<div class="mt-4 flex flex-col gap-3">
+			<!-- Search Bar -->
+			<div class="relative">
+				<div class="absolute inset-y-0 left-3 flex items-center text-muted-foreground/60">
+					<HugeiconsIcon icon={Search01Icon} size={18} />
+				</div>
+				<input
+					type="text"
+					bind:value={searchQuery}
+					placeholder="Cerca per mittente o causale..."
+					class="h-11 w-full rounded-2xl border-none bg-muted/60 pl-10 pr-4 text-[15px] transition-all focus:bg-muted focus:ring-2 focus:ring-primary/20"
+				/>
+			</div>
+
+			<!-- Filters -->
+			<div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+				<button
+					onclick={() => (selectedFilter = 'all')}
+					class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all {selectedFilter ===
+					'all'
+						? 'bg-foreground text-background shadow-md'
+						: 'bg-muted/60 text-muted-foreground hover:bg-muted'}"
+				>
+					Tutti
+				</button>
+				<button
+					onclick={() => (selectedFilter = 'admin')}
+					class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all {selectedFilter ===
+					'admin'
+						? 'bg-foreground text-background shadow-md'
+						: 'bg-muted/60 text-muted-foreground hover:bg-muted'}"
+				>
+					Amministratori
+				</button>
+				<button
+					onclick={() => (selectedFilter = 'resident')}
+					class="whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-all {selectedFilter ===
+					'resident'
+						? 'bg-foreground text-background shadow-md'
+						: 'bg-muted/60 text-muted-foreground hover:bg-muted'}"
+				>
+					Residenti
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="mx-auto max-w-2xl p-4 pb-20">
+	{#each Object.entries(groupedPayments()) as [dateKey, ps]}
+		<DayGroup date={new Date(dateKey)}>
+			{#each ps as payment}
+				<PaymentRow {payment} onclick={() => (selectedPayment = payment)} />
+			{/each}
+		</DayGroup>
+	{/each}
+
+	{#if Object.keys(groupedPayments()).length === 0}
+		<div class="flex flex-col items-center justify-center py-20 text-center">
+			<div class="mb-4 rounded-full bg-muted/40 p-5 text-muted-foreground/40">
+				<HugeiconsIcon icon={FilterIcon} size={32} />
+			</div>
+			<h3 class="text-base font-semibold text-foreground">Nessun movimento</h3>
+			<p class="mt-1 text-sm text-muted-foreground">Prova a cambiare i filtri o la ricerca.</p>
+		</div>
+	{/if}
+</div>
+
+<!-- Details Model / Bottom Sheet (kept the same logic but updated styling slightly) -->
+{#if selectedPayment}
+	{@const user = getUserById(selectedPayment.fromId)}
+	{@const isPaid = !!selectedPayment.paidAt}
+	<div
+		class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
+	>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="absolute inset-0" onclick={() => (selectedPayment = null)}></div>
+
+		<div
+			class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto rounded-t-[2.5rem] bg-background p-8 shadow-2xl animate-in slide-in-from-bottom duration-300 sm:max-w-sm sm:rounded-[2.5rem]"
+		>
+			<div class="mx-auto mb-8 h-1.5 w-12 rounded-full bg-muted-foreground/20 sm:hidden"></div>
+
+			<div class="flex flex-col items-center text-center">
+				<div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/5 text-primary">
+					<HugeiconsIcon icon={Search01Icon} size={32} />
+				</div>
+				<h2 class="mb-1 text-3xl font-bold tracking-tight text-foreground">
+					+ {selectedPayment.amount.toLocaleString('it-IT', {
+						style: 'currency',
+						currency: selectedPayment.currency
+					})}
+				</h2>
+				<p class="text-[15px] font-medium text-emerald-500">Ricevuto</p>
+			</div>
+
+			<div class="mt-10 space-y-5 rounded-3xl bg-muted/40 p-6">
+				<div class="flex items-center justify-between gap-4 text-sm">
+					<span class="text-muted-foreground">Mittente</span>
+					<span class="font-semibold text-foreground">{user?.name ?? 'Sconosciuto'}</span>
+				</div>
+				<div class="flex items-center justify-between gap-4 text-sm">
+					<span class="text-muted-foreground">Stato</span>
+					<div class="flex items-center gap-1.5 font-semibold text-foreground">
+						<div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
+						<span>Ricevuto</span>
+					</div>
+				</div>
+				<div class="flex flex-col gap-1.5 text-sm">
+					<span class="text-muted-foreground">Causale</span>
+					<span class="font-semibold leading-relaxed text-foreground">{selectedPayment.description}</span>
+				</div>
+				<div class="flex items-center justify-between gap-4 pt-1 text-xs">
+					<span class="text-muted-foreground">ID Transazione</span>
+					<span class="font-mono font-medium uppercase text-muted-foreground">{selectedPayment.id}</span>
+				</div>
+			</div>
+
+			<div class="mt-8 flex flex-col gap-3">
+				<Button class="h-14 rounded-2xl text-[15px] font-bold shadow-lg" onclick={() => (selectedPayment = null)}>
+					Chiudi
+				</Button>
+			</div>
+		</div>
+	</div>
+{/if}
+

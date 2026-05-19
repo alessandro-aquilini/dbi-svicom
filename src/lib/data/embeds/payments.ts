@@ -56,6 +56,41 @@ export const payments: Payment[] = [
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'bkg-003'
 	},
+	// Payments to frd-idroclima nord (not related to ticket / booking). This is in order to make the supplier/finances/payments populated. 
+	// Should be removed if we add more tickets.
+	{
+		id: 'pay-004',
+		fromId: 'adm-giorgio-01',
+		toId: 'frn-idroclima-nord',
+		amount: 320.00,
+		currency: 'EUR',
+		paidAt: '2026-05-18T00:00:00',
+		createdAt: '2026-05-18T09:30:00',
+		description: 'Intervento riparazione caldaia - Condominio Europa',
+		propertyId: 'cnd-europa-7'
+	},
+	{
+		id: 'pay-005',
+		fromId: 'res-conti-02',
+		toId: 'frn-idroclima-nord',
+		amount: 150.00,
+		currency: 'EUR',
+		paidAt: '2026-05-15T00:00:00',
+		createdAt: '2026-05-15T14:20:00',
+		description: 'Manutenzione ordinaria condizionatore',
+		propertyId: 'cnd-europa-7'
+	},
+	{
+		id: 'pay-006',
+		fromId: 'adm-giorgio-01',
+		toId: 'frn-idroclima-nord',
+		amount: 2100.00,
+		currency: 'EUR',
+		paidAt: '2026-05-10T00:00:00',
+		createdAt: '2026-05-10T11:00:00',
+		description: 'Sostituzione pompe di calore - Acconto',
+		propertyId: 'cnd-marconi-14'
+	},
 
 	// ─── Quote condominiali in ritardo (morosi) ─────────────────────────────────
 	{
