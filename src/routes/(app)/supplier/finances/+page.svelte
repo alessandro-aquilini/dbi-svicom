@@ -19,7 +19,9 @@
 	import { HugeiconsIcon } from "@hugeicons/svelte";
 	import FinanceRadar from "$lib/components/supplier/finances/FinanceRadar.svelte";
 	import PaymentRow from "$lib/components/supplier/finances/payments/PaymentRow.svelte";
+	import PaymentDetailsModal from "$lib/components/supplier/finances/payments/PaymentDetailsModal.svelte";
 	import DocumentRow from "$lib/components/supplier/finances/documents/DocumentRow.svelte";
+	import DocumentDetailsModal from "$lib/components/supplier/finances/documents/DocumentDetailsModal.svelte";
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? "frn-idroclima-nord";
@@ -183,150 +185,13 @@
 		</div>
 	</section>
 
-	{#if selectedPayment}
-		<div
-			class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]"
-		>
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div
-				class="absolute inset-0"
-				onclick={() => (selectedPayment = null)}
-			></div>
-			<div
-				class="relative w-full max-w-lg rounded-4xl bg-background p-8 shadow-2xl"
-			>
-				<div class="flex flex-col items-center text-center">
-					<h2 class="text-2xl font-bold text-foreground">
-						{selectedPayment.amount.toLocaleString("it-IT", {
-							style: "currency",
-							currency: selectedPayment.currency,
-						})}
-					</h2>
-					<p class="mt-2 text-sm text-muted-foreground">
-						Pagamento ricevuto da {getUserById(
-							selectedPayment.fromId,
-						)?.name ?? "Sconosciuto"}.
-					</p>
-				</div>
-				<div class="mt-8 space-y-4 rounded-3xl bg-muted/40 p-6">
-					<div
-						class="flex items-center justify-between text-sm text-muted-foreground"
-					>
-						<span>Mittente</span>
-						<span class="text-foreground font-semibold"
-							>{getUserById(selectedPayment.fromId)?.name ??
-								"Sconosciuto"}</span
-						>
-					</div>
-					<div
-						class="flex items-center justify-between text-sm text-muted-foreground"
-					>
-						<span>Stato</span>
-						<span class="font-semibold text-foreground"
-							>{selectedPayment.paidAt
-								? "Ricevuto"
-								: "In elaborazione"}</span
-						>
-					</div>
-					<div class="text-sm text-muted-foreground">
-						<span class="font-semibold text-foreground"
-							>Descrizione</span
-						>
-						<p class="mt-1 leading-relaxed">
-							{selectedPayment.description}
-						</p>
-					</div>
-				</div>
-				<div class="mt-6 flex justify-end">
-					<Button
-						class="h-12 rounded-2xl text-[15px] font-bold"
-						onclick={() => (selectedPayment = null)}
-					>
-						Chiudi
-					</Button>
-				</div>
-			</div>
-		</div>
-	{/if}
+	<PaymentDetailsModal 
+		payment={selectedPayment} 
+		onclose={() => (selectedPayment = null)} 
+	/>
 
-	{#if selectedDocument}
-		{@const doc = selectedDocument}
-		{@const isInv = doc.type === "invoice"}
-		<div
-			class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]"
-		>
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div
-				class="absolute inset-0"
-				onclick={() => (selectedDocument = null)}
-			></div>
-			<div
-				class="relative w-full max-w-lg rounded-4xl bg-background p-8 shadow-2xl"
-			>
-				<div class="flex flex-col items-center text-center">
-					<div
-						class="mb-4 flex h-16 w-16 items-center justify-center rounded-full {isInv
-							? 'bg-blue-500/5 text-blue-600'
-							: 'bg-purple-500/5 text-purple-600'}"
-					>
-						<HugeiconsIcon
-							icon={isInv ? Invoice01Icon : Agreement01Icon}
-							size={28}
-						/>
-					</div>
-					<h2 class="text-2xl font-bold text-foreground">
-						{isInv ? doc.data.number : doc.data.title}
-					</h2>
-					<p class="mt-2 text-sm text-muted-foreground">
-						{doc.data.amount.toLocaleString("it-IT", {
-							style: "currency",
-							currency: doc.data.currency,
-						})}
-					</p>
-				</div>
-				<div class="mt-8 space-y-4 rounded-3xl bg-muted/40 p-6">
-					<div
-						class="flex items-center justify-between text-sm text-muted-foreground"
-					>
-						<span>Tipo</span>
-						<span class="font-semibold text-foreground"
-							>{isInv ? "Fattura" : "Preventivo"}</span
-						>
-					</div>
-					<div
-						class="flex items-center justify-between text-sm text-muted-foreground"
-					>
-						<span>Cliente</span>
-						<span class="font-semibold text-foreground"
-							>{getUserById(doc.data.customerId)?.name ??
-								"Sconosciuto"}</span
-						>
-					</div>
-					<div class="text-sm text-muted-foreground">
-						<span class="font-semibold text-foreground"
-							>Descrizione</span
-						>
-						<p class="mt-1 leading-relaxed">
-							{doc.data.description}
-						</p>
-					</div>
-				</div>
-				<div class="mt-6 flex justify-between gap-3">
-					<Button
-						class="h-12 rounded-2xl text-[15px] font-bold"
-						onclick={() => (selectedDocument = null)}
-					>
-						Chiudi
-					</Button>
-					<Button
-						class="h-12 rounded-2xl text-[15px] font-bold shadow-lg"
-					>
-						Scarica PDF
-					</Button>
-				</div>
-			</div>
-		</div>
-	{/if}
+	<DocumentDetailsModal 
+		document={selectedDocument} 
+		onclose={() => (selectedDocument = null)} 
+	/>
 </div>

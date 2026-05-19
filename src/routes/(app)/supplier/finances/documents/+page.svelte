@@ -14,6 +14,7 @@
 	} from '@hugeicons/core-free-icons';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import DocumentRow from '$lib/components/supplier/finances/documents/DocumentRow.svelte';
+	import DocumentDetailsModal from '$lib/components/supplier/finances/documents/DocumentDetailsModal.svelte';
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
 
@@ -169,69 +170,9 @@
 	{/if}
 </div>
 
-<!-- Details Modal -->
-{#if selectedDocument}
-	{@const doc = selectedDocument}
-	{@const isInv = doc.type === 'invoice'}
-	{@const customerName = getUserById(doc.data.customerId)?.name ?? 'Sconosciuto'}
-	<div
-		class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
-	>
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="absolute inset-0" onclick={() => (selectedDocument = null)}></div>
-		<div
-			class="relative flex max-h-[90vh] w-full flex-col overflow-y-auto rounded-t-[2.5rem] bg-background p-8 shadow-2xl animate-in slide-in-from-bottom duration-300 sm:max-w-sm sm:rounded-[2.5rem]"
-		>
-			<div class="mx-auto mb-8 h-1.5 w-12 rounded-full bg-muted-foreground/20 sm:hidden"></div>
+<DocumentDetailsModal
+	document={selectedDocument}
+	onclose={() => (selectedDocument = null)}
+/>
 
-			<div class="flex flex-col items-center border-b border-border/50 pb-8 text-center">
-				<div
-					class="mb-6 flex h-20 w-20 items-center justify-center rounded-full {isInv
-						? 'bg-blue-500/5 text-blue-600'
-						: 'bg-purple-500/5 text-purple-600'}"
-				>
-					<HugeiconsIcon icon={isInv ? Invoice01Icon : Agreement01Icon} size={32} />
-				</div>
-				<h2 class="text-xl font-bold text-foreground">{isInv ? doc.data.number : doc.data.title}</h2>
-				<h3 class="mt-2 font-mono text-3xl font-bold tracking-tight text-foreground">
-					{doc.data.amount.toLocaleString('it-IT', { style: 'currency', currency: doc.data.currency })}
-				</h3>
-			</div>
-
-			<div class="space-y-5 py-8">
-				<div class="flex items-center justify-between text-[15px]">
-					<span class="text-muted-foreground">Tipo</span>
-					<span class="font-semibold text-foreground">{isInv ? 'Fattura' : 'Preventivo'}</span>
-				</div>
-				<div class="flex items-center justify-between text-[15px]">
-					<span class="text-muted-foreground">Cliente</span>
-					<span class="font-semibold text-foreground">{customerName}</span>
-				</div>
-				<div class="flex items-center justify-between text-[15px]">
-					<span class="text-muted-foreground">Emissione</span>
-					<span class="font-semibold text-foreground">{new Date(doc.date).toLocaleDateString('it-IT')}</span>
-				</div>
-				<div class="flex flex-col gap-1.5 pt-2 text-[15px]">
-					<span class="text-muted-foreground">Descrizione</span>
-					<span class="font-medium leading-relaxed text-foreground">{doc.data.description}</span>
-				</div>
-			</div>
-
-			<div class="mt-auto flex flex-col gap-3">
-				<Button class="h-14 rounded-2xl text-[15px] font-bold shadow-lg">
-					<HugeiconsIcon icon={Download01Icon} size={20} class="mr-2" />
-					Scarica PDF
-				</Button>
-				<Button
-					variant="ghost"
-					class="h-14 rounded-2xl text-[15px] font-bold"
-					onclick={() => (selectedDocument = null)}
-				>
-					Chiudi
-				</Button>
-			</div>
-		</div>
-	</div>
-{/if}
 
