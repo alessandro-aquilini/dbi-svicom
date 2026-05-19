@@ -6,7 +6,8 @@
 	import { ArrowLeft02Icon, FilterIcon, Search01Icon } from '@hugeicons/core-free-icons';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import PaymentRow from '$lib/components/supplier/finances/payments/PaymentRow.svelte';
-	import DayGroup from '$lib/components/supplier/finances/payments/DayGroup.svelte';
+	import { format } from 'date-fns';
+	import { it } from 'date-fns/locale';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
@@ -48,9 +49,9 @@
 		const groups: Record<string, Payment[]> = {};
 		for (const p of filteredPayments()) {
 			const d = new Date(p.paidAt || p.createdAt || '');
-			const dateKey = d.toISOString().split('T')[0];
-			if (!groups[dateKey]) groups[dateKey] = [];
-			groups[dateKey].push(p);
+			const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+			if (!groups[monthKey]) groups[monthKey] = [];
+			groups[monthKey].push(p);
 		}
 		return groups;
 	});
@@ -62,7 +63,7 @@
 
 <!-- Sticky Header -->
 <div class="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-md">
-	<div class="mx-auto max-w-2xl px-4 py-4">
+	<div class="w-full px-4 py-4">
 		<div class="flex items-center gap-3">
 			<Button variant="ghost" size="icon" href="/supplier/finances" class="h-10 w-10 shrink-0 rounded-full">
 				<HugeiconsIcon icon={ArrowLeft02Icon} size={22} />
@@ -118,13 +119,18 @@
 	</div>
 </div>
 
-<div class="mx-auto max-w-2xl p-4 pb-20">
-	{#each Object.entries(groupedPayments()) as [dateKey, ps]}
-		<DayGroup date={new Date(dateKey)}>
-			{#each ps as payment}
-				<PaymentRow {payment} onclick={() => (selectedPayment = payment)} />
-			{/each}
-		</DayGroup>
+<div class="w-full max-w-full p-4 pb-20">
+	{#each Object.entries(groupedPayments()) as [monthKey, ps]}
+		<div class="mb-8">
+			<h2 class="px-1 text-sm font-bold uppercase tracking-[0.24em] text-muted-foreground">
+				{format(new Date(`${monthKey}-01`), 'LLLL yyyy', { locale: it })}
+			</h2>
+			<div class="mt-3 overflow-hidden rounded-3xl border border-border bg-card divide-y divide-border/40">
+				{#each ps as payment}
+					<PaymentRow {payment} onclick={() => (selectedPayment = payment)} />
+				{/each}
+			</div>
+		</div>
 	{/each}
 
 	{#if Object.keys(groupedPayments()).length === 0}
