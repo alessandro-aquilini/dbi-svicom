@@ -22,7 +22,7 @@
 	}
 </script>
 
-<div class="flex-1 overflow-hidden flex flex-col bg-slate-50/30">
+<div class="flex-1 h-full min-h-0 overflow-hidden flex flex-col bg-slate-50/30">
 	<div class="grid grid-cols-7 border-b border-slate-200 bg-white sticky top-0 z-20">
 		{#each weekDays as day}
 			<div class="py-4 text-center border-r last:border-r-0 border-slate-100">
@@ -41,8 +41,8 @@
 		{/each}
 	</div>
 
-	<div class="flex-1 overflow-y-auto no-scrollbar">
-		<div class="grid grid-cols-7 min-h-full">
+	<div class="flex-1 h-full overflow-y-auto no-scrollbar">
+		<div class="grid grid-cols-7 h-full min-h-full">
 			{#each weekDays as day}
 				<div class="border-r last:border-r-0 border-slate-100 p-2 space-y-2 pb-10">
 					{#each getDayEvents(day) as event (event.id)}
