@@ -50,7 +50,7 @@
 	}
 </script>
 
-<div class="flex-1 min-h-0 overflow-hidden flex flex-col bg-white">
+<div class="h-full min-h-0 overflow-hidden flex flex-col bg-white">
 	<div class="grid grid-cols-7 border-b border-slate-200">
 		{#each ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'] as day}
 			<div class="py-3 text-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
@@ -59,10 +59,10 @@
 		{/each}
 	</div>
 
-	<div class="flex-1 min-h-0 grid grid-cols-7 grid-rows-6 auto-rows-fr">
+	<div class="flex-1 min-h-0 h-full grid grid-cols-7 grid-rows-6 auto-rows-fr">
 		{#each monthDays as { date, currentMonth }}
 			<div
-				class="border-r border-b border-slate-100 p-2 flex flex-col gap-1 min-h-0 overflow-hidden {currentMonth
+				class="border-r border-b border-slate-100 p-2 flex flex-col gap-1 h-full min-h-0 overflow-hidden {currentMonth
 					? 'bg-white'
 					: 'bg-slate-50/50'}"
 			>
