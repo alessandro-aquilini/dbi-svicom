@@ -108,7 +108,7 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 			return {
 				id: event.id,
 				at: event.at,
-				actorId: getCurrentSupplier(ticket) ?? ticket.adminId,
+				actorId: getCurrentSupplier(ticket) ?? ticket.creatorId,
 				toStatus,
 				label: ticketStatusLabels[toStatus]
 			};
@@ -118,7 +118,7 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 			return {
 				id: event.id,
 				at: event.at,
-				actorId: ticket.adminId,
+				actorId: ticket.creatorId,
 				label: 'Pratica operativa aperta',
 				note: 'L amministrazione ha trasformato la segnalazione in una pratica operativa.'
 			};
