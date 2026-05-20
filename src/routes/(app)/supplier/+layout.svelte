@@ -29,9 +29,9 @@
 </svelte:head>
 
 <!-- Supplier layout: simple topbar + content -->
-<div class="flex min-h-screen flex-col bg-background">
+<div class="h-screen w-screen flex flex-col overflow-hidden bg-background">
 	<!-- Topbar -->
-	<header class="flex h-14 shrink-0 items-center border-b border-border px-4">
+	<header class="relative flex h-14 shrink-0 items-center border-b border-border px-4">
 		<div class="flex items-center gap-2">
 			<img src="/svicom-logo.png" alt="Svicom" class="h-6 w-auto" />
 			<div class="flex flex-col leading-tight">
@@ -78,12 +78,12 @@
 	</header>
 
 	<!-- Content -->
-	<main class="flex-1 flex flex-col min-h-0 relative pb-18">
+	<main class="flex-1 flex flex-col min-h-0 overflow-y-auto" style="-webkit-overflow-scrolling: touch;">
 		{@render children()}
 	</main>
 
 	<!-- Bottom navigation bar -->
-	<nav class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-card/95 backdrop-blur-sm shadow-[0_-10px_30px_-24px_rgba(15,23,42,0.35)] md:shadow-none">
+	<nav class="shrink-0 border-t border-slate-200 bg-card/95 backdrop-blur-sm shadow-[0_-10px_30px_-24px_rgba(15,23,42,0.35)] pb-[env(safe-area-inset-bottom)]">
 		<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-2 md:px-6">
 			{#each navItems as item}
 				<a

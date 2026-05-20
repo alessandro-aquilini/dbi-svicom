@@ -33,7 +33,7 @@
 	}
 </script>
 
-<div class="flex flex-1 h-full w-full bg-white overflow-hidden">
+<div class="flex-1 min-h-0 flex w-full bg-white overflow-hidden">
 	{#if !sidebarCollapsed}
 		<div class="flex-none border-r border-slate-200">
 			<CalendarSidebar
@@ -46,12 +46,12 @@
 		</div>
 	{/if}
 
-	<div class="flex-1 flex flex-col overflow-hidden">
+	<div class="flex-1 min-h-0 flex flex-col overflow-hidden">
 		<div class="flex-none border-b border-slate-100">
 			<CalendarToolbar bind:view bind:currentDate onToday={handleToday} bind:sidebarCollapsed />
 		</div>
 
-		<div class="flex-1 relative overflow-hidden">
+		<div class="flex-1 min-h-0 relative overflow-hidden">
 			{#if view === 'day'}
 				<CalendarDayView {currentDate} events={filteredEvents} onEventClick={handleEventClick} />
 			{:else if view === 'week'}

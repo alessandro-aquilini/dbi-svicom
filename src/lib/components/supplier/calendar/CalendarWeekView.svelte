@@ -22,7 +22,7 @@
 	}
 </script>
 
-<div class="flex-1 h-full min-h-0 overflow-hidden flex flex-col bg-slate-50/30">
+<div class="h-full min-h-0 overflow-hidden flex flex-col bg-slate-50/30">
 	<div class="grid grid-cols-7 border-b border-slate-200 bg-white sticky top-0 z-20">
 		{#each weekDays as day}
 			<div class="py-4 text-center border-r last:border-r-0 border-slate-100">
@@ -41,26 +41,28 @@
 		{/each}
 	</div>
 
-	<div class="flex-1 h-full overflow-y-auto no-scrollbar">
-		<div class="grid grid-cols-7 h-full min-h-full">
+	<div class="flex-1 min-h-0 overflow-y-auto">
+		<div class="grid grid-cols-7 h-full min-h-0">
 			{#each weekDays as day}
-				<div class="border-r last:border-r-0 border-slate-100 p-2 space-y-2 pb-10">
-					{#each getDayEvents(day) as event (event.id)}
-						<button
-							onclick={() => onEventClick(event)}
-							class="w-full text-left bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition-all group"
-						>
-							<div class="flex items-center gap-1.5 mb-1.5">
-								<div class={`w-1.5 h-1.5 rounded-full ${EVENT_COLORS_DOT[event.type as EventType]}`}></div>
-								<span class="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-									{formatTime(event.start)}
-								</span>
-							</div>
-							<div class="text-[11px] font-bold text-slate-800 leading-snug line-clamp-2">
-								{event.title}
-							</div>
-						</button>
-					{/each}
+				<div class="border-r last:border-r-0 border-slate-100 p-2 min-h-0 flex flex-col h-full overflow-hidden">
+					<div class="flex-1 min-h-0 space-y-2 overflow-y-auto">
+						{#each getDayEvents(day) as event (event.id)}
+							<button
+								onclick={() => onEventClick(event)}
+								class="w-full text-left bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition-all group"
+							>
+								<div class="flex items-center gap-1.5 mb-1.5">
+									<div class={`w-1.5 h-1.5 rounded-full ${EVENT_COLORS_DOT[event.type as EventType]}`}></div>
+									<span class="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+										{formatTime(event.start)}
+									</span>
+								</div>
+								<div class="text-[11px] font-bold text-slate-800 leading-snug line-clamp-2">
+									{event.title}
+								</div>
+							</button>
+						{/each}
+					</div>
 				</div>
 			{/each}
 		</div>
