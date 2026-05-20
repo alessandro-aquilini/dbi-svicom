@@ -3,7 +3,7 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getUserById } from '$lib/data/users';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { DashboardSquare01Icon, BubbleChatIcon, Wrench01Icon, CreditCardIcon, File01Icon, Contact01Icon, Money01Icon } from '@hugeicons/core-free-icons';
+	import { DashboardSquare01Icon, BubbleChatIcon, Wrench01Icon, CreditCardIcon, File01Icon, Contact01Icon, Money01Icon, CalendarIcon } from '@hugeicons/core-free-icons';
 
 	let { children } = $props();
 
@@ -14,7 +14,7 @@
 	const navItems = [
 		{ label: 'Home', href: '/supplier', icon: DashboardSquare01Icon },
 		{ label: 'Chat', href: '/supplier/chat', icon: BubbleChatIcon },
-		{ label: 'Calendario', href: '/supplier/calendar', icon: Wrench01Icon },
+		{ label: 'Calendario', href: '/supplier/calendar', icon: CalendarIcon },
 		{ label: 'Finanze', href: '/supplier/finances', icon: Money01Icon }
 	];
 
@@ -29,28 +29,17 @@
 </svelte:head>
 
 <!-- Supplier layout: simple topbar + content -->
-<div class="flex h-screen flex-col bg-background">
+<div class="flex min-h-screen flex-col bg-background">
 	<!-- Topbar -->
 	<header class="flex h-14 shrink-0 items-center border-b border-border px-4">
 		<div class="flex items-center gap-2">
 			<img src="/svicom-logo.png" alt="Svicom" class="h-6 w-auto" />
-			<span class="text-sm font-semibold text-foreground">Living Hub</span>
-			<span class="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">Fornitore</span>
+			<div class="flex flex-col leading-tight">
+				<span class="text-sm font-semibold text-foreground">Living Hub</span>
+				<span class="text-xs text-muted-foreground">Fornitore</span>
+			</div>
 		</div>
-		<nav class="ml-8 hidden gap-1 md:flex">
-			{#each navItems as item}
-				<a
-					href={item.href}
-					class="rounded-md px-3 py-1.5 text-sm transition-colors {isActive(item.href)
-						? 'bg-accent text-accent-foreground font-medium'
-						: 'text-muted-foreground hover:text-foreground'}"
-				>
-					<HugeiconsIcon icon={item.icon} size={18} strokeWidth={1.5} class="mr-2" />
-					<span>{item.label}</span>
-				</a>
-			{/each}
-		</nav>
-		
+
 		<div class="ml-auto flex items-center gap-3">
 			<button 
 				class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none"
@@ -89,20 +78,20 @@
 	</header>
 
 	<!-- Content -->
-	<main class="flex-1 overflow-y-auto">
+	<main class="flex-1 overflow-y-auto pb-24">
 		{@render children()}
 	</main>
 
-	<!-- Mobile nav (visible on small screens) -->
-	<nav class="shrink-0 border-t border-border bg-card md:hidden">
-		<div class="flex items-stretch">
+	<!-- Bottom navigation bar -->
+	<nav class="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card shadow-inner md:border-none md:shadow-none">
+		<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-2 md:px-6">
 			{#each navItems as item}
 				<a
 					href={item.href}
-					class="flex flex-1 flex-col items-center gap-0.5 py-2 text-xs {isActive(item.href) ? 'text-primary font-medium' : 'text-muted-foreground'}"
+					class="flex flex-1 flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[10px] transition-all duration-150 md:text-xs {isActive(item.href) ? 'bg-accent text-accent-foreground font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-muted/10'}"
 				>
-					<HugeiconsIcon icon={item.icon} size={18} strokeWidth={1.5} />
-					<span>{item.label}</span>
+					<HugeiconsIcon icon={item.icon} size={20} strokeWidth={1.5} />
+					<span class="whitespace-nowrap">{item.label}</span>
 				</a>
 			{/each}
 		</div>
