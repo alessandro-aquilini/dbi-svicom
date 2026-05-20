@@ -98,7 +98,7 @@
 	let selectedDocument: DocumentItem | null = $state(null);
 </script>
 
-<div class="w-full min-h-screen px-6 pb-24">
+<div class="flex-1 overflow-y-auto pb-24 px-6">
 	<header class="space-y-4 pt-6">
 		<div
 			class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6"

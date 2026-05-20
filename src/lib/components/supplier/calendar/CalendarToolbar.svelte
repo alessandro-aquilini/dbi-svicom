@@ -73,17 +73,7 @@
 </script>
 
 <div class="h-16 px-6 flex items-center bg-white">
-	<div class="flex items-center w-12">
-		<button
-			onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
-			class="p-2 -ml-2 text-slate-500 hover:text-slate-900 transition-colors"
-			aria-label={sidebarCollapsed ? 'Apri barra' : 'Chiudi barra'}
-		>
-			<HugeiconsIcon icon={Menu01Icon} size="20" />
-		</button>
-	</div>
-
-	<div class="flex items-center gap-6 flex-1 ml-50">
+	<div class="flex items-center gap-6 flex-1">
 		<div class="flex items-center gap-2">
 			<button
 				onclick={onToday}

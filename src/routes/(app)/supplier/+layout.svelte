@@ -78,7 +78,7 @@
 	</header>
 
 	<!-- Content -->
-	<main class="flex-1 overflow-y-auto pb-24">
+	<main class="flex-1 flex flex-col min-h-0 relative">
 		{@render children()}
 	</main>
 
