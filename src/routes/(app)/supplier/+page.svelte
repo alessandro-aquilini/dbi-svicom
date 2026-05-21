@@ -90,7 +90,6 @@
 	const statusColors: Record<string, string> = {
 		requested: 'bg-warning/10 text-warning border-warning/20',
 		confirmed: 'bg-primary/10 text-primary border-primary/20',
-		performed: 'bg-success/10 text-success border-success/20',
 		open: 'bg-primary/10 text-primary border-primary/20',
 		'in-progress': 'bg-warning/10 text-warning border-warning/20'
 	};

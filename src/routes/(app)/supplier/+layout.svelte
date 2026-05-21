@@ -3,7 +3,7 @@
 	import { getCurrentUser } from '$lib/auth';
 	import { getUserById } from '$lib/data/users';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { DashboardSquare01Icon, BubbleChatIcon, Wrench01Icon, CreditCardIcon, File01Icon, Contact01Icon, Money01Icon, CalendarIcon } from '@hugeicons/core-free-icons';
+	import { DashboardSquare01Icon, BubbleChatIcon, Wrench01Icon, CreditCardIcon, File01Icon, Contact01Icon, Money01Icon, CalendarIcon, BookmarkIcon } from '@hugeicons/core-free-icons';
 
 	let { children } = $props();
 
@@ -15,7 +15,8 @@
 		{ label: 'Home', href: '/supplier', icon: DashboardSquare01Icon },
 		{ label: 'Chat', href: '/supplier/chat', icon: BubbleChatIcon },
 		{ label: 'Calendario', href: '/supplier/calendar', icon: CalendarIcon },
-		{ label: 'Finanze', href: '/supplier/finances', icon: Money01Icon }
+		{ label: 'Finanze', href: '/supplier/finances', icon: Money01Icon }, 
+		{ label: 'Servizi', href: '/supplier/services', icon: BookmarkIcon} // Add an icon.
 	];
 
 	function isActive(href: string): boolean {

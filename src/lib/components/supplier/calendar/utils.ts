@@ -36,7 +36,7 @@ export function getSupplierEvents(supplierId: string): CalendarEvent[] {
 
 	for (const b of filteredBookings) {
 		const lastEvent = lastBookingEvent(b);
-		const slot = b.slot || (lastEvent?.kind === 'timeslot_updated' || lastEvent?.kind === 'request_created' ? lastEvent.slot : undefined);
+		const slot = b.slot || (lastEvent?.kind === 'booking_updated' || lastEvent?.kind === 'booking_created' ? lastEvent.slot : undefined);
 		
 		if (slot) {
 			const service = services.find(s => s.id === b.serviceId);
