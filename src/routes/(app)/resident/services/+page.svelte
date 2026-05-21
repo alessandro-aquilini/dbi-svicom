@@ -1,124 +1,78 @@
 <script lang="ts">
-	import { getActiveResidentBookings } from '$lib/components/shared/booking';
-	import BookingCard from '$lib/components/shared/booking/BookingCard.svelte';
-	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { 
-		PlusSignIcon, 
-		TimeScheduleIcon, 
-		Calendar03Icon
-	} from '@hugeicons/core-free-icons';
-	import { Dialog } from '$lib/components/shared';
-	import BookingLifecycleDetail from '$lib/components/shared/booking/BookingLifecycleDetail.svelte';
-	import BookingActions from '$lib/components/shared/booking/BookingActions.svelte';
 	import { getCurrentUser } from '$lib/auth';
-	import type { Booking } from '$lib/data/ticket/booking';
+	import { getServiceById } from '$lib/data/services';
+	import {
+		getBookingsByResidentId,
+		getActiveBookings,
+		getRecentClosedBookings,
+		type Booking
+	} from '$lib/data/ticket/booking';
+	import ActiveBookingCard from '$lib/components/shared/booking/booking-card/ActiveBookingCard.svelte';
+	import HistoryBookingCard from '$lib/components/shared/booking/booking-card/HistoryBookingCard.svelte';
 
-	const activeBookings = $derived(getActiveResidentBookings());
 	const currentUser = getCurrentUser();
-
-	let selectedBooking = $state<Booking | null>(null);
-	let detailsOpen = $state(false);
-
-	function handleAction(action: string) {
-		console.log('Action performed:', action, 'on booking:', selectedBooking?.id);
-		// Logic for actions would go here
-		detailsOpen = false;
-		selectedBooking = null;
-	}
+	const residentId = currentUser?.id ?? '';
+	const allBookings = residentId ? getBookingsByResidentId(residentId) : [];
+	const activeBookings = getActiveBookings(allBookings);
+	const recentHistory = getRecentClosedBookings(allBookings, 3);
 </script>
 
 <svelte:head>
-	<title>Servizi Attivi — Svicom Living Hub</title>
+	<title>Servizi — Residente — Svicom Living Hub</title>
 </svelte:head>
 
-<div class="p-4 lg:p-6 pb-24">
-	<div class="mb-8 flex items-center justify-between gap-4">
-		<div>
-			<h1 class="text-2xl font-semibold tracking-tight">I tuoi Servizi</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				Gestisci le tue richieste attive e prenotazioni in corso
-			</p>
-		</div>
-
-		<a 
-			href="/resident/services/book-new" 
-			class="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap"
-		>
-			<HugeiconsIcon icon={PlusSignIcon} size={18} />
-			<span class="hidden sm:inline">Nuovo Servizio</span>
-			<span class="sm:hidden">Nuovo</span>
-		</a>
+<div class="mx-auto max-w-xl px-4 py-6 sm:px-6 lg:px-8">
+	<div class="mb-6">
+		<p class="text-sm uppercase tracking-[0.24em] text-primary">Servizi</p>
+		<h1 class="mt-3 text-3xl font-semibold tracking-tight">I miei interventi</h1>
+		<p class="mt-2 text-sm text-muted-foreground">Controlla le richieste che hai già inviato e consulta lo storico dei servizi completati.</p>
 	</div>
 
-	{#if activeBookings.length === 0}
-		<div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-muted/20 px-6 py-20 text-center">
-			<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-border shadow-sm mb-4">
-				<HugeiconsIcon icon={Calendar03Icon} size={28} strokeWidth={1.5} class="text-muted-foreground" />
+	<section class="space-y-4">
+		<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+			<div>
+				<h2 class="text-xl font-semibold">Prenotazioni attive</h2>
+				<p class="mt-1 text-sm text-muted-foreground">Richieste ancora aperte o confermate.</p>
 			</div>
-			<h3 class="text-lg font-semibold text-foreground">Nessun servizio attivo</h3>
-			<p class="mt-2 text-sm text-muted-foreground max-w-xs mx-auto">
-				Non hai prenotazioni in corso. Esplora il marketplace per scoprire i servizi disponibili.
-			</p>
-			<a 
-				href="/resident/services/book-new" 
-				class="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity"
-			>
-				Esplora Marketplace
+			<div class="rounded-2xl border border-border bg-card px-4 py-3 text-sm">
+				<span class="font-semibold">{activeBookings.length}</span> attive
+			</div>
+		</div>
+
+		<div class="space-y-4">
+			{#if activeBookings.length > 0}
+				{#each activeBookings as booking (booking.id)}
+					<ActiveBookingCard {booking} service={getServiceById(booking.serviceId)} view="resident" />
+				{/each}
+			{:else}
+				<div class="rounded-3xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+					Non ci sono richieste attive al momento.
+				</div>
+			{/if}
+		</div>
+	</section>
+
+	<section class="mt-10 space-y-4">
+		<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+			<div>
+				<h2 class="text-xl font-semibold">Cronologia recente</h2>
+				<p class="mt-1 text-sm text-muted-foreground">Le ultime 3 prenotazioni chiuse.</p>
+			</div>
+			<a href="/resident/services/history" class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/10 transition hover:bg-primary/90">
+				Vai allo storico
 			</a>
 		</div>
-	{:else}
-		<div class="grid grid-cols-1 gap-4">
-			{#each activeBookings as booking (booking.id)}
-				<BookingCard 
-					{booking} 
-					onclick={() => { selectedBooking = booking; detailsOpen = true; }}
-				/>
-			{/each}
-		</div>
-	{/if}
 
-	<div class="mt-8 pt-8 border-t border-border">
-		<a 
-			href="/resident/services/history" 
-			class="flex items-center justify-between p-4 rounded-2xl border border-border bg-card hover:bg-muted/30 transition-colors group"
-		>
-			<div class="flex items-center gap-3">
-				<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
-					<HugeiconsIcon icon={TimeScheduleIcon} size={20} />
+		<div class="space-y-4">
+			{#if recentHistory.length > 0}
+				{#each recentHistory as booking (booking.id)}
+					<HistoryBookingCard {booking} service={getServiceById(booking.serviceId)} view="resident" />
+				{/each}
+			{:else}
+				<div class="rounded-3xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+					Non hai ancora prenotazioni chiuse.
 				</div>
-				<div>
-					<p class="font-semibold text-foreground">Storico Servizi</p>
-					<p class="text-xs text-muted-foreground">Visualizza i tuoi interventi passati</p>
-				</div>
-			</div>
-			<div class="text-muted-foreground group-hover:translate-x-1 transition-transform">
-				<HugeiconsIcon icon={PlusSignIcon} size={20} class="rotate-45" /> 
-			</div>
-		</a>
-	</div>
+			{/if}
+		</div>
+	</section>
 </div>
-
-{#if selectedBooking && currentUser}
-	<Dialog
-		bind:open={detailsOpen}
-		title="Dettaglio Prenotazione"
-		hideCancel
-		confirmLabel="Chiudi"
-		onConfirm={() => { detailsOpen = false; selectedBooking = null; }}
-	>
-		<div class="flex flex-col gap-6">
-			<BookingLifecycleDetail 
-				booking={selectedBooking} 
-				currentUserId={currentUser.id} 
-			/>
-			
-			<div class="border-t border-border pt-4">
-				<BookingActions 
-					booking={selectedBooking} 
-					onAction={handleAction}
-				/>
-			</div>
-		</div>
-	</Dialog>
-{/if}
-

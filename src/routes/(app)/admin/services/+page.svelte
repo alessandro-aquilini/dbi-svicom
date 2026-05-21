@@ -4,8 +4,8 @@
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { getUserById } from '$lib/data/users';
 	import { PropertyScopeChip, Dialog } from '$lib/components/shared';
-	import ServiceCard from '$lib/components/shared/booking/ServiceCard.svelte';
-	import ServiceDetailView from '$lib/components/shared/booking/ServiceDetailView.svelte';
+	import ServiceCard from '$lib/components/shared/booking/service-marketplace/ServiceCard.svelte';
+	import ServiceDetailView from '$lib/components/shared/booking/service-marketplace/ServiceDetailView.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		Search01Icon,

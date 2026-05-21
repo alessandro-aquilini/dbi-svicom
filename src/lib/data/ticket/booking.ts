@@ -1,4 +1,6 @@
-// ─── booking-types.ts ────────────────────────────────────────────────────────
+// ───────────────── booking-types.ts ──────────────────────────────────────────
+import { getUserById } from '../users';
+import { services } from '../services';
 
 export type BookingEventKind =
     | 'booking_created'
@@ -262,12 +264,90 @@ export function getBookingsByResidentId(residentId: string): Booking[] {
     return bookings.filter((b) => b.residentId === residentId);
 }
 
-import { services } from '../services';
-
-// ...existing code...
 export function getBookingsBySupplierId(supplierId: string): Booking[] {
     const supplierServiceIds = services
-        .filter(s => s.supplierId === supplierId)
-        .map(s => s.id);
+        .filter((s) => s.supplierId === supplierId)
+        .map((s) => s.id);
     return bookings.filter((b) => supplierServiceIds.includes(b.serviceId));
+}
+
+// ─── Booking Info Helpers ─────────────────────────────────────────────────────
+
+export interface BookingInfo {
+    bookingId: string;
+    serviceId: string;
+    serviceName: string;
+    residentId: string;
+    residentName?: string;
+    supplierId?: string;
+    supplierName?: string;
+    status: BookingStatus;
+    slot?: BookingSlot;
+    place?: string;
+    description?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    closedAt?: string;
+    lastEvent?: BookingEvent;
+}
+
+export function isBookingActive(booking: Booking): boolean {
+    const status = inferBookingStatus(booking);
+    return status !== 'closed' && status !== 'cancelled' && status !== 'declined';
+}
+
+export function isBookingClosed(booking: Booking): boolean {
+    return inferBookingStatus(booking) === 'closed';
+}
+
+export function getBookingCreatedAt(booking: Booking): string | undefined {
+    return booking.timeline?.find((event) => event.kind === 'booking_created')?.at;
+}
+
+export function getBookingInfo(booking: Booking): BookingInfo {
+    const service = services.find((s) => s.id === booking.serviceId);
+    const resident = getUserById(booking.residentId);
+    const supplier = service ? getUserById(service.supplierId) : undefined;
+    const createdEvent = booking.timeline?.find((event) => event.kind === 'booking_created');
+    const closedEvent = booking.timeline?.find((event) => event.kind === 'closed');
+    const lastEvent = lastBookingEvent(booking);
+
+    return {
+        bookingId: booking.id,
+        serviceId: booking.serviceId,
+        serviceName: service?.name ?? 'Servizio',
+        residentId: booking.residentId,
+        residentName: resident?.name,
+        supplierId: service?.supplierId,
+        supplierName: supplier?.name,
+        status: inferBookingStatus(booking),
+        slot: lastEvent?.slot ?? createdEvent?.slot ?? booking.slot,
+        place: lastEvent?.place ?? createdEvent?.place,
+        description: lastEvent?.description ?? createdEvent?.description,
+        createdAt: createdEvent?.at,
+        updatedAt: lastEvent?.at,
+        closedAt: closedEvent?.at,
+        lastEvent
+    };
+}
+
+export function getActiveBookings(bookings: Booking[]): Booking[] {
+    return bookings
+        .filter(isBookingActive)
+        .sort((a, b) => {
+            const createdA = getBookingCreatedAt(a) ?? '';
+            const createdB = getBookingCreatedAt(b) ?? '';
+            return createdA.localeCompare(createdB);
+        });
+}
+
+export function getRecentClosedBookings(bookings: Booking[], limit = 3): Booking[] {
+    return bookings
+        .filter(isBookingClosed)
+        .sort((a, b) => {
+            const aLast = lastBookingEvent(a)?.at ?? '';
+            const bLast = lastBookingEvent(b)?.at ?? '';
+            return bLast.localeCompare(aLast);
+        })
+        .slice(0, limit);
 }
