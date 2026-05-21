@@ -17,7 +17,7 @@
 		getResidentVisibleTicketsByCreatorId,
 		getReportOperationalContext,
 		ticketStatusLabels
-	} from '$lib/components/reports';
+	} from '$lib/components/view-resident/reports';
 	import { inferReportStatus, getReportCreatedAt, getReportUpdatedAt } from '$lib/data/ticket/reports';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';

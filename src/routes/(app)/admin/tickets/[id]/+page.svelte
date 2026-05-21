@@ -8,8 +8,8 @@
 		UserAdd01Icon
 	} from '@hugeicons/core-free-icons';
 	import { StatusBadge } from '$lib/components/shared';
-	import TicketTimeline from '$lib/components/ticket/TicketTimeline.svelte';
-	import type { TicketTimelineItem } from '$lib/components/ticket/types';
+	import TicketTimeline from '$lib/components/shared/ticket/TicketTimeline.svelte';
+	import type { TicketTimelineItem } from '$lib/components/shared/ticket/types';
 	import type { StatusVariant } from '$lib/types';
 	import {
 		getTicketById,

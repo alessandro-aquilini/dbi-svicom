@@ -1,11 +1,10 @@
 // ─── booking-types.ts ────────────────────────────────────────────────────────
 
 export type BookingEventKind =
-    | 'request_created'
+    | 'booking_created'
     | 'confirmed'
     | 'declined'
-    | 'timeslot_updated'
-    | 'performed'
+    | 'booking_updated'
     | 'cancelled'
     | 'closed';
 
@@ -21,7 +20,9 @@ export interface BookingEvent {
     kind: BookingEventKind;
     authorId: string;
     at: string; // ISO datetime
-    // Optional slot payload is attached to request creation or timeslot updates
+    place?: string;
+    description?: string;
+    // Optional slot payload is attached to booking creation or updates
     slot?: BookingSlot;
 }
 
@@ -34,7 +35,7 @@ export interface BookingMessage {
 }
 
 // Booking status (derived from the last event in the timeline)
-export type BookingStatus = 'requested' | 'confirmed' | 'performed' | 'cancelled' | 'closed' | 'declined' | 'unknown';
+export type BookingStatus = 'requested' | 'confirmed' | 'cancelled' | 'closed' | 'declined' | 'unknown';
 
 // ─── Main Booking ─────────────────────────────────────────────────────────────
 
@@ -75,18 +76,15 @@ export function inferBookingStatus(booking: Booking): BookingStatus {
     const last = lastBookingEvent(booking);
     if (!last) return 'unknown';
     switch (last.kind) {
-        case 'request_created':
+        case 'booking_created':
             return 'requested';
         case 'confirmed':
             return 'confirmed';
-        case 'timeslot_updated': {
-            // If a timeslot update exists, fallback to confirmed if a confirmed event exists earlier
+        case 'booking_updated': {
             const timeline = booking.timeline || [];
             const hasConfirmed = timeline.some((ev) => ev.kind === 'confirmed');
             return hasConfirmed ? 'confirmed' : 'requested';
         }
-        case 'performed':
-            return 'performed';
         case 'cancelled':
             return 'cancelled';
         case 'declined':
@@ -106,7 +104,15 @@ export const bookings: Booking[] = [
         residentId: 'res-bianchi-01',
         serviceId: 'srv-pet-sitting-premium',
         timeline: [
-            { id: 'bkg-001-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-06T08:00:00', slot: { start: '2026-05-06T09:30:00', end: '2026-05-06T11:00:00' } },
+            {
+                id: 'bkg-001-e1',
+                kind: 'booking_created',
+                authorId: 'res-bianchi-01',
+                at: '2026-05-06T08:00:00',
+                slot: { start: '2026-05-06T09:30:00', end: '2026-05-06T11:00:00' },
+                place: 'Scala B - Interno 5',
+                description: 'Pet sitting per cane di taglia media'
+            },
             { id: 'bkg-001-e2', kind: 'confirmed', authorId: 'frn-pet-care-h24', at: '2026-05-06T09:00:00' },
             { id: 'bkg-001-e3', kind: 'cancelled', authorId: 'frn-pet-care-h24', at: '2026-05-06T10:00:00' }
         ],
@@ -117,16 +123,23 @@ export const bookings: Booking[] = [
         ]
     },
 
-    // 2) Pulizie extra: performed and paid (simple flow)
+    // 2) Pulizie extra: confirmato e chiuso dopo l'intervento
     {
         id: 'bkg-002',
         residentId: 'res-bianchi-01',
         serviceId: 'srv-pulizie-extra',
         timeline: [
-            { id: 'bkg-002-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-04-20T09:00:00', slot: { start: '2026-04-20T10:00:00', end: '2026-04-20T13:00:00' } },
+            {
+                id: 'bkg-002-e1',
+                kind: 'booking_created',
+                authorId: 'res-bianchi-01',
+                at: '2026-04-20T09:00:00',
+                slot: { start: '2026-04-20T10:00:00', end: '2026-04-20T13:00:00' },
+                place: 'Scala B - Interno 5',
+                description: 'Pulizia extra della zona giorno e corridoio'
+            },
             { id: 'bkg-002-e2', kind: 'confirmed', authorId: 'frn-clean-green', at: '2026-04-20T10:00:00' },
-            { id: 'bkg-002-e3', kind: 'performed', authorId: 'frn-clean-green', at: '2026-04-20T13:00:00' },
-            { id: 'bkg-002-e4', kind: 'closed', authorId: 'adm-giorgio-01', at: '2026-04-20T15:00:00' }
+            { id: 'bkg-002-e4', kind: 'closed', authorId: 'frn-clean-green', at: '2026-04-20T15:00:00' }
         ],
         messageTimeline: [
             { id: 'msg-bkg-002-1', senderId: 'res-bianchi-01', text: 'Richiedo pulizia extra per interno 5, possibile il 20 aprile?', timestamp: '2026-04-20T09:00:00' },
@@ -144,11 +157,26 @@ export const bookings: Booking[] = [
         residentId: 'res-bianchi-01',
         serviceId: 'srv-installazione-climatizzatore',
         timeline: [
-            { id: 'bkg-003-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-01T09:00:00', slot: { start: '2026-05-02T09:00:00', end: '2026-05-02T17:00:00' } },
+            {
+                id: 'bkg-003-e1',
+                kind: 'booking_created',
+                authorId: 'res-bianchi-01',
+                at: '2026-05-01T09:00:00',
+                slot: { start: '2026-05-02T09:00:00', end: '2026-05-02T17:00:00' },
+                place: 'Scala B - Interno 5',
+                description: 'Installazione climatizzatore in soggiorno'
+            },
             { id: 'bkg-003-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-01T11:45:00' },
-            { id: 'bkg-003-e3', kind: 'timeslot_updated', authorId: 'res-bianchi-01', at: '2026-05-02T08:00:00', slot: { start: '2026-05-02T10:00:00', end: '2026-05-02T18:00:00' } },
-            { id: 'bkg-003-e4', kind: 'performed', authorId: 'frn-idroclima-nord', at: '2026-05-02T14:00:00' },
-            { id: 'bkg-003-e5', kind: 'closed', authorId: 'adm-giorgio-01', at: '2026-05-03T09:00:00' }
+            {
+                id: 'bkg-003-e3',
+                kind: 'booking_updated',
+                authorId: 'res-bianchi-01',
+                at: '2026-05-02T08:00:00',
+                slot: { start: '2026-05-02T10:00:00', end: '2026-05-02T18:00:00' },
+                place: 'Scala B - Interno 5',
+                description: 'Richiesta di posticipare l’intervento di un’ora'
+            },
+            { id: 'bkg-003-e5', kind: 'closed', authorId: 'frn-idroclima-nord', at: '2026-05-03T09:00:00' }
         ],
         messageTimeline: [
             { id: 'msg-bkg-003-1', senderId: 'res-bianchi-01', text: 'Vorrei un preventivo per installare un climatizzatore.', timestamp: '2026-05-01T09:00:00' },
@@ -169,7 +197,15 @@ export const bookings: Booking[] = [
         residentId: 'res-bianchi-01',
         serviceId: 'srv-check-termico',
         timeline: [
-            { id: 'bkg-004-e1', kind: 'request_created', authorId: 'res-bianchi-01', at: '2026-05-10T14:20:00', slot: { start: '2026-05-15T10:00:00', end: '2026-05-15T11:00:00' } }
+            {
+                id: 'bkg-004-e1',
+                kind: 'booking_created',
+                authorId: 'res-bianchi-01',
+                at: '2026-05-10T14:20:00',
+                slot: { start: '2026-05-15T10:00:00', end: '2026-05-15T11:00:00' },
+                place: 'Scala B - Interno 5',
+                description: 'Controllo termico della caldaia'
+            }
         ],
         messageTimeline: [
             { id: 'msg-bkg-004-1', senderId: 'res-bianchi-01', text: 'Vorrei un controllo della caldaia prima dell\'estate.', timestamp: '2026-05-10T14:20:00' }
@@ -182,7 +218,15 @@ export const bookings: Booking[] = [
         residentId: 'res-rossi-01',
         serviceId: 'srv-installazione-climatizzatore',
         timeline: [
-            { id: 'bkg-005-e1', kind: 'request_created', authorId: 'res-rossi-01', at: '2026-05-12T09:00:00', slot: { start: '2026-05-20T09:00:00', end: '2026-05-20T12:00:00' } },
+            {
+                id: 'bkg-005-e1',
+                kind: 'booking_created',
+                authorId: 'res-rossi-01',
+                at: '2026-05-12T09:00:00',
+                slot: { start: '2026-05-20T09:00:00', end: '2026-05-20T12:00:00' },
+                place: 'Scala A - Interno 3',
+                description: 'Installazione climatizzatore camera da letto'
+            },
             { id: 'bkg-005-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-13T08:30:00' }
         ],
         messageTimeline: [
@@ -197,7 +241,15 @@ export const bookings: Booking[] = [
         residentId: 'res-bellini-05',
         serviceId: 'srv-riparazione-citofono',
         timeline: [
-            { id: 'bkg-006-e1', kind: 'request_created', authorId: 'res-bellini-05', at: '2026-05-10T08:30:00', slot: { start: '2026-05-12T09:00:00', end: '2026-05-12T11:00:00' } }
+            {
+                id: 'bkg-006-e1',
+                kind: 'booking_created',
+                authorId: 'res-bellini-05',
+                at: '2026-05-10T08:30:00',
+                slot: { start: '2026-05-12T09:00:00', end: '2026-05-12T11:00:00' },
+                place: 'Interno 1',
+                description: 'Riparazione citofono con suoneria difettosa'
+            }
         ]
     }
 ];
@@ -210,9 +262,12 @@ export function getBookingsByResidentId(residentId: string): Booking[] {
     return bookings.filter((b) => b.residentId === residentId);
 }
 
+import { services } from '../services';
+
+// ...existing code...
 export function getBookingsBySupplierId(supplierId: string): Booking[] {
-    // Note: serviceId contains supplier info in the services dataset
-    // For now we filter based on IDs we know belong to the supplier
-    const supplierServiceIds = ['srv-installazione-climatizzatore', 'srv-check-termico'];
+    const supplierServiceIds = services
+        .filter(s => s.supplierId === supplierId)
+        .map(s => s.id);
     return bookings.filter((b) => supplierServiceIds.includes(b.serviceId));
 }

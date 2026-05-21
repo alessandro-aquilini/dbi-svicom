@@ -48,13 +48,12 @@
 		const name = author?.name || 'Sistema';
 		
 		switch (event.kind) {
-			case 'request_created': return `${name} ha creato la richiesta`;
+			case 'booking_created': return `${name} ha creato la prenotazione`;
 			case 'confirmed': return `${name} ha confermato l'appuntamento`;
 			case 'declined': return `${name} ha rifiutato la richiesta`;
-			case 'timeslot_updated': return `${name} ha modificato l'orario`;
-			case 'performed': return `Servizio completato da ${name}`;
+			case 'booking_updated': return `${name} ha aggiornato la prenotazione`;
 			case 'cancelled': return `Richiesta annullata da ${name}`;
-			case 'closed': return `Pratica chiusa`;
+			case 'closed': return `Pratica chiusa da ${name}`;
 			default: return `Stato aggiornato: ${event.kind}`;
 		}
 	}
@@ -80,14 +79,26 @@
 			</div>
 		{:else}
 			<div class="flex justify-center my-2">
-				<div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
-					<div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
-					<span class="text-[10px] font-medium text-slate-500 uppercase tracking-tight">
-						{getEventLabel(item.data)}
-					</span>
-					<span class="text-[9px] text-slate-400">
-						{format(new Date(item.data.at), 'HH:mm')}
-					</span>
+				<div class="flex flex-col items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
+					<div class="flex items-center gap-2">
+						<div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+						<span class="text-[10px] font-medium text-slate-500 uppercase tracking-tight">
+							{getEventLabel(item.data)}
+						</span>
+						<span class="text-[9px] text-slate-400">
+							{format(new Date(item.data.at), 'HH:mm')}
+						</span>
+					</div>
+					{#if item.data.place || item.data.description}
+						<div class="mt-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 text-left max-w-[20rem]">
+							{#if item.data.place}
+								<div class="font-semibold text-slate-700">Luogo: {item.data.place}</div>
+							{/if}
+							{#if item.data.description}
+								<div class="mt-1 leading-5">{item.data.description}</div>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/if}

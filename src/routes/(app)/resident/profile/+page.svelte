@@ -6,7 +6,7 @@
 		UserIcon
 	} from '@hugeicons/core-free-icons';
 	import { getCurrentUser } from '$lib/auth';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import { Button } from '$lib/components/ui/button';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getResidentById } from '$lib/data/residents';

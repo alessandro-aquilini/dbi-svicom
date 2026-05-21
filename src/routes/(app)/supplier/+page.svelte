@@ -90,7 +90,6 @@
 	const statusColors: Record<string, string> = {
 		requested: 'bg-warning/10 text-warning border-warning/20',
 		confirmed: 'bg-primary/10 text-primary border-primary/20',
-		performed: 'bg-success/10 text-success border-success/20',
 		open: 'bg-primary/10 text-primary border-primary/20',
 		'in-progress': 'bg-warning/10 text-warning border-warning/20'
 	};
@@ -100,7 +99,8 @@
 	<title>Dashboard — Fornitore — Svicom Living Hub</title>
 </svelte:head>
 
-<div class="flex flex-col gap-6 p-4 lg:p-8">
+<div class="flex-1 overflow-y-auto pb-24">
+	<div class="flex flex-col gap-6 p-4 lg:p-8">
 	<!-- Welcome Header -->
 	<div class="flex flex-col gap-1">
 		<h1 class="text-2xl font-semibold tracking-tight">Benvenuto, {currentUser?.name?.split(' ')[0] || 'Team'}</h1>
@@ -188,6 +188,7 @@
 			</div>
 		</div>
 
+	</div>
 	</div>
 </div>
 

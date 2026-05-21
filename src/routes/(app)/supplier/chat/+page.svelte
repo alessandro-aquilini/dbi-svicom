@@ -20,11 +20,11 @@
 	} from '@hugeicons/core-free-icons';
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
-	import ChatBubble from '$lib/components/chat-cards/ChatBubble.svelte';
-	import ChatQuoteCard from '$lib/components/chat-cards/ChatQuoteCard.svelte';
-	import ChatInvoiceCard from '$lib/components/chat-cards/ChatInvoiceCard.svelte';
-	import ChatPaymentCard from '$lib/components/chat-cards/ChatPaymentCard.svelte';
-	import ChatTimelineEvent from '$lib/components/chat-cards/ChatTimelineEvent.svelte';
+	import ChatBubble from '$lib/components/shared/chat-cards/ChatBubble.svelte';
+	import ChatQuoteCard from '$lib/components/shared/chat-cards/ChatQuoteCard.svelte';
+	import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
+	import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
+	import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { Badge } from '$lib/components/ui/badge';
@@ -170,8 +170,6 @@
 	const statusColors: Record<string, string> = {
 		requested: 'bg-amber-100 text-amber-700',
 		confirmed: 'bg-emerald-100 text-emerald-700',
-		timeslot_updated: 'bg-blue-100 text-blue-700',
-		performed: 'bg-slate-100 text-slate-700',
 		cancelled: 'bg-red-100 text-red-700',
 		closed: 'bg-slate-100 text-slate-500',
 		declined: 'bg-red-100 text-red-700',

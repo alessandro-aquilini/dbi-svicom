@@ -7,8 +7,8 @@
 		documentCategoryLabels,
 		documentTypeLabels,
 		formatDocumentDate
-	} from '$lib/components/documents';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	} from '$lib/components/view-resident/documents';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import {

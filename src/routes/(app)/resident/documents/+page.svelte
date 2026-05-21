@@ -1,10 +1,10 @@
 <!-- TODO: Importare anche "invoices.ts" e "quotas.ts" dalla chat con il fornitore. Per ora solo i documenti in document.ts -->
 
 	<script lang="ts">
-	import { ResidentDocumentCard, formatDocumentDate } from '$lib/components/documents';
+	import { ResidentDocumentCard, formatDocumentDate } from '$lib/components/view-resident/documents';
 	import {
 		ResidentEmptyCard
-	} from '$lib/components/resident';
+	} from '$lib/components/view-resident/resident';
 	import { InfoTip } from '$lib/components/shared';
 	import {
 		Select,

@@ -16,7 +16,7 @@
 		Tag01Icon,
 		Wrench01Icon
 	} from '@hugeicons/core-free-icons';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import {
 		buildResidentTicketAttachmentSummary,
 		buildResidentTicketAiDraft,
@@ -29,7 +29,7 @@
 		sanitizeResidentTicketPriority,
 		ticketStatusLabels,
 		type ResidentTicketFieldAnswer
-	} from '$lib/components/reports';
+	} from '$lib/components/view-resident/reports';
 	import { DemoDialog, InfoTip } from '$lib/components/shared';
 	import { getCurrentUser } from '$lib/auth';
 	import { getPropertyById } from '$lib/data/properties';

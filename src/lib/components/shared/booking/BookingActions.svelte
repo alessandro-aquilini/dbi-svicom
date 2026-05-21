@@ -52,23 +52,6 @@
 			<HugeiconsIcon icon={Message01Icon} size={18} />
 			Messaggio
 		</button>
-	{:else if status === 'performed'}
-		{#if (booking.invoiceIds?.length ?? 0) > 0}
-			<button 
-				onclick={() => onAction('view-invoice')}
-				class="flex-1 min-w-35 flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors"
-			>
-				<HugeiconsIcon icon={Invoice01Icon} size={18} />
-				Vedi Fattura
-			</button>
-		{/if}
-		<button 
-			onclick={() => onAction('close')}
-			class="flex-1 min-w-35 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity"
-		>
-			<HugeiconsIcon icon={CheckmarkCircle02Icon} size={18} />
-			Chiudi Pratica
-		</button>
 	{:else if status === 'closed' || status === 'cancelled' || status === 'declined'}
 		<button 
 			onclick={() => onAction('archive')}

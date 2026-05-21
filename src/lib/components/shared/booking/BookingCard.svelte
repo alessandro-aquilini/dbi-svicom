@@ -26,8 +26,6 @@
 	const statusColors = {
 		requested: 'bg-amber-100 text-amber-700 border-amber-200',
 		confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-		timeslot_updated: 'bg-blue-100 text-blue-700 border-blue-200',
-		performed: 'bg-slate-100 text-slate-700 border-slate-200',
 		cancelled: 'bg-red-100 text-red-700 border-red-200',
 		closed: 'bg-slate-100 text-slate-500 border-slate-200',
 		declined: 'bg-red-100 text-red-700 border-red-200',
@@ -37,8 +35,6 @@
 	const statusLabels = {
 		requested: 'Richiesta inviata',
 		confirmed: 'Confermato',
-		timeslot_updated: 'Orario aggiornato',
-		performed: 'Eseguito',
 		cancelled: 'Annullato',
 		closed: 'Chiuso',
 		declined: 'Rifiutato',

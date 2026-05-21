@@ -7,8 +7,8 @@
 		getResidentAssemblyContext,
 		getResidentAssemblyProxyRecord,
 		saveResidentAssemblyProxy
-	} from '$lib/components/assemblies';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	} from '$lib/components/view-resident/assemblies';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,

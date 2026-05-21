@@ -1,5 +1,7 @@
-1. Raggruppare le chat per destinatario. E' una chat non un servizio. 
-2. In admin.ts, pagamenti -> contabilità. Tre sezioni (quotes, invoices, payments).
-3. In admin/ticket l'ai summary è una proprietà per ciascun ticket. Da generare in modo carino con animazione. 
 4. Aggiungere i link in giro. 
+
+## Vista supplier
+
+1. La sezione Pagamenti deve avere un po' di contabilità (uscita entrata, andamento ultimo mese). 
+2. Sidebar laterale alla discord (con solo le icone). 
 

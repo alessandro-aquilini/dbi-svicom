@@ -2,7 +2,7 @@
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Notification01Icon, PinIcon } from '@hugeicons/core-free-icons';
 	import { getCurrentUser } from '$lib/auth';
-	import { getResidentVisibleAnnouncements } from '$lib/components/resident/announcements';
+	import { getResidentVisibleAnnouncements } from '$lib/components/view-resident/resident/announcements';
 	import { getAnnouncementsByPropertyId } from '$lib/data/announcements';
 	import { getAssembliesByPropertyId } from '$lib/data/events/assemblies';
 	import { getPropertyById } from '$lib/data/properties';

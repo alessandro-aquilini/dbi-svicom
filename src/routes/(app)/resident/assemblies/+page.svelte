@@ -8,10 +8,10 @@
 		getAssemblyVoteHref,
 		getResidentAssemblyProxyRecord,
 		getResidentAssemblyVoteRecord
-	} from '$lib/components/assemblies';
+	} from '$lib/components/view-resident/assemblies';
 	import {
 		ResidentEmptyCard
-	} from '$lib/components/resident';
+	} from '$lib/components/view-resident/resident';
 	import { InfoTip } from '$lib/components/shared';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';

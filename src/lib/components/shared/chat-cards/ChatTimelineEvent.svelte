@@ -19,14 +19,13 @@
     let { event }: Props = $props();
 
     const config = {
-        request_created: { icon: Add01Icon, label: 'Richiesta creata', color: 'text-blue-500 bg-blue-50' },
-        confirmed: { icon: Tick02Icon, label: 'Prenotazione confermata', color: 'text-emerald-500 bg-emerald-50' },
-        declined: { icon: Cancel01Icon, label: 'Richiesta rifiutata', color: 'text-red-500 bg-red-50' },
-        timeslot_updated: { icon: Clock01Icon, label: 'Orario aggiornato', color: 'text-amber-500 bg-amber-50' },
-        performed: { icon: Tick02Icon, label: 'Intervento completato', color: 'text-emerald-500 bg-emerald-50' },
-        cancelled: { icon: Cancel01Icon, label: 'Prenotazione annullata', color: 'text-slate-400 bg-slate-50' },
-        closed: { icon: LockIcon, label: 'Pratica chiusa', color: 'text-slate-500 bg-slate-100' }
-    };
+		booking_created: { icon: Add01Icon, label: 'Prenotazione creata', color: 'text-blue-500 bg-blue-50' },
+		confirmed: { icon: Tick02Icon, label: 'Prenotazione confermata', color: 'text-emerald-500 bg-emerald-50' },
+		declined: { icon: Cancel01Icon, label: 'Richiesta rifiutata', color: 'text-red-500 bg-red-50' },
+		booking_updated: { icon: Clock01Icon, label: 'Prenotazione aggiornata', color: 'text-amber-500 bg-amber-50' },
+		cancelled: { icon: Cancel01Icon, label: 'Prenotazione annullata', color: 'text-slate-400 bg-slate-50' },
+		closed: { icon: LockIcon, label: 'Pratica chiusa', color: 'text-slate-500 bg-slate-100' }
+	};
 
 	const c = $derived(config[event.kind] || { icon: Calendar03Icon, label: event.kind, color: 'text-slate-400 bg-slate-50' });
 </script>
@@ -42,11 +41,17 @@
             {format(new Date(event.at), "d MMM, HH:mm", { locale: it })}
         </span>
     </div>
-    
-    {#if event.slot}
-        <div class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-[#5D7D94]">
-            <HugeiconsIcon icon={Clock01Icon} size={12} />
-            <span>Appuntamento: {format(new Date(event.slot.start), "HH:mm")} - {format(new Date(event.slot.end), "HH:mm")}</span>
+    {#if event.place || event.description}
+        <div class="max-w-xl rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm text-slate-600">
+            {#if event.place}
+                <div class="flex items-center gap-2 mb-1 text-slate-500">
+                    <HugeiconsIcon icon={Calendar03Icon} size={14} />
+                    <span>{event.place}</span>
+                </div>
+            {/if}
+            {#if event.description}
+                <div class="text-sm leading-5">{event.description}</div>
+            {/if}
         </div>
     {/if}
 </div>

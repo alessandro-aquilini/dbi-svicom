@@ -20,11 +20,11 @@
 		getResidentPaymentsContext,
 		getResidentVisiblePaymentById,
 		PaymentStatusBadge
-	} from '$lib/components/payments';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	} from '$lib/components/view-resident/payments';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { formatMoney, formatPaymentDate, formatPaymentDateTime } from '$lib/components/payments/presentation';
+	import { formatMoney, formatPaymentDate, formatPaymentDateTime } from '$lib/components/view-resident/payments/presentation';
 
 	const currentUser = getCurrentUser();
 	const paymentId = $derived(page.params.id ?? '');

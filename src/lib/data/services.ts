@@ -147,7 +147,7 @@ export const services: Service[] = [
 	},
 	{
 		id: 'srv-check-termico',
-		name: 'Check Termico / Controllo Caldaia',
+		name: 'Check Termico',
 		description: 'Controllo preventivo del corretto funzionamento dell’impianto termico e verifica sicurezza caldaia (check stagionale).',
 		category: 'benessere',
 		pricing: '€50/check',
