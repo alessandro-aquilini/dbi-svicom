@@ -36,13 +36,13 @@
 		type ResidentCalendarEvent,
 		type ResidentCalendarFilter,
 		type ResidentCalendarTone
-	} from '$lib/components/resident/calendar';
+	} from '$lib/components/view-resident/resident/calendar';
 	import {
 		createResidentLocalCalendarEvent,
 		getResidentLocalCalendarEventsByResidentId,
 		residentLocalCalendarEventTypeOptions,
 		type ResidentLocalCalendarEventType
-	} from '$lib/components/resident/local-calendar-events';
+	} from '$lib/components/view-resident/resident/local-calendar-events';
 
 	type CreateEventFormState = {
 		title: string;

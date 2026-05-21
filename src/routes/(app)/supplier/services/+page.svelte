@@ -4,9 +4,9 @@
 		getPastSupplierBookings, 
 		getSupplierServices,
 		getServiceById
-	} from '$lib/components/services';
-	import BookingCard from '$lib/components/services/BookingCard.svelte';
-	import ServiceCard from '$lib/components/services/ServiceCard.svelte';
+	} from '$lib/components/shared/booking';
+	import BookingCard from '$lib/components/shared/booking/BookingCard.svelte';
+	import ServiceCard from '$lib/components/shared/booking/ServiceCard.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { 
 		PlusSignIcon, 
@@ -16,8 +16,8 @@
 		ArrowRight02Icon
 	} from '@hugeicons/core-free-icons';
 	import { Dialog } from '$lib/components/shared';
-	import BookingLifecycleDetail from '$lib/components/services/BookingLifecycleDetail.svelte';
-	import BookingActions from '$lib/components/services/BookingActions.svelte';
+	import BookingLifecycleDetail from '$lib/components/shared/booking/BookingLifecycleDetail.svelte';
+	import BookingActions from '$lib/components/shared/booking/BookingActions.svelte';
 	import { getCurrentUser } from '$lib/auth';
 	import type { Booking } from '$lib/data/ticket/booking';
 	import { goto } from '$app/navigation';

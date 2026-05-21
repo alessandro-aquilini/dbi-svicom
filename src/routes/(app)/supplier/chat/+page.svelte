@@ -20,11 +20,11 @@
 	} from '@hugeicons/core-free-icons';
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
-	import ChatBubble from '$lib/components/chat-cards/ChatBubble.svelte';
-	import ChatQuoteCard from '$lib/components/chat-cards/ChatQuoteCard.svelte';
-	import ChatInvoiceCard from '$lib/components/chat-cards/ChatInvoiceCard.svelte';
-	import ChatPaymentCard from '$lib/components/chat-cards/ChatPaymentCard.svelte';
-	import ChatTimelineEvent from '$lib/components/chat-cards/ChatTimelineEvent.svelte';
+	import ChatBubble from '$lib/components/shared/chat-cards/ChatBubble.svelte';
+	import ChatQuoteCard from '$lib/components/shared/chat-cards/ChatQuoteCard.svelte';
+	import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
+	import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
+	import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { Badge } from '$lib/components/ui/badge';

@@ -9,7 +9,7 @@
 		Notification01Icon
 	} from '@hugeicons/core-free-icons';
 	import { getCurrentUser } from '$lib/auth';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import { InfoTip } from '$lib/components/shared';
 	import { Button } from '$lib/components/ui/button';
 	import { getChatsByUserId, type Message } from '$lib/data/chats';

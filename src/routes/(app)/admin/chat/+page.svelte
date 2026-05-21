@@ -24,12 +24,12 @@
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
 	
-	import ChatBubble from '$lib/components/chat-cards/ChatBubble.svelte';
-	import ChatQuoteCard from '$lib/components/chat-cards/ChatQuoteCard.svelte';
-	import ChatInvoiceCard from '$lib/components/chat-cards/ChatInvoiceCard.svelte';
-	import ChatPaymentCard from '$lib/components/chat-cards/ChatPaymentCard.svelte';
-	import ChatInterventionCard from '$lib/components/chat-cards/ChatInterventionCard.svelte';
-	import ChatTimelineEvent from '$lib/components/chat-cards/ChatTimelineEvent.svelte';
+	import ChatBubble from '$lib/components/shared/chat-cards/ChatBubble.svelte';
+	import ChatQuoteCard from '$lib/components/shared/chat-cards/ChatQuoteCard.svelte';
+	import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
+	import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
+	import ChatInterventionCard from '$lib/components/shared/chat-cards/ChatInterventionCard.svelte';
+	import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';

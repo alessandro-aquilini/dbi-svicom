@@ -5,8 +5,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { ArrowLeft02Icon, FilterIcon, Search01Icon } from '@hugeicons/core-free-icons';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import PaymentRow from '$lib/components/supplier/finances/payments/PaymentRow.svelte';
-	import PaymentDetailsModal from '$lib/components/supplier/finances/payments/PaymentDetailsModal.svelte';
+	import PaymentRow from '$lib/components/view-supplier/finances/payments/PaymentRow.svelte';
+	import PaymentDetailsModal from '$lib/components/view-supplier/finances/payments/PaymentDetailsModal.svelte';
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
 

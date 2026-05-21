@@ -3,9 +3,9 @@
 	import { getResidentById } from '$lib/data/residents';
 	import { getCurrentUser } from '$lib/auth';
 	import { Dialog } from '$lib/components/shared';
-	import ServiceCard from '$lib/components/services/ServiceCard.svelte';
-	import ServiceDetailView from '$lib/components/services/ServiceDetailView.svelte';
-	import ServiceBookingForm from '$lib/components/services/ServiceBookingForm.svelte';
+	import ServiceCard from '$lib/components/shared/booking/ServiceCard.svelte';
+	import ServiceDetailView from '$lib/components/shared/booking/ServiceDetailView.svelte';
+	import ServiceBookingForm from '$lib/components/shared/booking/ServiceBookingForm.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		Search01Icon,

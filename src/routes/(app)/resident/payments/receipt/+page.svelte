@@ -4,8 +4,8 @@
 		formatPaymentDateTime,
 		getResidentPaymentsContext,
 		getResidentReceiptByReference
-	} from '$lib/components/payments';
-	import { ResidentEmptyCard } from '$lib/components/resident';
+	} from '$lib/components/view-resident/payments';
+	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,

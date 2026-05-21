@@ -13,8 +13,8 @@
 		FilterIcon
 	} from '@hugeicons/core-free-icons';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import DocumentRow from '$lib/components/supplier/finances/documents/DocumentRow.svelte';
-	import DocumentDetailsModal from '$lib/components/supplier/finances/documents/DocumentDetailsModal.svelte';
+	import DocumentRow from '$lib/components/view-supplier/finances/documents/DocumentRow.svelte';
+	import DocumentDetailsModal from '$lib/components/view-supplier/finances/documents/DocumentDetailsModal.svelte';
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
 

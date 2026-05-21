@@ -19,7 +19,7 @@
 		getCurrentStatus,
 		getReportOperationalContext,
 		ticketProgressValues
-	} from '$lib/components/reports';
+	} from '$lib/components/view-resident/reports';
 	import { getInvoiceById } from '$lib/data/embeds/invoices';
 	import { getPaymentById } from '$lib/data/embeds/payments';
 	import { getQuoteById } from '$lib/data/embeds/quotes';

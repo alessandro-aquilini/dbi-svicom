@@ -17,11 +17,11 @@
 		Agreement01Icon,
 	} from "@hugeicons/core-free-icons";
 	import { HugeiconsIcon } from "@hugeicons/svelte";
-	import FinanceRadar from "$lib/components/supplier/finances/FinanceRadar.svelte";
-	import PaymentRow from "$lib/components/supplier/finances/payments/PaymentRow.svelte";
-	import PaymentDetailsModal from "$lib/components/supplier/finances/payments/PaymentDetailsModal.svelte";
-	import DocumentRow from "$lib/components/supplier/finances/documents/DocumentRow.svelte";
-	import DocumentDetailsModal from "$lib/components/supplier/finances/documents/DocumentDetailsModal.svelte";
+	import FinanceRadar from "$lib/components/view-supplier/finances/FinanceRadar.svelte";
+	import PaymentRow from "$lib/components/view-supplier/finances/payments/PaymentRow.svelte";
+	import PaymentDetailsModal from "$lib/components/view-supplier/finances/payments/PaymentDetailsModal.svelte";
+	import DocumentRow from "$lib/components/view-supplier/finances/documents/DocumentRow.svelte";
+	import DocumentDetailsModal from "$lib/components/view-supplier/finances/documents/DocumentDetailsModal.svelte";
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? "frn-idroclima-nord";

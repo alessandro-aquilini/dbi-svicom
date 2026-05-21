@@ -8,11 +8,11 @@
 		getResidentPaymentReminder,
 		getResidentPaymentStatus,
 		getResidentPaymentsContext
-	} from '$lib/components/payments';
+	} from '$lib/components/view-resident/payments';
 	import {
 		ResidentEmptyCard,
 		ResidentPieChart
-	} from '$lib/components/resident';
+	} from '$lib/components/view-resident/resident';
 	import { InfoTip } from '$lib/components/shared';
 	import { Button } from '$lib/components/ui/button';
 	import {
