@@ -40,6 +40,11 @@
 			? 'muted'
 			: 'destructive'
 	);
+	const chatLink = $derived(
+		view === 'resident'
+			? `/resident/services/chat?id=${booking.id}`
+			: `/supplier/chat?id=${booking.residentId}`
+	);
 
 	function formatDate(iso?: string) {
 		if (!iso) return 'Non definito';
@@ -67,6 +72,12 @@
 			<p class="text-xs text-muted-foreground">{collaboratorLabel} {collaboratorName}</p>
 		</div>
 		<StatusBadge label={statusLabel} variant={statusVariant} />
+	</div>
+
+	<div class="mt-4 flex flex-wrap items-center gap-2">
+		<a href={chatLink} class="inline-flex items-center rounded-2xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/20">
+			Apri chat
+		</a>
 	</div>
 
 	<div class="mt-4 space-y-3 text-sm text-muted-foreground">

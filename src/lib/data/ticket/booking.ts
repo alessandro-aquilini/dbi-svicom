@@ -24,6 +24,7 @@ export interface BookingEvent {
     at: string; // ISO datetime
     place?: string;
     description?: string;
+    propertyId?: string;
     // Optional slot payload is attached to booking creation or updates
     slot?: BookingSlot;
 }
@@ -113,7 +114,8 @@ export const bookings: Booking[] = [
                 at: '2026-05-06T08:00:00',
                 slot: { start: '2026-05-06T09:30:00', end: '2026-05-06T11:00:00' },
                 place: 'Scala B - Interno 5',
-                description: 'Pet sitting per cane di taglia media'
+                description: 'Pet sitting per cane di taglia media',
+                propertyId: 'cnd-marconi-14'
             },
             { id: 'bkg-001-e2', kind: 'confirmed', authorId: 'frn-pet-care-h24', at: '2026-05-06T09:00:00' },
             { id: 'bkg-001-e3', kind: 'cancelled', authorId: 'frn-pet-care-h24', at: '2026-05-06T10:00:00' }
@@ -138,7 +140,8 @@ export const bookings: Booking[] = [
                 at: '2026-04-20T09:00:00',
                 slot: { start: '2026-04-20T10:00:00', end: '2026-04-20T13:00:00' },
                 place: 'Scala B - Interno 5',
-                description: 'Pulizia extra della zona giorno e corridoio'
+                description: 'Pulizia extra della zona giorno e corridoio',
+                propertyId: 'cnd-marconi-14'
             },
             { id: 'bkg-002-e2', kind: 'confirmed', authorId: 'frn-clean-green', at: '2026-04-20T10:00:00' },
             { id: 'bkg-002-e4', kind: 'closed', authorId: 'frn-clean-green', at: '2026-04-20T15:00:00' }
@@ -166,7 +169,8 @@ export const bookings: Booking[] = [
                 at: '2026-05-01T09:00:00',
                 slot: { start: '2026-05-02T09:00:00', end: '2026-05-02T17:00:00' },
                 place: 'Scala B - Interno 5',
-                description: 'Installazione climatizzatore in soggiorno'
+                description: 'Installazione climatizzatore in soggiorno',
+                propertyId: 'cnd-marconi-14'
             },
             { id: 'bkg-003-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-01T11:45:00' },
             {
@@ -206,7 +210,8 @@ export const bookings: Booking[] = [
                 at: '2026-05-10T14:20:00',
                 slot: { start: '2026-05-15T10:00:00', end: '2026-05-15T11:00:00' },
                 place: 'Scala B - Interno 5',
-                description: 'Controllo termico della caldaia'
+                description: 'Controllo termico della caldaia',
+                propertyId: 'cnd-marconi-14'
             }
         ],
         messageTimeline: [
@@ -227,7 +232,8 @@ export const bookings: Booking[] = [
                 at: '2026-05-12T09:00:00',
                 slot: { start: '2026-05-20T09:00:00', end: '2026-05-20T12:00:00' },
                 place: 'Scala A - Interno 3',
-                description: 'Installazione climatizzatore camera da letto'
+                description: 'Installazione climatizzatore camera da letto',
+                propertyId: 'cnd-verdi-3'
             },
             { id: 'bkg-005-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-13T08:30:00' }
         ],
@@ -250,7 +256,8 @@ export const bookings: Booking[] = [
                 at: '2026-05-10T08:30:00',
                 slot: { start: '2026-05-12T09:00:00', end: '2026-05-12T11:00:00' },
                 place: 'Interno 1',
-                description: 'Riparazione citofono con suoneria difettosa'
+                description: 'Riparazione citofono con suoneria difettosa',
+                propertyId: 'cnd-marconi-14'
             }
         ]
     }
@@ -285,6 +292,7 @@ export interface BookingInfo {
     slot?: BookingSlot;
     place?: string;
     description?: string;
+    propertyId?: string;
     createdAt?: string;
     updatedAt?: string;
     closedAt?: string;
@@ -324,6 +332,7 @@ export function getBookingInfo(booking: Booking): BookingInfo {
         slot: lastEvent?.slot ?? createdEvent?.slot ?? booking.slot,
         place: lastEvent?.place ?? createdEvent?.place,
         description: lastEvent?.description ?? createdEvent?.description,
+        propertyId: createdEvent?.propertyId,
         createdAt: createdEvent?.at,
         updatedAt: lastEvent?.at,
         closedAt: closedEvent?.at,
