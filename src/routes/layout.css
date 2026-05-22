@@ -6,6 +6,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* shadcn-svelte primitives expose state via data-state="checked|unchecked".
+   Map data-checked / data-unchecked variants to that selector. */
+@custom-variant data-checked (&[data-state="checked"]);
+@custom-variant data-unchecked (&[data-state="unchecked"]);
+
 /* ─── Montserrat Variable Font (matches svicom.com brand) ─── */
 /*
  * ─── Svicom Living Hub Design System ───
