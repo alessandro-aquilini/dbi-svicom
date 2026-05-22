@@ -23,15 +23,14 @@
 
 <div class="p-4 sm:p-6 lg:p-8">
 	<div class="mb-6 max-w-5xl">
-		<p class="text-sm uppercase tracking-[0.24em] text-primary">Servizi</p>
-		<h1 class="mt-3 text-3xl font-semibold tracking-tight">Gestione prenotazioni</h1>
-		<p class="mt-2 max-w-2xl text-sm text-muted-foreground">Qui trovi le richieste attive del tuo catalogo e le ultime prenotazioni già chiuse.</p>
+		<h1 class="mt-3 text-3xl font-semibold tracking-tight">Servizi</h1>
+		<p class="mt-2 max-w-2xl text-sm text-muted-foreground">Qui trovi le richieste attive e le ultimi prenotazioni avvenute</p>
 	</div>
 
 	<section class="space-y-4">
 		<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 			<div>
-				<h2 class="text-xl font-semibold">Prenotazioni attive</h2>
+				<h2 class="text-xl font-semibold">Servizi in corso</h2>
 				<p class="mt-1 text-sm text-muted-foreground">Prenotazioni create e non ancora chiuse.</p>
 			</div>
 			<div class="rounded-2xl border border-border bg-card px-4 py-3 text-sm">

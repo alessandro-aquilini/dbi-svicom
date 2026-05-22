@@ -12,7 +12,7 @@
     import ChatQuoteCard from '$lib/components/shared/chat-cards/ChatQuoteCard.svelte';
     import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
     import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
-    import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
+    import BookingTimelineEvent from '$lib/components/shared/booking/actions-cards/BookingTimelineEvent.svelte';
     import { HugeiconsIcon } from '@hugeicons/svelte';
     import { ArrowLeft01Icon, SentIcon, Message01Icon, InformationCircleIcon } from '@hugeicons/core-free-icons';
 
@@ -110,7 +110,7 @@
                         {#if item.type === 'message'}
                             <ChatBubble message={item.data} isOwn={isOwnMessage(item.data.senderId)} />
                         {:else if item.type === 'event'}
-                            <ChatTimelineEvent event={item.data} />
+                            <BookingTimelineEvent event={item.data} currentUserId={residentId} />
                         {:else if item.type === 'quote'}
                             <ChatQuoteCard quote={item.data} isOwn={item.data.supplierId === service?.supplierId} />
                         {:else if item.type === 'invoice'}

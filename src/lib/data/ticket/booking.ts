@@ -185,7 +185,7 @@ export const bookings: Booking[] = [
             { id: 'bkg-003-e5', kind: 'closed', authorId: 'frn-idroclima-nord', at: '2026-05-03T09:00:00' }
         ],
         messageTimeline: [
-            { id: 'msg-bkg-003-1', senderId: 'res-bianchi-01', text: 'Vorrei un preventivo per installare un climatizzatore.', timestamp: '2026-05-01T09:00:00' },
+            { id: 'msg-bkg-003-1', senderId: 'res-bianchi-01', text: 'Vorrei un preventivo per installare un climatizzatore.', timestamp: '2026-05-01T09:01:00' },
             { id: 'msg-bkg-003-2', senderId: 'frn-idroclima-nord', text: 'Ti invio un preventivo, controllo materiali e costi.', timestamp: '2026-05-01T11:30:00' },
             { id: 'msg-bkg-003-3', senderId: 'res-bianchi-01', text: 'Accetto il preventivo, procedete con l\'intervento.', timestamp: '2026-05-02T09:00:00' },
             { id: 'msg-bkg-003-4', senderId: 'frn-idroclima-nord', text: 'Intervento completato. Abbiamo emesso la fattura.', timestamp: '2026-05-03T10:00:00' },
