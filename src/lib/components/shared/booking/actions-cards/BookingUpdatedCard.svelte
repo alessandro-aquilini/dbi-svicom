@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { BookingEvent } from '$lib/data/ticket/booking';
     import { HugeiconsIcon } from '@hugeicons/svelte';
-    import { Clock01Icon, Calendar03Icon, Location01Icon, Note01Icon } from '@hugeicons/core-free-icons';
+    import { Calendar03Icon, Location01Icon, Note01Icon, PencilEdit01Icon } from '@hugeicons/core-free-icons';
     import { format } from 'date-fns';
     import { it } from 'date-fns/locale';
 
@@ -22,56 +22,39 @@
 </script>
 
 <div class="flex flex-col {isOwn ? 'items-end' : 'items-start'} w-full">
-    <div class="max-w-[90%]">
-        <div class="rounded-[28px] border p-4 shadow-sm transition-colors {isOwn ? 'bg-[#5D7D94] border-transparent text-white' : 'bg-white border border-slate-200 text-slate-900'}">
-            <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-2 text-sm font-semibold {isOwn ? 'text-slate-100' : 'text-slate-900'}">
-                    <HugeiconsIcon icon={Clock01Icon} size={18} />
-                    <span>Prenotazione aggiornata</span>
-                </div>
-                <span class="text-[10px] font-medium {isOwn ? 'text-slate-200' : 'text-slate-400'}">
-                    {format(new Date(event.at), 'd MMM · HH:mm', { locale: it })}
-                </span>
+    <div class="max-w-[85%]">
+        <div class="rounded-2xl border p-3.5 shadow-sm transition-all {isOwn ? 'bg-amber-500 border-transparent text-white' : 'bg-white border-slate-200 text-slate-900'}">
+            <div class="flex items-center gap-2 mb-2 font-bold text-sm">
+                <HugeiconsIcon icon={PencilEdit01Icon} size={18} class={isOwn ? 'text-amber-100' : 'text-amber-500'} />
+                <span>{isOwn ? 'Hai modificato i dettagli' : 'Prenotazione aggiornata'}</span>
             </div>
 
-            <p class="mt-3 text-sm leading-6 {isOwn ? 'text-slate-100/90' : 'text-slate-600'}">
-                {isOwn ? 'Hai modificato la prenotazione' : 'La prenotazione è stata modificata'}
-            </p>
-            <p class="mt-1 text-xs {isOwn ? 'text-slate-200/90' : 'text-slate-400'}">
-                I dettagli aggiornati sono disponibili qui sotto.
-            </p>
+            <div class="space-y-2.5">
+                {#if event.slot}
+                    <div class="flex items-center gap-2.5 text-xs">
+                        <HugeiconsIcon icon={Calendar03Icon} size={14} class={isOwn ? 'text-amber-100' : 'text-slate-400'} />
+                        <span class="font-semibold">{formatSlot(event.slot)}</span>
+                    </div>
+                {/if}
+                
+                {#if event.place}
+                    <div class="flex items-center gap-2.5 text-xs">
+                        <HugeiconsIcon icon={Location01Icon} size={14} class={isOwn ? 'text-amber-100' : 'text-slate-400'} />
+                        <span class="font-medium">{event.place}</span>
+                    </div>
+                {/if}
 
-            {#if event.slot || event.place || event.description}
-                <div class="mt-4 space-y-3">
-                    {#if event.slot}
-                        <div class="rounded-3xl border px-3 py-3 {isOwn ? 'border-white/20 bg-white/10' : 'border-slate-200 bg-slate-50'}">
-                            <div class="flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-slate-500 font-semibold">
-                                <HugeiconsIcon icon={Calendar03Icon} size={14} />
-                                Nuovo orario
-                            </div>
-                            <p class="mt-2 text-sm font-medium {isOwn ? 'text-white' : 'text-slate-900'}">{formatSlot(event.slot)}</p>
-                        </div>
-                    {/if}
-                    {#if event.place}
-                        <div class="rounded-3xl border px-3 py-3 {isOwn ? 'border-white/20 bg-white/10' : 'border-slate-200 bg-slate-50'}">
-                            <div class="flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-slate-500 font-semibold">
-                                <HugeiconsIcon icon={Location01Icon} size={14} />
-                                Luogo
-                            </div>
-                            <p class="mt-2 text-sm font-medium {isOwn ? 'text-white' : 'text-slate-900'}">{event.place}</p>
-                        </div>
-                    {/if}
-                    {#if event.description}
-                        <div class="rounded-3xl border px-3 py-3 {isOwn ? 'border-white/20 bg-white/10' : 'border-slate-200 bg-slate-50'}">
-                            <div class="flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-slate-500 font-semibold">
-                                <HugeiconsIcon icon={Note01Icon} size={14} />
-                                Dettagli
-                            </div>
-                            <p class="mt-2 text-sm leading-6 {isOwn ? 'text-white' : 'text-slate-900'}">{event.description}</p>
-                        </div>
-                    {/if}
-                </div>
-            {/if}
+                {#if event.description}
+                    <div class="flex items-start gap-2.5 pt-1 border-t {isOwn ? 'border-white/10' : 'border-slate-100'}">
+                        <HugeiconsIcon icon={Note01Icon} size={14} class="mt-0.5 {isOwn ? 'text-amber-100' : 'text-slate-400'}" />
+                        <p class="text-xs leading-relaxed opacity-90">{event.description}</p>
+                    </div>
+                {/if}
+            </div>
         </div>
+        
+        <p class="mt-1.5 px-1 text-[10px] font-medium {isOwn ? 'text-right text-slate-400' : 'text-slate-500'}">
+            {format(new Date(event.at), 'd MMM · HH:mm', { locale: it })}
+        </p>
     </div>
 </div>
