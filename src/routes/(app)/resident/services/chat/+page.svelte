@@ -3,7 +3,12 @@
     import { goto } from '$app/navigation';
     import { getCurrentUser } from '$lib/auth';
     import { getUserById } from '$lib/data/users';
-    import { getBookingById } from '$lib/data/ticket/booking';
+    import { 
+        getBookingById, 
+        isBookingActive, 
+        getBookingInfo, 
+        updateBookingStatusAction 
+    } from '$lib/data/ticket/booking';
     import { services } from '$lib/data/services';
     import { getQuoteById } from '$lib/data/embeds/quotes';
     import { getInvoiceById } from '$lib/data/embeds/invoices';
@@ -13,8 +18,10 @@
     import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
     import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
     import BookingTimelineEvent from '$lib/components/shared/booking/actions-cards/BookingTimelineEvent.svelte';
+    import PaymentModal from '$lib/components/shared/chat-buttons/PaymentModal.svelte';
     import { HugeiconsIcon } from '@hugeicons/svelte';
-    import { ArrowLeft01Icon, SentIcon, Message01Icon, InformationCircleIcon } from '@hugeicons/core-free-icons';
+    import { ArrowLeft01Icon, SentIcon, Message01Icon, InformationCircleIcon, Cancel01Icon } from '@hugeicons/core-free-icons';
+    import { Button } from '$lib/components/ui/button';
 
     const currentUser = getCurrentUser();
     const residentId = currentUser?.id ?? '';
@@ -24,6 +31,10 @@
     const supplier = $derived.by(() => (service?.supplierId ? getUserById(service.supplierId) : undefined));
     const chatTitle = $derived.by(() => service?.name ?? 'Chat servizio');
     const chatSubtitle = $derived.by(() => (supplier?.name ? `Fornitore · ${supplier.name}` : 'Prenotazione in corso'));
+
+    const bookingInfo = $derived(booking ? getBookingInfo(booking) : null);
+    let accordionOpen = $state(false);
+    let showPaymentModal = $state(false);
 
     const timelineItems = $derived.by(() => {
         const items: any[] = [];
@@ -69,7 +80,22 @@
         const day = new Date(slot.start).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
         return `${day} · ${starts} – ${ends}`;
     }
+
+    function handleCancelBooking() {
+        if (!bookingId) return;
+        updateBookingStatusAction(bookingId, 'cancelled', residentId);
+    }
 </script>
+
+{#if booking && bookingInfo}
+    <PaymentModal 
+        bind:open={showPaymentModal} 
+        bookingId={booking.id} 
+        fromId={residentId} 
+        toId={supplier?.id ?? ''} 
+        propertyId={bookingInfo.propertyId ?? ''} 
+    />
+{/if}
 
 <svelte:head>
     <title>Chat servizio — Residente — Svicom Living Hub</title>
@@ -86,11 +112,52 @@
                 <h1 class="text-base font-semibold text-slate-900 truncate">{chatTitle}</h1>
                 <p class="text-[11px] text-slate-500 truncate">{chatSubtitle}</p>
             </div>
-            <button type="button" class="ml-auto hidden h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 md:flex">
+            <button 
+                type="button" 
+                onclick={() => accordionOpen = !accordionOpen}
+                class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-2xl transition md:flex {accordionOpen ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}"
+            >
                 <HugeiconsIcon icon={InformationCircleIcon} size={18} />
             </button>
         </div>
-        {#if booking}
+        {#if booking && bookingInfo && isBookingActive(booking) && accordionOpen}
+            <div class="border-t border-border px-4 py-4 bg-slate-50 animate-in slide-in-from-top duration-200">
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">{bookingInfo.serviceName}</h3>
+                            <p class="text-xs text-slate-500 mt-1">{bookingInfo.place} • {bookingInfo.description}</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Stato attuale</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">
+                                {bookingInfo.status.toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid gap-2 sm:grid-cols-2 mb-4">
+                        <div class="rounded-xl bg-white border border-border px-3 py-2 text-xs text-slate-600 shadow-sm flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
+                            {formatSlot(booking.slot)}
+                        </div>
+                        {#if bookingInfo.place}
+                            <div class="rounded-xl bg-white border border-border px-3 py-2 text-xs text-slate-600 shadow-sm flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
+                                {bookingInfo.place}
+                            </div>
+                        {/if}
+                    </div>
+
+                    <div class="flex justify-end">
+                        <Button size="sm" variant="outline" class="text-red-600 border-red-200 hover:bg-red-50 h-8 text-xs px-3" onclick={handleCancelBooking}>
+                            <HugeiconsIcon icon={Cancel01Icon} size={14} class="mr-1.5" />
+                            Annulla Prenotazione
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        {:else if booking}
             <div class="border-t border-border px-4 py-3 bg-slate-50">
                 <div class="grid gap-2 sm:grid-cols-2">
                     <div class="rounded-3xl bg-white px-3 py-2 text-xs text-slate-500 shadow-sm">{formatSlot(booking.slot)}</div>
@@ -129,15 +196,24 @@
             </section>
 
             <footer class="sticky bottom-0 z-10 border-t border-border bg-white px-4 py-4">
-                <div class="flex items-center gap-3 rounded-2xl border border-border bg-slate-50 px-3 py-2 shadow-sm">
-                    <input
-                        type="text"
-                        placeholder="Scrivi un messaggio..."
-                        class="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                    />
-                    <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white transition hover:opacity-90">
-                        <HugeiconsIcon icon={SentIcon} size={18} />
-                    </button>
+                <div class="max-w-4xl mx-auto flex flex-col gap-3">
+                    {#if isBookingActive(booking)}
+                        <div class="flex gap-2 px-1 overflow-x-auto no-scrollbar pb-1">
+                            <Button variant="outline" size="sm" class="rounded-full bg-white border-slate-200 text-xs h-8 shadow-sm" onclick={() => showPaymentModal = true}>
+                                💳 Nuovo Pagamento
+                            </Button>
+                        </div>
+                    {/if}
+                    <div class="flex items-center gap-3 rounded-2xl border border-border bg-slate-50 px-3 py-2 shadow-sm">
+                        <input
+                            type="text"
+                            placeholder="Scrivi un messaggio..."
+                            class="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                        />
+                        <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white transition hover:opacity-90">
+                            <HugeiconsIcon icon={SentIcon} size={18} />
+                        </button>
+                    </div>
                 </div>
             </footer>
         </main>

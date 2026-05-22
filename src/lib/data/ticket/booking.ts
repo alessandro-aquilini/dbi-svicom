@@ -360,3 +360,38 @@ export function getRecentClosedBookings(bookings: Booking[], limit = 3): Booking
         })
         .slice(0, limit);
 }
+
+export function addBookingEvent(bookingId: string, event: Omit<BookingEvent, 'id' | 'at'>): void {
+    const booking = getBookingById(bookingId);
+    if (!booking) return;
+
+    if (!booking.timeline) booking.timeline = [];
+
+    const newEvent: BookingEvent = {
+        ...event,
+        id: `bkg-${bookingId.split('-').pop()}-e${booking.timeline.length + 1}`,
+        at: new Date().toISOString()
+    };
+
+    booking.timeline.push(newEvent);
+}
+
+export function updateBookingStatusAction(bookingId: string, kind: BookingEventKind, authorId: string): void {
+    addBookingEvent(bookingId, {
+        kind,
+        authorId
+    });
+}
+
+export function linkDocumentToBooking(bookingId: string, type: 'invoice' | 'quote' | 'payment', documentId: string): void {
+    const booking = getBookingById(bookingId);
+    if (!booking) return;
+
+    if (type === 'invoice') {
+        booking.invoiceIds = [...(booking.invoiceIds || []), documentId];
+    } else if (type === 'quote') {
+        booking.quoteIds = [...(booking.quoteIds || []), documentId];
+    } else if (type === 'payment') {
+        booking.paymentIds = [...(booking.paymentIds || []), documentId];
+    }
+}

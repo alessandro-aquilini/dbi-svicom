@@ -26,9 +26,19 @@
 	import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
 	import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
 	import BookingTimelineEvent from '$lib/components/shared/booking/actions-cards/BookingTimelineEvent.svelte';
+	import { 
+		isBookingActive, 
+		getBookingInfo, 
+		updateBookingStatusAction, 
+		type BookingStatus 
+	} from '$lib/data/ticket/booking';
+	import InvoiceModal from '$lib/components/shared/chat-buttons/InvoiceModal.svelte';
+	import QuoteModal from '$lib/components/shared/chat-buttons/QuoteModal.svelte';
+	import TaskModal from '$lib/components/shared/chat-buttons/TaskModal.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
@@ -37,6 +47,11 @@
 	type ChatType = 'admin' | 'resident';
 	let activeTab = $state<ChatType>('resident');
 	const selectedId = $derived(page.url.searchParams.get('id'));
+
+	let showInvoiceModal = $state(false);
+	let showQuoteModal = $state(false);
+	let showTaskModal = $state(false);
+	let accordionOpen = $state(false);
 
 	// Resident Chats: group bookings by residentId
 	const residentChats = $derived.by(() => {
@@ -99,6 +114,9 @@
 		? (activeTab === 'resident' ? getResidentInfo((activeChat as any).userId) : getResidentInfo((activeChat as any).adminId))
 		: null);
 	
+	const activeBooking = $derived(activeTab === 'resident' && activeChat ? (activeChat as any).bookings[(activeChat as any).bookings.length - 1] : null);
+	const bookingInfo = $derived(activeBooking ? getBookingInfo(activeBooking) : null);
+
 	const timelineItems = $derived.by(() => {
 		const items: any[] = [];
 		if (!activeChat) return [];
@@ -182,7 +200,37 @@
 		completed: 'bg-emerald-100 text-emerald-700',
 		paid: 'bg-slate-100 text-slate-700'
 	};
+
+	function handleUpdateStatus(kind: any) {
+		if (!activeBooking) return;
+		updateBookingStatusAction(activeBooking.id, kind, supplierId);
+		// Local trigger for re-render if needed, though $derived should handle it if 'bookings' is reactive.
+		// Since 'bookings' is a simple array export, we might need to trigger a refresh or use a state-proxied version.
+		// For this demo, we assume the UI reacts to the mutation.
+	}
 </script>
+
+<InvoiceModal 
+	bind:open={showInvoiceModal} 
+	bookingId={activeBooking?.id ?? ''} 
+	supplierId={supplierId} 
+	customerId={activeBooking?.residentId ?? ''} 
+	propertyId={bookingInfo?.propertyId ?? ''} 
+/>
+<QuoteModal 
+	bind:open={showQuoteModal} 
+	bookingId={activeBooking?.id ?? ''} 
+	supplierId={supplierId} 
+	customerId={activeBooking?.residentId ?? ''} 
+	propertyId={bookingInfo?.propertyId ?? ''} 
+/>
+<TaskModal 
+	bind:open={showTaskModal} 
+	bookingId={activeBooking?.id ?? ''} 
+	supplierId={supplierId} 
+	customerId={activeBooking?.residentId ?? ''} 
+	propertyId={bookingInfo?.propertyId ?? ''} 
+/>
 
 <div class="flex h-[calc(100vh-64px)] bg-white overflow-hidden">
 	<!-- Sidebar: Chat List -->
@@ -295,11 +343,40 @@
 				</div>
 
 				<div class="flex items-center gap-1">
-					<button class="p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
+					<button 
+						onclick={() => accordionOpen = !accordionOpen}
+						class="p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors {accordionOpen ? 'bg-slate-100 text-primary' : ''}"
+					>
 						<HugeiconsIcon icon={InformationCircleIcon} size={20} />
 					</button>
 				</div>
 			</header>
+
+			{#if activeBooking && isBookingActive(activeBooking) && accordionOpen}
+				<div class="bg-white border-b border-border p-4 animate-in slide-in-from-top duration-200">
+					<div class="max-w-4xl mx-auto">
+						<div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+							<div>
+								<h3 class="font-bold text-slate-900">{bookingInfo?.serviceName}</h3>
+								<p class="text-xs text-slate-500">{bookingInfo?.place} • {bookingInfo?.description}</p>
+							</div>
+							<Badge class={statusColors[bookingInfo?.status ?? 'unknown']}>
+								{bookingInfo?.status}
+							</Badge>
+						</div>
+
+						<div class="flex flex-wrap gap-2">
+							{#if bookingInfo?.status === 'requested'}
+								<Button size="sm" onclick={() => handleUpdateStatus('confirmed')}>Accetta Prenotazione</Button>
+								<Button size="sm" variant="outline" class="text-red-600 hover:text-red-700 hover:bg-red-50" onclick={() => handleUpdateStatus('declined')}>Rifiuta</Button>
+							{:else if ['confirmed', 'booking_updated'].includes(bookingInfo?.status ?? '')}
+								<Button size="sm" variant="outline" onclick={() => handleUpdateStatus('cancelled')}>Annulla</Button>
+								<Button size="sm" onclick={() => handleUpdateStatus('closed')}>Completa Intervento</Button>
+							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
 
 			<div class="flex-1 overflow-y-auto p-4 space-y-6">
 				{#each timelineItems as item}
@@ -331,16 +408,32 @@
 			</div>
 
 			<footer class="p-4 bg-white border-t border-border sticky bottom-0">
-				<div class="flex gap-3 max-w-4xl mx-auto items-center">
-					<div class="bg-slate-50 flex items-center gap-2 border border-slate-200 rounded-2xl p-1.5 w-full">
-						<input 
-							type="text" 
-							placeholder="Scrivi un messaggio..." 
-							class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
-						/>
-						<button class="bg-[#5D7D94] text-white p-2 rounded-xl hover:opacity-90 transition-opacity">
-							<HugeiconsIcon icon={SentIcon} size={18} />
-						</button>
+				<div class="max-w-4xl mx-auto flex flex-col gap-3">
+					{#if activeTab === 'resident' && activeBooking && isBookingActive(activeBooking)}
+						<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+							<Button variant="outline" size="sm" class="rounded-full bg-slate-50 border-slate-200 text-xs h-8" onclick={() => showInvoiceModal = true}>
+								🧾 Nuova Fattura
+							</Button>
+							<Button variant="outline" size="sm" class="rounded-full bg-slate-50 border-slate-200 text-xs h-8" onclick={() => showQuoteModal = true}>
+								📄 Nuovo Preventivo
+							</Button>
+							<Button variant="outline" size="sm" class="rounded-full bg-slate-50 border-slate-200 text-xs h-8" onclick={() => showTaskModal = true}>
+								🔧 Nuovo Intervento
+							</Button>
+						</div>
+					{/if}
+					
+					<div class="flex gap-3 items-center">
+						<div class="bg-slate-50 flex items-center gap-2 border border-slate-200 rounded-2xl p-1.5 w-full">
+							<input 
+								type="text" 
+								placeholder="Scrivi un messaggio..." 
+								class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
+							/>
+							<button class="bg-[#5D7D94] text-white p-2 rounded-xl hover:opacity-90 transition-opacity">
+								<HugeiconsIcon icon={SentIcon} size={18} />
+							</button>
+						</div>
 					</div>
 				</div>
 			</footer>

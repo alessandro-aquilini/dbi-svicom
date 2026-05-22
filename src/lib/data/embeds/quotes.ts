@@ -74,3 +74,13 @@ export function getQuoteById(id: string): Quote | undefined {
 export function getQuotesBySupplierId(supplierId: string): Quote[] {
 	return quotes.filter((q) => q.supplierId === supplierId);
 }
+
+export function createQuote(quote: Omit<Quote, 'id' | 'createdAt'>): Quote {
+	const newQuote: Quote = {
+		...quote,
+		id: `quo-${Math.random().toString(36).substr(2, 9)}`,
+		createdAt: new Date().toISOString()
+	};
+	quotes.push(newQuote);
+	return newQuote;
+}

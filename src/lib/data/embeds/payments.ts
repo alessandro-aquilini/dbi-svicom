@@ -125,6 +125,16 @@ export function getPaymentById(id: string): Payment | undefined {
 	return payments.find((p) => p.id === id);
 }
 
+export function createPayment(payment: Omit<Payment, 'id' | 'createdAt'>): Payment {
+	const newPayment: Payment = {
+		...payment,
+		id: `pay-${Math.random().toString(36).substr(2, 9)}`,
+		createdAt: new Date().toISOString()
+	};
+	payments.push(newPayment);
+	return newPayment;
+}
+
 export function getPaymentsByUserId(userId: string): Payment[] {
 	return payments.filter((p) => p.fromId === userId || p.toId === userId);
 }
