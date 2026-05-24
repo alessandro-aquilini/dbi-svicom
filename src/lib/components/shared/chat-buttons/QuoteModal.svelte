@@ -6,10 +6,20 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { createQuote } from '$lib/data/embeds/quotes';
 	import { linkDocumentToBooking } from '$lib/data/ticket/booking';
+	import { linkDocumentToTicket } from '$lib/data/ticket/tickets';
 
-	let { open = $bindable(false), bookingId, supplierId, customerId, propertyId, onCreated } = $props<{
+	let {
+		open = $bindable(false),
+		bookingId,
+		ticketId,
+		supplierId,
+		customerId,
+		propertyId,
+		onCreated
+	} = $props<{
 		open: boolean;
-		bookingId: string;
+		bookingId?: string;
+		ticketId?: string;
 		supplierId: string;
 		customerId: string;
 		propertyId: string;
@@ -27,12 +37,19 @@
 			customerId,
 			propertyId,
 			bookingId,
+			ticketId,
 			amount,
 			currency: 'EUR',
 			description,
 			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 		});
-		linkDocumentToBooking(bookingId, 'quote', quote.id);
+
+		if (bookingId) {
+			linkDocumentToBooking(bookingId, 'quote', quote.id);
+		} else if (ticketId) {
+			linkDocumentToTicket(ticketId, 'quote', quote.id);
+		}
+
 		open = false;
 		onCreated?.();
 		// Reset

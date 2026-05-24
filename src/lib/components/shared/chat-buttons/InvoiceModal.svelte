@@ -6,10 +6,20 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { createInvoice } from '$lib/data/embeds/invoices';
 	import { linkDocumentToBooking } from '$lib/data/ticket/booking';
+	import { linkDocumentToTicket } from '$lib/data/ticket/tickets';
 
-	let { open = $bindable(false), bookingId, supplierId, customerId, propertyId, onCreated } = $props<{
+	let {
+		open = $bindable(false),
+		bookingId,
+		ticketId,
+		supplierId,
+		customerId,
+		propertyId,
+		onCreated
+	} = $props<{
 		open: boolean;
-		bookingId: string;
+		bookingId?: string;
+		ticketId?: string;
 		supplierId: string;
 		customerId: string;
 		propertyId: string;
@@ -27,11 +37,18 @@
 			customerId,
 			propertyId,
 			bookingId,
+			ticketId,
 			amount,
 			currency: 'EUR',
 			description
 		});
-		linkDocumentToBooking(bookingId, 'invoice', invoice.id);
+
+		if (bookingId) {
+			linkDocumentToBooking(bookingId, 'invoice', invoice.id);
+		} else if (ticketId) {
+			linkDocumentToTicket(ticketId, 'invoice', invoice.id);
+		}
+
 		open = false;
 		onCreated?.();
 		// Reset

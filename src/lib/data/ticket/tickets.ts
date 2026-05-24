@@ -323,6 +323,25 @@ export function getTicketsByResidentCc(residentId: string): Ticket[] {
 	return tickets.filter((t) => t.cc.includes(residentId));
 }
 
+export function linkDocumentToTicket(
+	ticketId: string,
+	type: 'invoice' | 'quote' | 'payment' | 'intervention',
+	documentId: string
+): void {
+	const ticket = getTicketById(ticketId);
+	if (!ticket) return;
+
+	if (type === 'invoice') {
+		ticket.invoiceIds = [...(ticket.invoiceIds || []), documentId];
+	} else if (type === 'quote') {
+		ticket.quoteIds = [...(ticket.quoteIds || []), documentId];
+	} else if (type === 'payment') {
+		ticket.paymentIds = [...(ticket.paymentIds || []), documentId];
+	} else if (type === 'intervention') {
+		ticket.interventionIds = [...(ticket.interventionIds || []), documentId];
+	}
+}
+
 // ─── AI-derived narratives ────────────────────────────────────────────────────
 // TODO: replace stubs with real model calls when AI integration ships.
 

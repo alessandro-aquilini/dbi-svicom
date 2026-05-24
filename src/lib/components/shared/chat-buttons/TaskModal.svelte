@@ -5,10 +5,21 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
 	import { createSupplierTask } from '$lib/data/embeds/supplierTasks';
+	import { linkDocumentToBooking } from '$lib/data/ticket/booking';
+	import { linkDocumentToTicket } from '$lib/data/ticket/tickets';
 
-	let { open = $bindable(false), bookingId, supplierId, customerId, propertyId, onCreated } = $props<{
+	let {
+		open = $bindable(false),
+		bookingId,
+		ticketId,
+		supplierId,
+		customerId,
+		propertyId,
+		onCreated
+	} = $props<{
 		open: boolean;
-		bookingId: string;
+		bookingId?: string;
+		ticketId?: string;
 		supplierId: string;
 		customerId: string;
 		propertyId: string;
@@ -23,7 +34,7 @@
 	let location = $state('');
 
 	function handleSubmit() {
-		createSupplierTask({
+		const task = createSupplierTask({
 			title,
 			type,
 			date,
@@ -33,8 +44,16 @@
 			supplierId,
 			customerId,
 			propertyId,
-			bookingId
+			bookingId,
+			ticketId
 		});
+
+		if (bookingId) {
+			linkDocumentToBooking(bookingId, 'intervention', task.id);
+		} else if (ticketId) {
+			linkDocumentToTicket(ticketId, 'intervention', task.id);
+		}
+
 		open = false;
 		onCreated?.();
 		// Reset

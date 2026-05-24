@@ -55,6 +55,7 @@ export interface Booking {
     paymentIds?: string[];
     quoteIds?: string[];
     invoiceIds?: string[];
+    interventionIds?: string[];
 }
 
 /**
@@ -383,7 +384,7 @@ export function updateBookingStatusAction(bookingId: string, kind: BookingEventK
     });
 }
 
-export function linkDocumentToBooking(bookingId: string, type: 'invoice' | 'quote' | 'payment', documentId: string): void {
+export function linkDocumentToBooking(bookingId: string, type: 'invoice' | 'quote' | 'payment' | 'intervention', documentId: string): void {
     const booking = getBookingById(bookingId);
     if (!booking) return;
 
@@ -393,5 +394,7 @@ export function linkDocumentToBooking(bookingId: string, type: 'invoice' | 'quot
         booking.quoteIds = [...(booking.quoteIds || []), documentId];
     } else if (type === 'payment') {
         booking.paymentIds = [...(booking.paymentIds || []), documentId];
+    } else if (type === 'intervention') {
+        booking.interventionIds = [...(booking.interventionIds || []), documentId];
     }
 }
