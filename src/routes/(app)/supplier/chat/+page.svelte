@@ -767,7 +767,7 @@
 										variant="default"
 										class="w-full h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700"
 										onclick={() => { handleUpdateStatus("closed"); accordionOpen = false; }}
-									>Chiudi Pratica</Button>
+									>Chiudi prenotazione</Button>
 								{/if}
 							</div>
 						</div>

@@ -14,9 +14,9 @@
 	const navItems = [
 		{ label: 'Home', href: '/supplier', icon: DashboardSquare01Icon },
 		{ label: 'Chat', href: '/supplier/chat', icon: BubbleChatIcon },
+		{ label: 'Servizi', href: '/supplier/services', icon: BookmarkIcon},
 		{ label: 'Calendario', href: '/supplier/calendar', icon: CalendarIcon },
 		{ label: 'Finanze', href: '/supplier/finances', icon: Money01Icon }, 
-		{ label: 'Servizi', href: '/supplier/services', icon: BookmarkIcon} // Add an icon.
 	];
 
 	function isActive(href: string): boolean {

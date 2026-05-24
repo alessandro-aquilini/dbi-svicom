@@ -4,12 +4,24 @@
     import { Add01Icon, Clock01Icon, Location01Icon, Note01Icon } from '@hugeicons/core-free-icons';
     import { formatChatTime, formatChatTooltip } from '$lib/utils/dates';
 
+    import { getPropertyById } from '$lib/data/properties';
+    import { services } from '$lib/data/services';
+
     interface Props {
         event: BookingEvent;
         isOwn?: boolean;
     }
 
     let { event, isOwn = false }: Props = $props();
+
+    const serviceName = $derived(
+        services.find(s => s.id === event.propertyId)?.name ?? 'Nuova Prenotazione'
+    );
+
+    const propertyPlace = $derived.by(() => {
+        const property = event.propertyId ? getPropertyById(event.propertyId) : undefined;
+        return (property?.name ?? event.propertyId ?? '') + (event.place ? `, ${event.place}` : '');
+    });
 
     function formatSlot(slot?: { start: string; end: string }) {
         if (!slot) return 'Orario da definire';
@@ -28,11 +40,11 @@
             </div>
             <div>
                 <span class="text-[11px] font-bold uppercase tracking-widest text-amber-900 block mb-0.5">
-                    {isOwn ? 'Hai creato la prenotazione' : 'Nuova Prenotazione'}
+                    {serviceName}
                 </span>
                 {#if event.description}
-                    <p class="text-xs font-bold text-slate-900 leading-tight">
-                        {event.description}
+                    <p class="text-[11px] font-medium text-amber-900/70 leading-tight line-clamp-2 italic">
+                        "{event.description}"
                     </p>
                 {/if}
             </div>
@@ -48,12 +60,12 @@
                 </div>
             {/if}
 
-            {#if event.place}
+            {#if propertyPlace}
                 <div class="flex items-center gap-2.5 text-xs font-medium text-slate-500">
                     <div class="p-1.5 bg-slate-100 rounded-lg text-slate-400">
                         <HugeiconsIcon icon={Location01Icon} size={14} />
                     </div>
-                    <span class="line-clamp-1">{event.place}</span>
+                    <span class="line-clamp-1">{propertyPlace}</span>
                 </div>
             {/if}
         </div>

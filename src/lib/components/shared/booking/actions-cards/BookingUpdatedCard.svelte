@@ -1,7 +1,9 @@
 <script lang="ts">
     import type { BookingEvent } from '$lib/data/ticket/booking';
+    import { getPropertyById } from '$lib/data/properties';
+    import { services } from '$lib/data/services';
     import { HugeiconsIcon } from '@hugeicons/svelte';
-    import { Calendar03Icon, Location01Icon, Note01Icon, PencilEdit01Icon } from '@hugeicons/core-free-icons';
+    import { Calendar03Icon, Location01Icon, Note01Icon, PencilEdit01Icon, Clock01Icon } from '@hugeicons/core-free-icons';
     import { formatChatTime, formatChatTooltip } from '$lib/utils/dates';
 
     interface Props {
@@ -10,6 +12,17 @@
     }
 
     let { event, isOwn = false }: Props = $props();
+
+    const serviceName = $derived.by(() => {
+        // Since we don't have serviceId on event, we use propertyId as a fallback if it matches a service
+        const item = services.find(s => s.id === event.propertyId);
+        return item?.name ?? 'Aggiornamento';
+    });
+
+    const propertyPlace = $derived.by(() => {
+        const property = event.propertyId ? getPropertyById(event.propertyId) : undefined;
+        return (property?.name ?? event.propertyId ?? '') + (event.place ? `, ${event.place}` : '');
+    });
 
     function formatSlot(slot?: { start: string; end: string }) {
         if (!slot) return 'Orario da definire';
@@ -28,11 +41,11 @@
             </div>
             <div>
                 <span class="text-[11px] font-bold uppercase tracking-widest text-blue-500 block mb-0.5">
-                    {isOwn ? 'Hai modificato i dettagli' : 'Prenotazione Aggiornata'}
+                    {serviceName}
                 </span>
                 {#if event.description}
-                    <p class="text-xs font-bold text-slate-900 leading-tight">
-                        {event.description}
+                    <p class="text-[11px] font-medium text-blue-900/70 leading-tight line-clamp-2 italic">
+                        "{event.description}"
                     </p>
                 {/if}
             </div>
@@ -42,18 +55,18 @@
             {#if event.slot}
                 <div class="flex items-center gap-2.5 text-xs font-medium text-slate-700">
                     <div class="p-1.5 bg-blue-50 rounded-lg text-blue-400">
-                        <HugeiconsIcon icon={Calendar03Icon} size={14} />
+                        <HugeiconsIcon icon={Clock01Icon} size={14} />
                     </div>
                     <span>{formatSlot(event.slot)}</span>
                 </div>
             {/if}
 
-            {#if event.place}
+            {#if propertyPlace}
                 <div class="flex items-center gap-2.5 text-xs font-medium text-slate-500">
                     <div class="p-1.5 bg-blue-50 rounded-lg text-blue-400">
                         <HugeiconsIcon icon={Location01Icon} size={14} />
                     </div>
-                    <span class="line-clamp-1">{event.place}</span>
+                    <span class="line-clamp-1">{propertyPlace}</span>
                 </div>
             {/if}
         </div>
