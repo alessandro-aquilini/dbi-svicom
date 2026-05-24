@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { getUserById } from '$lib/data/users';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getBookingInfo, type Booking, type BookingInfo, updateBookingStatusAction } from '$lib/data/ticket/booking';
 	import type { Service } from '$lib/data/services';
 	import type { StatusVariant } from '$lib/types';
 	import { StatusBadge } from '$lib/components/shared';
-	import BookingDetailsModal from '$lib/components/shared/booking/booking-card/BookingDetailsModal.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Calendar03Icon, Location01Icon, Message01Icon } from '@hugeicons/core-free-icons';
@@ -63,8 +63,6 @@
 			: (info.createdAt ? new Date(info.createdAt).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : 'Data non definita')
 	);
 
-	let isOpen = $state(false);
-
 	function formatSlot(slot?: BookingInfo['slot']) {
 		if (!slot) return 'Orario da definire';
 		const starts = new Date(slot.start).toLocaleTimeString('it-IT', {
@@ -95,16 +93,20 @@
 			isProcessingStatus = false;
 		}, 100);
 	}
+
+	function openChat() {
+		goto(chatLink);
+	}
 </script>
 
 <div
 	role="button"
 	tabindex="0"
-	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 hover:shadow-md active:scale-[0.98]"
-	onclick={() => (isOpen = true)}
+	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 hover:shadow-md active:scale-[0.98] cursor-pointer"
+	onclick={openChat}
 	onkeydown={(event: KeyboardEvent) => {
 		if (event.key === 'Enter' || event.key === ' ') {
-			isOpen = true;
+			openChat();
 			event.preventDefault();
 		}
 	}}
@@ -184,7 +186,7 @@
 				<Button
 					size="sm"
 					variant="outline"
-					class="h-9 flex-1 rounded-xl text-xs font-bold"
+					class="h-9 flex-1 rounded-xl border-red-200 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700"
 					disabled={isProcessingStatus}
 					onclick={() => handleUpdateStatus('cancelled')}
 				>
@@ -194,5 +196,3 @@
 		</div>
 	{/if}
 </div>
-
-<BookingDetailsModal bind:open={isOpen} {booking} {service} view={view} />

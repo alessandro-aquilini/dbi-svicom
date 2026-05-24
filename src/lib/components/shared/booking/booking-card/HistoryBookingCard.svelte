@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { getUserById } from '$lib/data/users';
 	import { getPropertyById } from '$lib/data/properties';
 	import { getBookingInfo, type Booking, type BookingInfo } from '$lib/data/ticket/booking';
 	import type { Service } from '$lib/data/services';
 	import { StatusBadge } from '$lib/components/shared';
-	import BookingDetailsModal from '$lib/components/shared/booking/booking-card/BookingDetailsModal.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Calendar03Icon, Location01Icon, Message01Icon } from '@hugeicons/core-free-icons';
 
@@ -32,7 +32,6 @@
 			: `/supplier/chat?id=${booking.residentId}`
 	);
 	const statusLabel = 'Chiuso';
-	let isOpen = $state(false);
 
 	function formatDate(iso?: string) {
 		if (!iso) return 'Non definito';
@@ -55,16 +54,20 @@
 	function stopPropagation(event: MouseEvent) {
 		event.stopPropagation();
 	}
+
+	function openChat() {
+		goto(chatLink);
+	}
 </script>
 
 <div
 	role="button"
 	tabindex="0"
-	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 hover:shadow-md active:scale-[0.98]"
-	onclick={() => (isOpen = true)}
+	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 hover:shadow-md active:scale-[0.98] cursor-pointer"
+	onclick={openChat}
 	onkeydown={(event: KeyboardEvent) => {
 		if (event.key === 'Enter' || event.key === ' ') {
-			isOpen = true;
+			openChat();
 			event.preventDefault();
 		}
 	}}
@@ -112,5 +115,3 @@
 		</div>
 	</div>
 </div>
-
-<BookingDetailsModal bind:open={isOpen} {booking} {service} view={view} />
