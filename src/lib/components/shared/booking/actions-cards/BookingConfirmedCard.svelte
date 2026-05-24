@@ -2,8 +2,7 @@
     import type { BookingEvent } from '$lib/data/ticket/booking';
     import { HugeiconsIcon } from '@hugeicons/svelte';
     import { Tick02Icon } from '@hugeicons/core-free-icons';
-    import { format } from 'date-fns';
-    import { it } from 'date-fns/locale';
+    import { formatChatTime, formatChatTooltip } from '$lib/utils/dates';
 
     interface Props {
         event: BookingEvent;
@@ -15,12 +14,10 @@
 
 <div class="flex w-full">
     <div class="{isOwn ? 'ml-auto' : 'mr-auto'} max-w-[85%]">
-        <div class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors {isOwn ? 'bg-emerald-500 text-white border-transparent' : 'bg-slate-100 text-slate-700 border-slate-200'}">
+        <div class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors {isOwn ? 'bg-emerald-600 text-white border-transparent' : ''}">
             <HugeiconsIcon icon={Tick02Icon} size={16} />
             <span>{isOwn ? 'Hai preso in carico il servizio' : 'Servizio preso in carico'}</span>
+            <span class="ml-auto text-xs font-semibold text-slate-500" title={formatChatTooltip(event.at)}>{formatChatTime(event.at)}</span>
         </div>
-        <p class="mt-1 text-[10px] {isOwn ? 'text-slate-200 text-right' : 'text-slate-400'}">
-            {format(new Date(event.at), 'd MMM · HH:mm', { locale: it })}
-        </p>
     </div>
 </div>

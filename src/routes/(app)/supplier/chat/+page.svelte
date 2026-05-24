@@ -30,7 +30,11 @@
 		CustomerServiceIcon,
 		SentIcon,
 		ArrowDown01Icon,
+		Invoice01Icon,
+		File01Icon,
+		WrenchIcon,
 	} from "@hugeicons/core-free-icons";
+	import { formatChatDateLabel, formatChatTime, formatChatTooltip, isSameChatDay } from "$lib/utils/dates";
 	import { format } from "date-fns";
 	import { it } from "date-fns/locale";
 	import ChatBubble from "$lib/components/shared/chat-cards/ChatBubble.svelte";
@@ -333,6 +337,14 @@
 		return users.find((u) => u.id === userId);
 	}
 
+	function getChatDayLabel(date: Date) {
+		return formatChatDateLabel(date);
+	}
+
+	function shouldRenderDateSeparator(current: Date, previous?: Date) {
+		return !previous || !isSameChatDay(current, previous);
+	}
+
 	const statusColors: Record<string, string> = {
 		requested: "bg-amber-100 text-amber-700",
 		confirmed: "bg-emerald-100 text-emerald-700",
@@ -486,16 +498,14 @@
 							<HugeiconsIcon icon={UserCircleIcon} size={28} />
 						</div>
 						<div class="flex-1 min-w-0">
-							<div
-								class="flex justify-between items-baseline mb-0.5"
-							>
+							<div class="flex justify-between items-baseline mb-0.5">
 								<span class="font-bold text-slate-900 truncate"
 									>{resident?.name || "Residente"}</span
 								>
 								{#if group.lastDate.getTime() > 0}
-									<span class="text-[10px] text-slate-400"
-										>{format(group.lastDate, "HH:mm")}</span
-									>
+									<span class="text-[10px] text-slate-400" title={formatChatTooltip(group.lastDate)}>
+										{formatChatTime(group.lastDate)}
+									</span>
 								{/if}
 							</div>
 							<p class="text-xs text-slate-500 line-clamp-1">
@@ -536,9 +546,9 @@
 									>{admin?.name || "Amministrazione"}</span
 								>
 								{#if group.lastDate.getTime() > 0}
-									<span class="text-[10px] text-slate-400"
-										>{format(group.lastDate, "HH:mm")}</span
-									>
+									<span class="text-[10px] text-slate-400" title={formatChatTooltip(group.lastDate)}>
+										{formatChatTime(group.lastDate)}
+									</span>
 								{/if}
 							</div>
 							<p class="text-[11px] text-slate-500 line-clamp-1">
@@ -682,8 +692,13 @@
 				</div>
 			{/if}
 
-			<div class="flex-1 overflow-y-auto p-4 space-y-6">
-				{#each timelineItems as item}
+			<div class="flex-1 overflow-y-auto p-4">
+				{#each timelineItems as item, index}
+					{#if shouldRenderDateSeparator(item.date, index > 0 ? timelineItems[index - 1].date : undefined)}
+						<div class="mx-auto mb-4 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+							{getChatDayLabel(item.date)}
+						</div>
+					{/if}
 					{#if item.type === "message"}
 						<ChatBubble
 							message={item.data}
@@ -725,7 +740,8 @@
 							class="rounded-full bg-slate-50 border-slate-200 text-xs h-8"
 							onclick={() => (showInvoiceModal = true)}
 						>
-							🧾 Nuova Fattura
+							<HugeiconsIcon icon={Invoice01Icon} size={16} />
+							Nuova Fattura
 						</Button>
 						<Button
 							variant="outline"
@@ -733,7 +749,8 @@
 							class="rounded-full bg-slate-50 border-slate-200 text-xs h-8"
 							onclick={() => (showQuoteModal = true)}
 						>
-							📄 Nuovo Preventivo
+							<HugeiconsIcon icon={File01Icon} size={16} />
+							Nuovo Preventivo
 						</Button>
 						<Button
 							variant="outline"
@@ -741,7 +758,8 @@
 							class="rounded-full bg-slate-50 border-slate-200 text-xs h-8"
 							onclick={() => (showTaskModal = true)}
 						>
-							🔧 Nuovo Intervento
+							<HugeiconsIcon icon={WrenchIcon} size={16} />
+							Nuovo Intervento
 						</Button>
 					</div>
 
