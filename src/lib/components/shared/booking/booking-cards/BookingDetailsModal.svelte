@@ -210,7 +210,7 @@
 			{/if}
 		</div>
 
-		<Dialog.Footer class="px-6 py-4 border-t border-border bg-muted/20 sm:flex-row sm:items-center sm:justify-between gap-4">
+		<Dialog.Footer class="px-6 pt-4 pb-6 border-t border-border bg-muted/20 sm:flex-row sm:items-center sm:justify-between gap-4">
 			<a
 				href={chatLink}
 				class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#5D7D94] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#5D7D94]/20 transition-all hover:bg-[#5D7D94]/90 active:scale-95"

@@ -145,7 +145,7 @@
 			</div>
 		</div>
 
-		<Dialog.Footer class="px-6 py-4 border-t border-border bg-muted/20 flex flex-col sm:flex-row gap-3">
+		<Dialog.Footer class="px-8 pt-4 pb-8 border-t border-border bg-muted/20 flex flex-col sm:flex-row gap-3">
 			<Button variant="outline" onclick={() => (open = false)} class="rounded-xl h-12 font-bold flex-1 order-2 sm:order-1">Annulla</Button>
 			<Button onclick={handleSubmit} class="rounded-xl h-12 font-black bg-[#5D7D94] hover:bg-[#5D7D94]/90 text-white flex-1 order-1 sm:order-2 shadow-lg shadow-[#5D7D94]/20 transition-all">
 				Salva Attività
