@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { getUserById } from '$lib/data/users';
+	import { getPropertyById } from '$lib/data/properties';
 	import { getBookingInfo, type Booking, type BookingInfo } from '$lib/data/ticket/booking';
 	import type { Service } from '$lib/data/services';
 	import { StatusBadge } from '$lib/components/shared';
-	import { Clock01Icon, Location01Icon } from '@hugeicons/core-free-icons';
+	import BookingDetailsModal from '$lib/components/shared/booking/booking-card/BookingDetailsModal.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { Calendar03Icon, Location01Icon, Message01Icon } from '@hugeicons/core-free-icons';
 
 	const { booking, service, view }: {
 		booking: Booking;
@@ -19,11 +21,18 @@
 	const collaboratorName = $derived(
 		view === 'supplier' ? resident?.name ?? 'Residente' : supplier?.name ?? 'Fornitore'
 	);
+	const property = $derived(info.propertyId ? getPropertyById(info.propertyId) : undefined);
+	const propertyPlace = $derived(
+		(property?.name ?? info.propertyId ?? 'Indirizzo non definito') + 
+		(info.place ? `, ${info.place}` : '')
+	);
 	const chatLink = $derived(
 		view === 'resident'
 			? `/resident/services/chat?id=${booking.id}`
 			: `/supplier/chat?id=${booking.residentId}`
 	);
+	const statusLabel = 'Chiuso';
+	let isOpen = $state(false);
 
 	function formatDate(iso?: string) {
 		if (!iso) return 'Non definito';
@@ -43,53 +52,65 @@
 		return `${day} · ${starts} – ${ends}`;
 	}
 
-	function getClosedDateParts(iso?: string) {
-		if (!iso) return { day: '--', month: '---' };
-		const date = new Date(iso);
-		return {
-			day: String(date.getDate()).padStart(2, '0'),
-			month: date.toLocaleDateString('it-IT', { month: 'short' })
-		};
+	function stopPropagation(event: MouseEvent) {
+		event.stopPropagation();
 	}
 </script>
 
-<div class="group grid gap-4 rounded-3xl border border-border bg-card p-4 text-left shadow-sm transition hover:shadow-lg sm:grid-cols-[96px_minmax(0,1fr)]">
-	<div class="flex flex-col items-center justify-between rounded-3xl bg-primary/10 p-3 text-primary">
-		<span class="text-2xl font-semibold">{getClosedDateParts(info.closedAt).day}</span>
-		<span class="text-[10px] uppercase tracking-[0.3em]">{getClosedDateParts(info.closedAt).month}</span>
+<div
+	role="button"
+	tabindex="0"
+	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 hover:shadow-md active:scale-[0.98]"
+	onclick={() => (isOpen = true)}
+	onkeydown={(event: KeyboardEvent) => {
+		if (event.key === 'Enter' || event.key === ' ') {
+			isOpen = true;
+			event.preventDefault();
+		}
+	}}
+>
+	<div class="flex items-start justify-between gap-4">
+		<div class="min-w-0">
+			<div class="flex items-center gap-2">
+				<h3 class="truncate text-base font-bold tracking-tight text-foreground">
+					{info.serviceName}
+				</h3>
+				<StatusBadge label={statusLabel} variant="success" />
+			</div>
+			<p class="mt-1 text-xs font-medium text-muted-foreground">
+				{collaboratorLabel} <span class="text-foreground">{collaboratorName}</span>
+			</p>
+		</div>
+		<a
+			href={chatLink}
+			class="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50 text-[#5D7D94] transition-colors hover:bg-[#5D7D94] hover:text-white"
+			onclick={stopPropagation}
+			aria-label="Apri chat"
+		>
+			<HugeiconsIcon icon={Message01Icon} size="18" />
+		</a>
 	</div>
 
-	<div class="min-w-0">
-		<div class="flex items-start justify-between gap-3">
+	<div class="mt-5 grid gap-4 rounded-xl bg-secondary/30 p-3 sm:grid-cols-2 opacity-80">
+		<div class="flex items-center gap-3">
+			<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm">
+				<HugeiconsIcon icon={Calendar03Icon} size="16" class="text-[#5D7D94]" />
+			</div>
+			<div>
+				<p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Data</p>
+				<p class="text-xs font-semibold text-foreground">{formatSlot(info.slot)}</p>
+			</div>
+		</div>
+		<div class="flex items-center gap-3">
+			<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm">
+				<HugeiconsIcon icon={Location01Icon} size="16" class="text-[#5D7D94]" />
+			</div>
 			<div class="min-w-0">
-				<p class="truncate text-sm font-semibold text-foreground">{info.serviceName}</p>
-				<p class="truncate text-xs text-muted-foreground">{collaboratorLabel} {collaboratorName}</p>
+				<p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Luogo</p>
+				<p class="truncate text-xs font-semibold text-foreground">{propertyPlace}</p>
 			</div>
-			<StatusBadge label="Chiuso" variant="success" />
 		</div>
-
-		<div class="mt-4">
-			<a href={chatLink} class="inline-flex items-center rounded-2xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/20">
-				Apri chat
-			</a>
-		</div>
-
-		<div class="mt-3 grid gap-2 sm:grid-cols-2">
-			<div class="flex items-center gap-2 rounded-3xl bg-slate-100 px-3 py-2 text-xs text-slate-600">
-				<HugeiconsIcon icon={Clock01Icon} size={14} />
-				<span>{formatSlot(info.slot)}</span>
-			</div>
-
-			{#if info.place}
-				<div class="flex items-center gap-2 rounded-3xl bg-slate-100 px-3 py-2 text-xs text-slate-600">
-					<HugeiconsIcon icon={Location01Icon} size={14} />
-					<span>{info.place}</span>
-				</div>
-			{/if}
-		</div>
-
-		{#if info.description}
-			<p class="mt-3 line-clamp-2 text-sm text-muted-foreground">{info.description}</p>
-		{/if}
 	</div>
 </div>
+
+<BookingDetailsModal bind:open={isOpen} {booking} {service} view={view} />
