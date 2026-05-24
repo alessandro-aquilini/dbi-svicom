@@ -10,16 +10,16 @@
     let { message, isOwn }: Props = $props();
 </script>
 
-<div class="flex flex-col w-full {isOwn ? 'items-end' : 'items-start'}">
+<div class="flex flex-col w-full {isOwn ? 'items-end' : 'items-start'} mb-1 last:mb-0">
     <div
-        class="max-w-[72%] px-4 py-3 rounded-xl border border-slate-200 text-sm shadow-sm transition-colors
+        class="max-w-[85%] md:max-w-[70%] px-3.5 py-2.5 rounded-2xl text-sm transition-all
         {isOwn
-            ? 'bg-slate-900 text-white border-slate-800'
-            : 'bg-white text-slate-900'}"
+            ? 'bg-[#5D7D94] text-white rounded-tr-none shadow-sm shadow-[#5D7D94]/10'
+            : 'bg-white text-slate-900 rounded-tl-none shadow-sm ring-1 ring-slate-100'}"
     >
         {message.text}
     </div>
-    <span class="mt-2 text-[11px] text-slate-500 {isOwn ? 'text-right' : 'text-left'}">
+    <span class="mt-1 px-1 text-[10px] font-medium text-slate-400 {isOwn ? 'text-right' : 'text-left'}">
         {formatChatTime(message.timestamp)}
     </span>
 </div>

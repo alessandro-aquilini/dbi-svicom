@@ -25,42 +25,47 @@
     }
 </script>
 
-<div class="flex flex-col gap-3 py-4">
-    <div class="h-px bg-slate-100 w-full"></div>
-    <div class="w-full max-w-sm overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4">
-            <div class="flex items-start gap-3">
-                <div class="grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-slate-700">
-                    <HugeiconsIcon icon={isVisit ? ViewIcon : WrenchIcon} size={20} />
+<div class="flex flex-col items-center w-full mb-4">
+    <div class="w-full max-w-85 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+        <div class="flex items-center justify-between gap-3 px-4 py-4 bg-slate-50/50">
+            <div class="flex items-center gap-3">
+                <div class="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 text-white">
+                    <HugeiconsIcon icon={isVisit ? ViewIcon : WrenchIcon} size={18} />
                 </div>
                 <div>
-                    <h4 class="text-sm font-semibold text-slate-900">{task.title}</h4>
-                    <Badge variant="secondary" class="text-[10px] h-5 px-2 uppercase font-semibold mt-1">
+                    <h4 class="text-sm font-bold text-slate-900 leading-tight">{task.title}</h4>
+                    <Badge variant="outline" class="text-[9px] h-4.5 px-1.5 uppercase font-bold mt-1 text-slate-500 border-slate-200">
                         {task.type}
                     </Badge>
                 </div>
             </div>
-            <span class="text-xs font-semibold text-slate-500" title={formatChatTooltip(task.createdAt ?? `${task.date}T${task.startTime}`)}>
-                {getTaskTime()}
-            </span>
         </div>
 
-        <div class="space-y-3 px-4 py-4 text-sm text-slate-600">
-            <div class="flex flex-wrap items-center gap-2 text-sm">
-                <HugeiconsIcon icon={Calendar03Icon} size={14} class="text-slate-400" />
-                <span class="font-medium">{task.date}</span>
-                <span class="mx-1 text-slate-300">·</span>
-                <HugeiconsIcon icon={Clock01Icon} size={14} class="text-slate-400" />
-                <span class="font-medium">{task.startTime} - {task.endTime}</span>
+        <div class="space-y-3 px-4 py-4 text-xs font-medium">
+            <div class="flex items-center gap-2.5 text-slate-700">
+                <div class="p-1.5 bg-slate-100 rounded-lg text-slate-400">
+                    <HugeiconsIcon icon={Calendar03Icon} size={14} />
+                </div>
+                <span>{task.date}</span>
+                <span class="text-slate-200 font-light">|</span>
+                <div class="p-1.5 bg-slate-100 rounded-lg text-slate-400">
+                    <HugeiconsIcon icon={Clock01Icon} size={14} />
+                </div>
+                <span>{task.startTime} - {task.endTime}</span>
             </div>
-            <div class="flex items-start gap-2 text-sm text-slate-500">
-                <HugeiconsIcon icon={Location01Icon} size={14} class="text-slate-400 mt-0.5" />
-                <span>{task.location}</span>
+            <div class="flex items-center gap-2.5 text-slate-500">
+                <div class="p-1.5 bg-slate-100 rounded-lg text-slate-400">
+                    <HugeiconsIcon icon={Location01Icon} size={14} />
+                </div>
+                <span class="line-clamp-1">{task.location}</span>
             </div>
         </div>
 
-        <div class="border-t border-slate-200 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Scheda intervento
+        <div class="mx-4 mb-4 p-3 bg-slate-50 rounded-xl flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100">
+            Accedi ai dettagli dell'intervento
         </div>
     </div>
+    <span class="mt-1 text-[10px] font-medium text-slate-400 text-center w-full">
+        {getTaskTime()}
+    </span>
 </div>

@@ -20,41 +20,45 @@
     }
 </script>
 
-<div class="flex flex-col {isOwn ? 'items-end' : 'items-start'} w-full">
-    <div class="max-w-[85%] rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all text-slate-900">
-        <div class="flex items-center gap-2 mb-3 text-sm font-semibold">
-            <div class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-700">
-                <HugeiconsIcon icon={PencilEdit01Icon} size={18} />
+<div class="flex flex-col items-center w-full mb-4">
+    <div class="w-full max-w-[320px] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-blue-100">
+        <div class="flex items-center gap-3 bg-blue-50/50 px-4 py-4">
+            <div class="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white">
+                <HugeiconsIcon icon={PencilEdit01Icon} size={20} />
             </div>
-            <span>{isOwn ? 'Hai modificato i dettagli' : 'Prenotazione aggiornata'}</span>
-            <span class="ml-auto text-xs font-semibold text-slate-500" title={formatChatTooltip(event.at)}>
-                {formatChatTime(event.at)}
-            </span>
+            <div>
+                <span class="text-[11px] font-bold uppercase tracking-widest text-blue-500 block mb-0.5">
+                    {isOwn ? 'Hai modificato i dettagli' : 'Prenotazione Aggiornata'}
+                </span>
+                {#if event.description}
+                    <p class="text-xs font-bold text-slate-900 leading-tight">
+                        {event.description}
+                    </p>
+                {/if}
+            </div>
         </div>
 
-        <div class="space-y-3 text-sm text-slate-600">
+        <div class="space-y-3 px-4 pb-4">
             {#if event.slot}
-                <div class="flex items-center gap-2.5 text-sm text-slate-700">
-                    <HugeiconsIcon icon={Calendar03Icon} size={14} class="text-slate-400" />
-                    <span class="font-medium">{formatSlot(event.slot)}</span>
+                <div class="flex items-center gap-2.5 text-xs font-medium text-slate-700">
+                    <div class="p-1.5 bg-blue-50 rounded-lg text-blue-400">
+                        <HugeiconsIcon icon={Calendar03Icon} size={14} />
+                    </div>
+                    <span>{formatSlot(event.slot)}</span>
                 </div>
             {/if}
 
             {#if event.place}
-                <div class="flex items-center gap-2.5 text-sm text-slate-700">
-                    <HugeiconsIcon icon={Location01Icon} size={14} class="text-slate-400" />
-                    <span class="font-medium">{event.place}</span>
-                </div>
-            {/if}
-
-            {#if event.description}
-                <div class="rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm leading-relaxed text-slate-600">
-                    <div class="flex items-start gap-2.5">
-                        <HugeiconsIcon icon={Note01Icon} size={14} class="mt-0.5 text-slate-400" />
-                        <p>{event.description}</p>
+                <div class="flex items-center gap-2.5 text-xs font-medium text-slate-500">
+                    <div class="p-1.5 bg-blue-50 rounded-lg text-blue-400">
+                        <HugeiconsIcon icon={Location01Icon} size={14} />
                     </div>
+                    <span class="line-clamp-1">{event.place}</span>
                 </div>
             {/if}
         </div>
     </div>
+    <span class="mt-2 text-[10px] font-medium text-slate-400">
+        {formatChatTime(event.at)}
+    </span>
 </div>

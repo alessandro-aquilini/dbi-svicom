@@ -119,21 +119,24 @@
 </script>
 
 <Dialog.Root bind:open={open}>
-	<Dialog.Content class="max-h-[90vh] overflow-y-auto p-0 gap-0 sm:max-w-xl rounded-3xl">
-		<div class="relative p-6 space-y-8">
-			<Dialog.Header class="space-y-6">
+	<Dialog.Content class="flex flex-col max-h-[96vh] h-full sm:h-auto overflow-hidden p-0 gap-0 sm:max-w-xl rounded-t-3xl sm:rounded-xl">
+		<!-- Header with sticky behavior on mobile -->
+		<div class="shrink-0 p-6 pb-4 sm:pb-6 border-b border-border/50 sm:border-none bg-card">
+			<Dialog.Header class="space-y-4 sm:space-y-6">
 				<div class="space-y-4">
 					<div class="flex items-start justify-between gap-4">
 						<div class="min-w-0 space-y-1">
 							<p class="text-[10px] font-bold uppercase tracking-widest text-[#5D7D94]/70">Dettagli Servizio</p>
-							<Dialog.Title class="text-2xl font-black tracking-tight text-foreground leading-tight">
+							<Dialog.Title class="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
 								{info.serviceName}
 							</Dialog.Title>
 						</div>
-						<StatusBadge label={statusLabel} variant={statusVariant} />
+						<div class="shrink-0">
+							<StatusBadge label={statusLabel} variant={statusVariant} />
+						</div>
 					</div>
 					
-					<div class="flex flex-wrap gap-4 text-sm font-medium">
+					<div class="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm font-medium">
 						<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
 							<span class="text-muted-foreground">{collaboratorLabel}:</span>
 							<span class="text-foreground">{collaboratorName}</span>
@@ -142,7 +145,7 @@
 				</div>
 
 				{#if info.description}
-					<div class="rounded-2xl bg-[#5D7D94]/5 border border-[#5D7D94]/10 p-4">
+					<div class="hidden sm:block rounded-2xl bg-[#5D7D94]/5 border border-[#5D7D94]/10 p-4">
 						<div class="flex gap-3">
 							<HugeiconsIcon icon={InformationCircleIcon} size="18" class="text-[#5D7D94] shrink-0 mt-0.5" />
 							<p class="text-sm leading-relaxed text-foreground/80">{info.description}</p>
@@ -150,6 +153,18 @@
 					</div>
 				{/if}
 			</Dialog.Header>
+		</div>
+
+		<!-- Scrollable Content -->
+		<div class="flex-1 overflow-y-auto p-6 space-y-8">
+			{#if info.description}
+				<div class="sm:hidden rounded-2xl bg-[#5D7D94]/5 border border-[#5D7D94]/10 p-4">
+					<div class="flex gap-3">
+						<HugeiconsIcon icon={InformationCircleIcon} size="18" class="text-[#5D7D94] shrink-0 mt-0.5" />
+						<p class="text-sm leading-relaxed text-foreground/80">{info.description}</p>
+					</div>
+				</div>
+			{/if}
 
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div class="group flex items-center gap-4 rounded-2xl bg-secondary/30 p-4 transition-colors hover:bg-secondary/40">
@@ -210,17 +225,18 @@
 			{/if}
 		</div>
 
-		<Dialog.Footer class="p-6 border-t border-border bg-muted/20 sm:flex-row sm:items-center sm:justify-between gap-4">
+		<!-- Footer with bottom safe area handling -->
+		<Dialog.Footer class="shrink-0 p-6 pt-4 pb-8 sm:pb-6 border-t border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
 			<a
 				href={chatLink}
-				class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#5D7D94] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#5D7D94]/20 transition-all hover:bg-[#5D7D94]/90 hover:scale-[1.02] active:scale-95"
+				class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#5D7D94] px-6 py-3.5 sm:py-3 text-sm font-black text-white shadow-lg shadow-[#5D7D94]/20 transition-all hover:bg-[#5D7D94]/90 active:scale-95"
 			>
 				<HugeiconsIcon icon={Message01Icon} size="18" />
 				Vai alla conversazione
 			</a>
 			<button
 				type="button"
-				class="px-6 py-3 rounded-xl border border-border bg-background text-sm font-bold text-foreground transition-all hover:bg-muted hover:border-muted-foreground/20"
+				class="px-6 py-3.5 sm:py-3 rounded-xl border border-border bg-background text-sm font-bold text-foreground transition-all hover:bg-muted hover:border-muted-foreground/20"
 				onclick={() => (open = false)}
 			>
 				Chiudi

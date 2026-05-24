@@ -13,14 +13,14 @@
     let { event, isOwn = false }: Props = $props();
 </script>
 
-<div class="flex w-full">
-    <div class="{isOwn ? 'ml-auto' : 'mr-auto'} max-w-[85%]">
-        <div class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors {isOwn ? 'bg-red-500 text-white border-transparent' : 'bg-slate-100 text-slate-700 border-slate-200'}">
-            <HugeiconsIcon icon={Cancel01Icon} size={16} />
-            <span>{isOwn ? 'Hai annullato la prenotazione' : 'Prenotazione annullata'}</span>
-        </div>
-        <p class="mt-1 text-[10px] {isOwn ? 'text-slate-200 text-right' : 'text-slate-400'}">
-            {format(new Date(event.at), 'd MMM · HH:mm', { locale: it })}
-        </p>
+<div class="flex flex-col items-center w-full my-2">
+    <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full ring-1 ring-red-100 bg-red-50 text-red-700 shadow-sm">
+        <HugeiconsIcon icon={Cancel01Icon} size={14} />
+        <span class="text-[11px] font-bold uppercase tracking-widest leading-none">
+            {isOwn ? 'Hai annullato la prenotazione' : 'Prenotazione annullata'}
+        </span>
     </div>
+    <span class="mt-2 text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
+        {format(new Date(event.at), 'HH:mm', { locale: it })}
+    </span>
 </div>

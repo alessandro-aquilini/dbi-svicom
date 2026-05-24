@@ -4,6 +4,7 @@
 		inferBookingStatus,
 		getBookingById,
 		lastBookingEvent,
+		addBookingEvent,
 	} from "$lib/data/ticket/booking";
 	import {
 		tickets,
@@ -33,6 +34,7 @@
 		Invoice01Icon,
 		File01Icon,
 		WrenchIcon,
+		Add01Icon,
 	} from "@hugeicons/core-free-icons";
 	import { formatChatDateLabel, formatChatTime, formatChatTooltip, isSameChatDay } from "$lib/utils/dates";
 	import { format } from "date-fns";
@@ -57,6 +59,7 @@
 	import { goto } from "$app/navigation";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
+	import { tick } from "svelte";
 
 	const currentUser = getCurrentUser();
 	const supplierId = currentUser?.id ?? "frn-idroclima-nord";
@@ -70,8 +73,67 @@
 	let showQuoteModal = $state(false);
 	let showTaskModal = $state(false);
 	let accordionOpen = $state(false);
+	let showPlusMenu = $state(false);
 	let refreshTrigger = $state(0);
 	let isProcessingStatus = $state(false);
+	let newMessageValue = $state("");
+	let scrollContainer = $state<HTMLElement | null>(null);
+
+	async function scrollToBottom() {
+		await tick();
+		if (scrollContainer) {
+			scrollContainer.scrollTo({
+				top: scrollContainer.scrollHeight,
+				behavior: "smooth",
+			});
+		}
+	}
+
+	$effect(() => {
+		if (selectedId) {
+			scrollToBottom();
+		}
+	});
+
+	$effect(() => {
+		if (timelineItems.length > 0) {
+			scrollToBottom();
+		}
+	});
+
+	function sendMessage() {
+		if (!newMessageValue.trim() || !activeChat) return;
+
+		const chat = activeChat as any;
+		const msg = {
+			id: `msg-${Date.now()}`,
+			senderId: supplierId,
+			text: newMessageValue.trim(),
+			timestamp: new Date().toISOString(),
+		};
+
+		if (activeTab === "resident") {
+			// Find the active booking to attach the message to
+			if (activeBooking) {
+				if (!activeBooking.messageTimeline) {
+					activeBooking.messageTimeline = [];
+				}
+				activeBooking.messageTimeline.push(msg);
+			}
+		} else {
+			// Find the active ticket to attach the message to
+			if (activeTicket) {
+				if (!activeTicket.messageTimeline) {
+					activeTicket.messageTimeline = [];
+				}
+				activeTicket.messageTimeline.push(msg);
+			}
+		}
+
+		newMessageValue = "";
+		refreshTrigger++;
+		scrollToBottom();
+	}
 
 	// Resident Chats: group bookings by residentId
 	const residentChats = $derived.by(() => {
@@ -435,7 +497,7 @@
 		<div class="p-4 bg-white border-b border-border">
 			<h1 class="text-xl font-bold text-slate-900 mb-4">Messaggi</h1>
 
-			<div class="flex p-1 bg-slate-100 rounded-xl mb-4">
+			<div class="flex p-1 bg-slate-200/50 rounded-xl mb-4">
 				<button
 					onclick={() => {
 						activeTab = "resident";
@@ -443,7 +505,7 @@
 					}}
 					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab ===
 					'resident'
-						? 'bg-white shadow-sm text-primary'
+						? 'bg-white shadow-sm text-slate-900'
 						: 'text-slate-500 hover:text-slate-700'}"
 				>
 					Residenti
@@ -455,7 +517,7 @@
 					}}
 					class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all {activeTab ===
 					'admin'
-						? 'bg-white shadow-sm text-primary'
+						? 'bg-white shadow-sm text-slate-900'
 						: 'text-slate-500 hover:text-slate-700'}"
 				>
 					Amministrazione
@@ -465,18 +527,18 @@
 			<div class="relative">
 				<HugeiconsIcon
 					icon={Search01Icon}
-					size={18}
+					size={16}
 					class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
 				/>
 				<input
 					type="text"
 					placeholder="Cerca conversazioni..."
-					class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 placeholder:text-slate-400"
+					class="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-xl text-xs focus:ring-2 focus:ring-slate-200 transition-all text-slate-900 placeholder:text-slate-400/80"
 				/>
 			</div>
 		</div>
 
-		<div class="flex-1 overflow-y-auto">
+		<div class="flex-1 overflow-y-auto bg-white">
 			{#if activeTab === "resident"}
 				{#each residentChats as group}
 					{@const resident = getResidentInfo(group.userId)}
@@ -487,28 +549,28 @@
 						]}
 					<button
 						onclick={() => selectChat(group.userId, "resident")}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId ===
+						class="w-full px-4 py-3.5 flex gap-3.5 hover:bg-slate-50 border-b border-slate-50 transition-colors text-left {selectedId ===
 						group.userId
-							? 'bg-white shadow-sm'
+							? 'bg-slate-100/80'
 							: ''}"
 					>
 						<div
-							class="w-12 h-12 rounded-full bg-[#5D7D94]/10 flex items-center justify-center text-[#5D7D94] shrink-0 border border-[#5D7D94]/5"
+							class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 ring-1 ring-slate-200/20"
 						>
 							<HugeiconsIcon icon={UserCircleIcon} size={28} />
 						</div>
-						<div class="flex-1 min-w-0">
+						<div class="flex-1 min-w-0 py-0.5">
 							<div class="flex justify-between items-baseline mb-0.5">
-								<span class="font-bold text-slate-900 truncate"
+								<span class="font-bold text-[14px] text-slate-900 truncate"
 									>{resident?.name || "Residente"}</span
 								>
 								{#if group.lastDate.getTime() > 0}
-									<span class="text-[10px] text-slate-400" title={formatChatTooltip(group.lastDate)}>
+									<span class="text-[10px] font-medium text-slate-400" title={formatChatTooltip(group.lastDate)}>
 										{formatChatTime(group.lastDate)}
 									</span>
 								{/if}
 							</div>
-							<p class="text-xs text-slate-500 line-clamp-1">
+							<p class="text-[12px] text-slate-500 line-clamp-1 leading-snug">
 								{lastMsg?.text || "Inizia la conversazione..."}
 							</p>
 						</div>
@@ -524,34 +586,34 @@
 						]}
 					<button
 						onclick={() => selectChat(group.adminId, "admin")}
-						class="w-full p-4 flex gap-3 hover:bg-white border-b border-slate-100 transition-colors text-left {selectedId ===
+						class="w-full px-4 py-3.5 flex gap-3.5 hover:bg-slate-50 border-b border-slate-50 transition-colors text-left {selectedId ===
 						group.adminId
-							? 'bg-white shadow-sm'
+							? 'bg-slate-100/80'
 							: ''}"
 					>
 						<div
-							class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0"
+							class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0 ring-1 ring-amber-100/20"
 						>
 							<HugeiconsIcon
 								icon={CustomerServiceIcon}
 								size={28}
 							/>
 						</div>
-						<div class="flex-1 min-w-0">
+						<div class="flex-1 min-w-0 py-0.5">
 							<div
 								class="flex justify-between items-baseline mb-0.5"
 							>
 								<span
-									class="font-bold text-slate-900 truncate text-sm"
+									class="font-bold text-[14px] text-slate-900 truncate"
 									>{admin?.name || "Amministrazione"}</span
 								>
 								{#if group.lastDate.getTime() > 0}
-									<span class="text-[10px] text-slate-400" title={formatChatTooltip(group.lastDate)}>
+									<span class="text-[10px] font-medium text-slate-400" title={formatChatTooltip(group.lastDate)}>
 										{formatChatTime(group.lastDate)}
 									</span>
 								{/if}
 							</div>
-							<p class="text-[11px] text-slate-500 line-clamp-1">
+							<p class="text-[12px] text-slate-500 line-clamp-1 leading-snug">
 								{lastMsg?.text || "Vedi cronologia..."}
 							</p>
 						</div>
@@ -563,25 +625,25 @@
 
 	<!-- Main: Chat Conversation -->
 	<main
-		class="flex-1 flex flex-col bg-slate-50/50 {selectedId
+		class="flex-1 flex flex-col bg-white {selectedId
 			? 'flex'
 			: 'hidden md:flex'}"
 	>
 		{#if activeChat && counterparty}
 			<header
-				class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10 transition-shadow"
+				class="h-16 shrink-0 bg-white border-b border-slate-100 px-4 flex items-center gap-3 relative z-10"
 			>
 				<button
 					onclick={() => goto("?", { replaceState: true })}
-					class="p-2 -ml-2 rounded-full hover:bg-slate-100 md:hidden transition-colors"
+					class="p-2 -ml-2 rounded-full hover:bg-slate-200/50 md:hidden transition-colors"
 				>
 					<HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
 				</button>
 
 				<div
 					class="w-10 h-10 rounded-full {activeTab === 'resident'
-						? 'bg-[#5D7D94]/10 text-[#5D7D94]'
-						: 'bg-amber-50 text-amber-600'} flex items-center justify-center border border-current/5 shrink-0 ml-1"
+						? 'bg-white text-slate-400'
+						: 'bg-amber-50 text-amber-600'} flex items-center justify-center ring-1 ring-black/5 shrink-0 ml-1"
 				>
 					<HugeiconsIcon
 						icon={activeTab === "resident"
@@ -593,11 +655,11 @@
 
 				<div class="flex-1 min-w-0">
 					<div class="flex items-center gap-2">
-						<h2 class="font-bold text-slate-900 text-sm truncate">
+						<h2 class="font-bold text-slate-900 text-[15px] truncate leading-tight">
 							{counterparty.name}
 						</h2>
 					</div>
-					<p class="text-[11px] text-[#5D7D94] font-medium truncate">
+					<p class="text-[11px] text-slate-500 font-medium truncate uppercase tracking-wider">
 						{activeTab === "resident"
 							? "Residente"
 							: "Amministratore"}
@@ -605,179 +667,197 @@
 				</div>
 			</header>
 
-			{#if activeBooking && isBookingActive(activeBooking)}
-				<div
-					class="bg-white border-b border-border transition-all"
-				>
-					<button 
-						onclick={() => (accordionOpen = !accordionOpen)}
-						class="w-full px-4 py-3 flex justify-between items-center hover:bg-slate-50 transition-colors text-left"
-					>
-						<div class="flex items-center gap-3">
-							<div class="w-8 h-8 rounded-lg bg-[#5D7D94]/5 flex items-center justify-center text-[#5D7D94]">
-								<HugeiconsIcon icon={InformationCircleIcon} size={18} />
-							</div>
-							<div>
-								<h3 class="text-xs font-bold text-slate-900 line-clamp-1">
-									Pratica: {bookingInfo?.serviceName}
-								</h3>
-								<p class="text-[10px] text-slate-400">
-									{bookingInfo?.place}
-								</p>
-							</div>
-						</div>
-						<div class="flex items-center gap-3 shrink-0">
-							<Badge
-								class="text-[10px] h-5 {statusColors[
-									bookingInfo?.status ?? 'unknown'
-								]}"
-							>
-								{bookingInfo?.status}
-							</Badge>
-							<HugeiconsIcon 
-								icon={ArrowDown01Icon} 
-								size={16} 
-								class="text-slate-300 transition-transform {accordionOpen ? 'rotate-180' : ''}" 
-							/>
-						</div>
-					</button>
-
-					{#if accordionOpen}
-						<div class="px-4 pb-4 animate-in fade-in slide-in-from-top-2 duration-200">
-							<div class="max-w-4xl mx-auto space-y-3">
-								<div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-									<p class="text-[11px] text-slate-600 leading-relaxed">
-										{bookingInfo?.description}
-									</p>
-								</div>
-
-								<div class="flex flex-wrap gap-2">
-									{#if bookingInfo?.status === "requested"}
-										<Button
-											size="sm"
-											disabled={isProcessingStatus}
-											onclick={() =>
-												handleUpdateStatus("confirmed")}
-											>Accetta Prenotazione</Button
-										>
-										<Button
-											size="sm"
-											variant="outline"
-											disabled={isProcessingStatus}
-											class="text-red-600 hover:text-red-700 hover:bg-red-50"
-											onclick={() =>
-												handleUpdateStatus("declined")}
-											>Rifiuta</Button
-										>
-									{:else if ["confirmed", "booking_updated"].includes(bookingInfo?.status ?? "")}
-										<Button
-											size="sm"
-											variant="outline"
-											disabled={isProcessingStatus}
-											onclick={() =>
-												handleUpdateStatus("cancelled")}
-											>Annulla</Button
-										>
-										<Button
-											size="sm"
-											disabled={isProcessingStatus}
-											onclick={() => handleUpdateStatus("closed")}
-											>Completa Intervento</Button
-										>
-									{/if}
+			<div 
+				bind:this={scrollContainer}
+				class="flex-1 overflow-y-auto p-4 md:p-6 bg-white"
+			>
+				<div class="w-full h-full flex flex-col space-y-4">
+					{#each timelineItems as item, index}
+						{#if shouldRenderDateSeparator(item.date, index > 0 ? timelineItems[index - 1].date : undefined)}
+							<div class="flex justify-center my-6 sticky top-2 z-10">
+								<div class="bg-white/90 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/50 px-4 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+									{getChatDayLabel(item.date)}
 								</div>
 							</div>
-						</div>
-					{/if}
-				</div>
-			{/if}
-
-			<div class="flex-1 overflow-y-auto p-4">
-				{#each timelineItems as item, index}
-					{#if shouldRenderDateSeparator(item.date, index > 0 ? timelineItems[index - 1].date : undefined)}
-						<div class="mx-auto mb-4 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-							{getChatDayLabel(item.date)}
-						</div>
-					{/if}
-					{#if item.type === "message"}
-						<ChatBubble
-							message={item.data}
-							isOwn={item.data.senderId === supplierId}
-						/>
-					{:else if item.type === "event"}
-						{#if ["booking_created", "confirmed", "declined", "booking_updated", "cancelled", "closed"].includes(item.data.kind)}
-							<BookingTimelineEvent
-								event={item.data}
-								currentUserId={supplierId}
-							/>
-						{:else}
-							<ChatTimelineEvent event={item.data} />
 						{/if}
-					{:else if item.type === "quote"}
-						<ChatQuoteCard
-							quote={item.data}
-							isOwn={item.data.supplierId === supplierId}
-						/>
-					{:else if item.type === "invoice"}
-						<ChatInvoiceCard
-							invoice={item.data}
-							isOwn={item.data.supplierId === supplierId}
-						/>
-					{:else if item.type === "payment"}
-						<ChatPaymentCard payment={item.data} />
-					{:else if item.type === "intervention"}
-						<ChatInterventionCard task={item.data} />
-					{/if}
-				{/each}
+						
+						{#if item.type === "message"}
+							<ChatBubble
+								message={item.data}
+								isOwn={item.data.senderId === supplierId}
+							/>
+						{:else if item.type === "event"}
+							<div class="flex justify-center w-full my-2">
+								{#if ["booking_created", "confirmed", "declined", "booking_updated", "cancelled", "closed"].includes(item.data.kind)}
+									<BookingTimelineEvent
+										event={item.data}
+										currentUserId={supplierId}
+									/>
+								{:else}
+									<ChatTimelineEvent event={item.data} />
+								{/if}
+							</div>
+						{:else if item.type === "quote"}
+							<ChatQuoteCard
+								quote={item.data}
+								isOwn={item.data.supplierId === supplierId}
+							/>
+						{:else if item.type === "invoice"}
+							<ChatInvoiceCard
+								invoice={item.data}
+								isOwn={item.data.supplierId === supplierId}
+							/>
+						{:else if item.type === "payment"}
+							<ChatPaymentCard payment={item.data} />
+						{:else if item.type === "intervention"}
+							<ChatInterventionCard task={item.data} />
+						{/if}
+					{/each}
+				</div>
 			</div>
 
-			<footer class="p-4 bg-white border-t border-border sticky bottom-0">
-				<div class="max-w-4xl mx-auto flex flex-col gap-3">
-					<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-						<Button
-							variant="outline"
-							size="sm"
-							class="rounded-full bg-slate-50 border-slate-200 text-xs h-8"
-							onclick={() => (showInvoiceModal = true)}
-						>
-							<HugeiconsIcon icon={Invoice01Icon} size={16} />
-							Nuova Fattura
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							class="rounded-full bg-slate-50 border-slate-200 text-xs h-8"
-							onclick={() => (showQuoteModal = true)}
-						>
-							<HugeiconsIcon icon={File01Icon} size={16} />
-							Nuovo Preventivo
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							class="rounded-full bg-slate-50 border-slate-200 text-xs h-8"
-							onclick={() => (showTaskModal = true)}
-						>
-							<HugeiconsIcon icon={WrenchIcon} size={16} />
-							Nuovo Intervento
-						</Button>
-					</div>
+			<footer class="p-4 bg-white border-t border-slate-100 sticky bottom-0 z-20">
+				<div class="w-full flex flex-col gap-3 relative">
+					<!-- Active Booking Info Popup -->
+					{#if activeBooking && isBookingActive(activeBooking) && accordionOpen}
+						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
+							<div class="flex items-center justify-between mb-4">
+								<div class="flex items-center gap-3">
+									<div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
+										<HugeiconsIcon icon={InformationCircleIcon} size={20} />
+									</div>
+									<div class="min-w-0">
+										<h3 class="text-xs font-black text-slate-900 uppercase tracking-widest leading-tight">
+											{bookingInfo?.serviceName}
+										</h3>
+										<p class="text-[11px] font-medium text-slate-400 leading-tight">
+											{bookingInfo?.place}
+										</p>
+									</div>
+								</div>
+							</div>
 
-					<div class="flex gap-3 items-center">
-						<div
-							class="bg-slate-50 flex items-center gap-2 border border-slate-200 rounded-2xl p-1.5 w-full"
+							{#if bookingInfo?.description}
+								<div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+									<p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
+										"{bookingInfo.description}"
+									</p>
+								</div>
+							{/if}
+
+							<div class="flex items-center gap-2">
+								{#if bookingInfo?.status === "requested"}
+									<Button
+										size="sm"
+										variant="default"
+										disabled={isProcessingStatus}
+										class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90"
+										onclick={() => { handleUpdateStatus("confirmed"); accordionOpen = false; }}
+									>Approva</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={isProcessingStatus}
+										class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50"
+										onclick={() => { handleUpdateStatus("declined"); accordionOpen = false; }}
+									>Rifiuta</Button>
+								{:else if ["confirmed", "booking_updated"].includes(bookingInfo?.status ?? "")}
+									<Button
+										size="sm"
+										variant="default"
+										class="w-full h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700"
+										onclick={() => { handleUpdateStatus("closed"); accordionOpen = false; }}
+									>Chiudi Pratica</Button>
+								{/if}
+							</div>
+						</div>
+					{/if}
+
+					<!-- Plus Menu Popup -->
+					{#if showPlusMenu}
+						<div 
+							class="absolute bottom-full left-0 mb-4 w-56 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-2 flex flex-col gap-1 animate-in slide-in-from-bottom-2 duration-200"
 						>
-							<input
-								type="text"
-								placeholder="Scrivi un messaggio..."
-								class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
-							/>
+							<button 
+								onclick={() => { showInvoiceModal = true; showPlusMenu = false; }}
+								class="flex items-center gap-3 w-full p-2.5 hover:bg-slate-50 rounded-xl transition-colors text-left"
+							>
+								<div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+									<HugeiconsIcon icon={Invoice01Icon} size={18} />
+								</div>
+								<div>
+									<p class="text-[13px] font-bold text-slate-900">Nuova Fattura</p>
+									<p class="text-[10px] text-slate-500">Invia richiesta pagamento</p>
+								</div>
+							</button>
+							<button 
+								onclick={() => { showQuoteModal = true; showPlusMenu = false; }}
+								class="flex items-center gap-3 w-full p-2.5 hover:bg-slate-50 rounded-xl transition-colors text-left"
+							>
+								<div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+									<HugeiconsIcon icon={File01Icon} size={18} />
+								</div>
+								<div>
+									<p class="text-[13px] font-bold text-slate-900">Nuovo Preventivo</p>
+									<p class="text-[10px] text-slate-500">Proponi i costi del servizio</p>
+								</div>
+							</button>
+							<button 
+								onclick={() => { showTaskModal = true; showPlusMenu = false; }}
+								class="flex items-center gap-3 w-full p-2.5 hover:bg-slate-50 rounded-xl transition-colors text-left"
+							>
+								<div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+									<HugeiconsIcon icon={WrenchIcon} size={18} />
+								</div>
+								<div>
+									<p class="text-[13px] font-bold text-slate-900">Nuovo Intervento</p>
+									<p class="text-[10px] text-slate-500">Pianifica un'uscita tecnica</p>
+								</div>
+							</button>
+						</div>
+					{/if}
+
+					<div class="flex gap-2 items-center">
+						<div class="flex items-center">
+							<button 
+								onclick={() => { showPlusMenu = !showPlusMenu; accordionOpen = false; }}
+								class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {showPlusMenu ? 'rotate-45' : ''}"
+							>
+								<HugeiconsIcon icon={Add01Icon} size={24} />
+							</button>
+
+							{#if activeBooking && isBookingActive(activeBooking)}
+								<button 
+									onclick={() => { accordionOpen = !accordionOpen; showPlusMenu = false; }}
+									class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {accordionOpen ? 'rotate-180 text-[#5D7D94]' : ''}"
+								>
+									<HugeiconsIcon icon={InformationCircleIcon} size={22} />
+								</button>
+							{/if}
+						</div>
+						
+						<form
+							onsubmit={(e) => { e.preventDefault(); sendMessage(); }}
+							class="flex items-center gap-2 w-full"
+						>
+							<div
+								class="bg-white flex items-center gap-2 border border-slate-200 shadow-sm rounded-2xl p-1.5 flex-1 ring-1 ring-black/5"
+							>
+								<input
+									type="text"
+									placeholder="Scrivi un messaggio..."
+									bind:value={newMessageValue}
+									onfocus={() => { showPlusMenu = false; accordionOpen = false; }}
+									class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
+								/>
+							</div>
 							<button
-								class="bg-[#5D7D94] text-white p-2 rounded-xl hover:opacity-90 transition-opacity"
+								type="submit"
+								class="bg-[#5D7D94] text-white w-10 h-10 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center shrink-0 shadow-sm"
 							>
 								<HugeiconsIcon icon={SentIcon} size={18} />
 							</button>
-						</div>
+						</form>
 					</div>
 				</div>
 			</footer>
