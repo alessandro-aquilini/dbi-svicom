@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { getCurrentUser } from '$lib/auth';
 	import { getServiceById } from '$lib/data/services';
 	import {
@@ -11,7 +12,7 @@
 	import HistoryBookingCard from '$lib/components/shared/booking/booking-card/HistoryBookingCard.svelte';
 
 	const currentUser = getCurrentUser();
-	const supplierId = currentUser?.id ?? 'frn-idroclima-nord';
+	const supplierId = page.url.searchParams.get('supplier') ?? (currentUser?.role === 'supplier' ? currentUser?.id : 'frn-idroclima-nord');
 	const allBookings = getBookingsBySupplierId(supplierId);
 	const activeBookings = getActiveBookings(allBookings);
 	const recentHistory = getRecentClosedBookings(allBookings, 3);

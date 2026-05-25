@@ -46,6 +46,7 @@ export interface Booking {
     id: string;
     residentId: string;
     serviceId: string; // The supplier ID can be inferred from the service metadata.
+    supplierId?: string;
 
     timeline?: BookingEvent[];
     messageTimeline?: BookingMessage[];
@@ -276,7 +277,7 @@ export function getBookingsBySupplierId(supplierId: string): Booking[] {
     const supplierServiceIds = services
         .filter((s) => s.supplierId === supplierId)
         .map((s) => s.id);
-    return bookings.filter((b) => supplierServiceIds.includes(b.serviceId));
+    return bookings.filter((b) => supplierServiceIds.includes(b.serviceId) || b.supplierId === supplierId);
 }
 
 // ─── Booking Info Helpers ─────────────────────────────────────────────────────
@@ -327,7 +328,7 @@ export function getBookingInfo(booking: Booking): BookingInfo {
         serviceName: service?.name ?? 'Servizio',
         residentId: booking.residentId,
         residentName: resident?.name,
-        supplierId: service?.supplierId,
+        supplierId: booking.supplierId ?? service?.supplierId,
         supplierName: supplier?.name,
         status: inferBookingStatus(booking),
         slot: lastEvent?.slot ?? createdEvent?.slot ?? booking.slot,
@@ -397,4 +398,47 @@ export function linkDocumentToBooking(bookingId: string, type: 'invoice' | 'quot
     } else if (type === 'intervention') {
         booking.interventionIds = [...(booking.interventionIds || []), documentId];
     }
+}
+
+export function createBooking(booking: Booking): Booking {
+    // Ensure booking has an id
+    if (!booking.id) {
+        booking.id = `bkg-new-${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    // Resolve supplierId from the service if missing
+    const svc = services.find((s) => s.id === booking.serviceId);
+    if (!booking.supplierId && svc) booking.supplierId = svc.supplierId;
+
+    const now = new Date().toISOString();
+
+    // Ensure there's at least one timeline event (booking_created)
+    if (!booking.timeline || booking.timeline.length === 0) {
+        booking.timeline = [
+            {
+                id: `${booking.id}-e1`,
+                kind: 'booking_created',
+                authorId: booking.residentId,
+                at: now,
+                slot: booking.slot,
+                // place/description/propertyId are intentionally left undefined if not provided
+            }
+        ];
+    } else {
+        // Normalize first event
+        const first = booking.timeline[0];
+        if (!first.id) first.id = `${booking.id}-e1`;
+        if (!first.authorId) first.authorId = booking.residentId;
+        if (!first.at) first.at = now;
+    }
+
+    // Ensure message timeline exists
+    if (!booking.messageTimeline) booking.messageTimeline = [];
+
+    // Keep top-level slot in sync with the last known slot
+    const lastEv = lastBookingEvent(booking);
+    booking.slot = lastEv?.slot ?? booking.slot;
+
+    bookings.push(booking);
+    return booking;
 }
