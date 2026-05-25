@@ -3,7 +3,6 @@
     import ReportCreatedCard from './ReportCreatedCard.svelte';
     import ReportAcknowledgedCard from './ReportAcknowledgedCard.svelte';
     import ReportResolvedCard from './ReportResolvedCard.svelte';
-    import ReportArchivedCard from './ReportArchivedCard.svelte';
     import ReportEscalatedCard from './ReportEscalatedCard.svelte';
 
     interface Props {
@@ -19,8 +18,6 @@
     <ReportAcknowledgedCard {event} />
 {:else if event.kind === 'resolved'}
     <ReportResolvedCard {event} />
-{:else if event.kind === 'archived'}
-    <ReportArchivedCard {event} />
 {:else if event.kind === 'escalated'}
     <ReportEscalatedCard {event} />
 {:else}
