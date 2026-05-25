@@ -1,27 +1,18 @@
 <script lang="ts">
     import type { BookingEvent } from '$lib/data/ticket/booking';
     import { HugeiconsIcon } from '@hugeicons/svelte';
-    import { Add01Icon, Clock01Icon, Location01Icon, Note01Icon } from '@hugeicons/core-free-icons';
-    import { formatChatTime, formatChatTooltip } from '$lib/utils/dates';
-
-    import { getPropertyById } from '$lib/data/properties';
-    import { services } from '$lib/data/services';
+    import { Add01Icon, Clock01Icon, Location01Icon } from '@hugeicons/core-free-icons';
+    import { formatChatTime } from '$lib/utils/dates';
 
     interface Props {
         event: BookingEvent;
+        serviceName?: string;
+        servicePlace?: string;
         isOwn?: boolean;
     }
 
-    let { event, isOwn = false }: Props = $props();
-
-    const serviceName = $derived(
-        services.find(s => s.id === event.propertyId)?.name ?? 'Nuova Prenotazione'
-    );
-
-    const propertyPlace = $derived.by(() => {
-        const property = event.propertyId ? getPropertyById(event.propertyId) : undefined;
-        return (property?.name ?? event.propertyId ?? '') + (event.place ? `, ${event.place}` : '');
-    });
+    let { event, serviceName = 'Nuova Prenotazione', servicePlace = '', isOwn = false }: Props = $props();
+    const notes = $derived(event.notes ?? event.description ?? '');
 
     function formatSlot(slot?: { start: string; end: string }) {
         if (!slot) return 'Orario da definire';
@@ -42,9 +33,9 @@
                 <span class="text-[11px] font-bold uppercase tracking-widest text-amber-900 block mb-0.5">
                     {serviceName}
                 </span>
-                {#if event.description}
+                {#if notes}
                     <p class="text-[11px] font-medium text-amber-900/70 leading-tight line-clamp-2 italic">
-                        "{event.description}"
+                        "{notes}"
                     </p>
                 {/if}
             </div>
@@ -60,12 +51,12 @@
                 </div>
             {/if}
 
-            {#if propertyPlace}
+            {#if servicePlace}
                 <div class="flex items-center gap-2.5 text-xs font-medium text-slate-500">
                     <div class="p-1.5 bg-slate-100 rounded-lg text-slate-400">
                         <HugeiconsIcon icon={Location01Icon} size={14} />
                     </div>
-                    <span class="line-clamp-1">{propertyPlace}</span>
+                    <span class="line-clamp-1">{servicePlace}</span>
                 </div>
             {/if}
         </div>

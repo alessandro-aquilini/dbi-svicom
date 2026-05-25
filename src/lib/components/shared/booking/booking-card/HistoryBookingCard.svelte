@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { getUserById } from '$lib/data/users';
-	import { getPropertyById } from '$lib/data/properties';
 	import { getBookingInfo, type Booking, type BookingInfo } from '$lib/data/ticket/booking';
 	import type { Service } from '$lib/data/services';
 	import { StatusBadge } from '$lib/components/shared';
@@ -21,11 +20,7 @@
 	const collaboratorName = $derived(
 		view === 'supplier' ? resident?.name ?? 'Residente' : supplier?.name ?? 'Fornitore'
 	);
-	const property = $derived(info.propertyId ? getPropertyById(info.propertyId) : undefined);
-	const propertyPlace = $derived(
-		(property?.name ?? info.propertyId ?? 'Indirizzo non definito') + 
-		(info.place ? `, ${info.place}` : '')
-	);
+	const propertyPlace = $derived(info.place ?? 'Indirizzo non definito');
 	const chatLink = $derived(
 		view === 'resident'
 			? `/resident/services/chat?id=${booking.id}`

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { getUserById } from '$lib/data/users';
-	import { getPropertyById } from '$lib/data/properties';
 	import { getBookingInfo, type Booking, type BookingInfo, updateBookingStatusAction } from '$lib/data/ticket/booking';
 	import type { Service } from '$lib/data/services';
 	import type { StatusVariant } from '$lib/types';
@@ -21,7 +20,6 @@
 	const info = $derived(getBookingInfo(booking));
 	const resident = $derived(getUserById(booking.residentId));
 	const supplier = $derived(service ? getUserById(service.supplierId) : undefined);
-	const property = $derived(info.propertyId ? getPropertyById(info.propertyId) : undefined);
 	const collaboratorLabel = $derived(view === 'supplier' ? 'Richiesto da' : 'Fornitore');
 	const collaboratorName = $derived(
 		view === 'supplier' ? resident?.name ?? 'Residente' : supplier?.name ?? 'Fornitore'
@@ -52,10 +50,6 @@
 		view === 'resident'
 			? `/resident/services/chat?id=${booking.id}`
 			: `/supplier/chat?id=${booking.residentId}`
-	);
-	const propertyPlace = $derived(
-		(property?.name ?? info.propertyId ?? 'Indirizzo non definito') + 
-		(info.place ? `, ${info.place}` : '')
 	);
 	const summaryDate = $derived(
 		info.slot 
@@ -149,7 +143,7 @@
 			</div>
 			<div class="min-w-0">
 				<p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Luogo</p>
-				<p class="truncate text-xs font-semibold text-foreground">{propertyPlace}</p>
+				<p class="truncate text-xs font-semibold text-foreground">{info.place ?? 'Indirizzo non definito'}</p>
 			</div>
 		</div>
 	</div>

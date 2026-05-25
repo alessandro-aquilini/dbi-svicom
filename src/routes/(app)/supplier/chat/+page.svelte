@@ -692,6 +692,8 @@
 									<BookingTimelineEvent
 										event={item.data}
 										currentUserId={supplierId}
+										serviceName={bookingInfo?.serviceName}
+										servicePlace={bookingInfo?.place}
 									/>
 								{:else}
 									<ChatTimelineEvent event={item.data} />
@@ -737,10 +739,10 @@
 								</div>
 							</div>
 
-							{#if bookingInfo?.description}
+							{#if bookingInfo?.notes}
 								<div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
 									<p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
-										"{bookingInfo.description}"
+										"{bookingInfo.notes}"
 									</p>
 								</div>
 							{/if}

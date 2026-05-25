@@ -10,15 +10,27 @@
     interface Props {
         event: BookingEvent;
         currentUserId?: string;
+        serviceName?: string;
+        servicePlace?: string;
     }
 
-    let { event, currentUserId = '' }: Props = $props();
+    let { event, currentUserId = '', serviceName = '', servicePlace = '' }: Props = $props();
 </script>
 
 {#if event.kind === 'booking_created'}
-    <BookingCreatedCard event={event} isOwn={event.authorId === currentUserId} />
+    <BookingCreatedCard
+        event={event}
+        isOwn={event.authorId === currentUserId}
+        serviceName={serviceName}
+        servicePlace={servicePlace}
+    />
 {:else if event.kind === 'booking_updated'}
-    <BookingUpdatedCard event={event} isOwn={event.authorId === currentUserId} />
+    <BookingUpdatedCard
+        event={event}
+        isOwn={event.authorId === currentUserId}
+        serviceName={serviceName}
+        servicePlace={servicePlace}
+    />
 {:else if event.kind === 'confirmed'}
     <BookingConfirmedCard event={event} isOwn={event.authorId === currentUserId} />
 {:else if event.kind === 'cancelled'}

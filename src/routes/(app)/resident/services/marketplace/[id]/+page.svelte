@@ -62,9 +62,7 @@
 							start: `${selectedDate}T${startTime}:00`, 
 							end: `${selectedDate}T${endTime}:00` 
 						},
-						place: 'Il mio appartamento',
-						description: notes,
-						propertyId: propertySelection.selectedId ?? undefined
+						notes: notes,
 					}
 				],
 				messageTimeline: [

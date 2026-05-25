@@ -27,7 +27,7 @@
 
     const currentUser = getCurrentUser();
     const residentId = currentUser?.id ?? '';
-    const bookingId = $derived(page.url.searchParams.get('id'));
+    const bookingId = $derived(page.url.searchParams.get('id') ?? '');
     const booking = $derived.by(() => (bookingId ? getBookingById(bookingId) : undefined));
     const service = $derived.by(() => (booking?.serviceId ? services.find((item) => item.id === booking.serviceId) : undefined));
     const supplier = $derived.by(() => (service?.supplierId ? getUserById(service.supplierId) : undefined));
@@ -180,7 +180,12 @@
                             <ChatBubble message={item.data} isOwn={isOwnMessage(item.data.senderId)} />
                         {:else if item.type === 'event'}
                             <div class="flex justify-center w-full my-2">
-                                <BookingTimelineEvent event={item.data} currentUserId={residentId} />
+                                <BookingTimelineEvent
+                                    event={item.data}
+                                    currentUserId={residentId}
+                                    serviceName={bookingInfo?.serviceName}
+                                    servicePlace={bookingInfo?.place}
+                                />
                             </div>
                         {:else if item.type === 'quote'}
                             <ChatQuoteCard quote={item.data} isOwn={false} />
@@ -223,10 +228,10 @@
                                 </div>
                             </div>
 
-                            {#if bookingInfo?.description}
+                            {#if bookingInfo?.notes}
                                 <div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                     <p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
-                                        "{bookingInfo.description}"
+                                        "{bookingInfo.notes}"
                                     </p>
                                 </div>
                             {/if}

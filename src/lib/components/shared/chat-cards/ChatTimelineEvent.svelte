@@ -79,9 +79,9 @@
             </span>
         </div>
 
-        {#if event.description}
+        {#if event.notes ?? event.description}
             <div class="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm leading-relaxed text-slate-600">
-                {event.description}
+                {event.notes ?? event.description}
             </div>
         {/if}
     </div>

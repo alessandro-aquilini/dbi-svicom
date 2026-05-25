@@ -1,6 +1,9 @@
 // ───────────────── booking-types.ts ──────────────────────────────────────────
 import { getUserById } from '../users';
 import { services } from '../services';
+import { getPropertyById } from '../properties';
+import { getResidentById } from '../residents';
+import { browser } from '$app/environment';
 
 export type BookingEventKind =
     | 'booking_created'
@@ -22,6 +25,7 @@ export interface BookingEvent {
     kind: BookingEventKind;
     authorId: string;
     at: string; // ISO datetime
+    notes?: string;
     place?: string;
     description?: string;
     propertyId?: string;
@@ -102,7 +106,9 @@ export function inferBookingStatus(booking: Booking): BookingStatus {
 }
 
 // ─── Sample bookings dataset (resident: res-bianchi-01, property: cnd-marconi-14) ───
-export const bookings: Booking[] = [
+const STORAGE_KEY = 'svicom.bookings';
+
+const baseBookings: Booking[] = [
     // 1) Pet sitting: supplier confirms then cancels
     {
         id: 'bkg-001',
@@ -115,9 +121,7 @@ export const bookings: Booking[] = [
                 authorId: 'res-bianchi-01',
                 at: '2026-05-06T08:00:00',
                 slot: { start: '2026-05-06T09:30:00', end: '2026-05-06T11:00:00' },
-                place: 'Scala B - Interno 5',
-                description: 'Pet sitting per cane di taglia media',
-                propertyId: 'cnd-marconi-14'
+                notes: 'Pet sitting per cane di taglia media'
             },
             { id: 'bkg-001-e2', kind: 'confirmed', authorId: 'frn-pet-care-h24', at: '2026-05-06T09:00:00' },
             { id: 'bkg-001-e3', kind: 'cancelled', authorId: 'frn-pet-care-h24', at: '2026-05-06T10:00:00' }
@@ -141,9 +145,7 @@ export const bookings: Booking[] = [
                 authorId: 'res-bianchi-01',
                 at: '2026-04-20T09:00:00',
                 slot: { start: '2026-04-20T10:00:00', end: '2026-04-20T13:00:00' },
-                place: 'Scala B - Interno 5',
-                description: 'Pulizia extra della zona giorno e corridoio',
-                propertyId: 'cnd-marconi-14'
+                notes: 'Pulizia extra della zona giorno e corridoio'
             },
             { id: 'bkg-002-e2', kind: 'confirmed', authorId: 'frn-clean-green', at: '2026-04-20T10:00:00' },
             { id: 'bkg-002-e4', kind: 'closed', authorId: 'frn-clean-green', at: '2026-04-20T15:00:00' }
@@ -170,9 +172,7 @@ export const bookings: Booking[] = [
                 authorId: 'res-bianchi-01',
                 at: '2026-05-01T09:00:00',
                 slot: { start: '2026-05-02T09:00:00', end: '2026-05-02T17:00:00' },
-                place: 'Scala B - Interno 5',
-                description: 'Installazione climatizzatore in soggiorno',
-                propertyId: 'cnd-marconi-14'
+                notes: 'Installazione climatizzatore in soggiorno'
             },
             { id: 'bkg-003-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-01T11:45:00' },
             {
@@ -181,8 +181,7 @@ export const bookings: Booking[] = [
                 authorId: 'res-bianchi-01',
                 at: '2026-05-02T08:00:00',
                 slot: { start: '2026-05-02T10:00:00', end: '2026-05-02T18:00:00' },
-                place: 'Scala B - Interno 5',
-                description: 'Richiesta di posticipare l’intervento di un’ora'
+                notes: 'Richiesta di posticipare l’intervento di un’ora'
             },
             { id: 'bkg-003-e5', kind: 'closed', authorId: 'frn-idroclima-nord', at: '2026-05-03T09:00:00' }
         ],
@@ -211,9 +210,7 @@ export const bookings: Booking[] = [
                 authorId: 'res-bianchi-01',
                 at: '2026-05-10T14:20:00',
                 slot: { start: '2026-05-15T10:00:00', end: '2026-05-15T11:00:00' },
-                place: 'Scala B - Interno 5',
-                description: 'Controllo termico della caldaia',
-                propertyId: 'cnd-marconi-14'
+                notes: 'Controllo termico della caldaia'
             }
         ],
         messageTimeline: [
@@ -233,9 +230,7 @@ export const bookings: Booking[] = [
                 authorId: 'res-rossi-01',
                 at: '2026-05-12T09:00:00',
                 slot: { start: '2026-05-20T09:00:00', end: '2026-05-20T12:00:00' },
-                place: 'Scala A - Interno 3',
-                description: 'Installazione climatizzatore camera da letto',
-                propertyId: 'cnd-verdi-3'
+                notes: 'Installazione climatizzatore camera da letto'
             },
             { id: 'bkg-005-e2', kind: 'confirmed', authorId: 'frn-idroclima-nord', at: '2026-05-13T08:30:00' }
         ],
@@ -257,13 +252,34 @@ export const bookings: Booking[] = [
                 authorId: 'res-bellini-05',
                 at: '2026-05-10T08:30:00',
                 slot: { start: '2026-05-12T09:00:00', end: '2026-05-12T11:00:00' },
-                place: 'Interno 1',
-                description: 'Riparazione citofono con suoneria difettosa',
-                propertyId: 'cnd-marconi-14'
+                notes: 'Riparazione citofono con suoneria difettosa'
             }
         ]
     }
 ];
+
+function loadPersistedBookings(): Booking[] {
+    if (!browser) return [];
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw) as Booking[];
+        if (!Array.isArray(parsed)) return [];
+        const baseIds = new Set(baseBookings.map((b) => b.id));
+        return parsed.filter((booking) => booking?.id && !baseIds.has(booking.id));
+    } catch {
+        return [];
+    }
+}
+
+function persistBookings(): void {
+    if (!browser) return;
+    const baseIds = new Set(baseBookings.map((b) => b.id));
+    const dynamicBookings = bookings.filter((booking) => !baseIds.has(booking.id));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dynamicBookings));
+}
+
+export const bookings: Booking[] = [...baseBookings, ...loadPersistedBookings()];
 
 export function getBookingById(id: string): Booking | undefined {
     return bookings.find((b) => b.id === id);
@@ -293,7 +309,7 @@ export interface BookingInfo {
     status: BookingStatus;
     slot?: BookingSlot;
     place?: string;
-    description?: string;
+    notes?: string;
     propertyId?: string;
     createdAt?: string;
     updatedAt?: string;
@@ -317,10 +333,18 @@ export function getBookingCreatedAt(booking: Booking): string | undefined {
 export function getBookingInfo(booking: Booking): BookingInfo {
     const service = services.find((s) => s.id === booking.serviceId);
     const resident = getUserById(booking.residentId);
-    const supplier = service ? getUserById(service.supplierId) : undefined;
+    const residentProfile = getResidentById(booking.residentId);
+    const property = residentProfile?.propertyId ? getPropertyById(residentProfile.propertyId) : undefined;
     const createdEvent = booking.timeline?.find((event) => event.kind === 'booking_created');
     const closedEvent = booking.timeline?.find((event) => event.kind === 'closed');
     const lastEvent = lastBookingEvent(booking);
+
+    const place = property
+        ? `${property.address.street}, ${property.address.city}${residentProfile?.apartment ? ` · ${residentProfile.apartment}` : ''}`
+        : residentProfile?.apartment;
+
+    const noteEvent = [...(booking.timeline || [])].reverse().find((event) => event.notes || event.description);
+    const notes = noteEvent?.notes ?? noteEvent?.description;
 
     return {
         bookingId: booking.id,
@@ -329,12 +353,12 @@ export function getBookingInfo(booking: Booking): BookingInfo {
         residentId: booking.residentId,
         residentName: resident?.name,
         supplierId: booking.supplierId ?? service?.supplierId,
-        supplierName: supplier?.name,
+        supplierName: service ? getUserById(service.supplierId)?.name : undefined,
         status: inferBookingStatus(booking),
         slot: lastEvent?.slot ?? createdEvent?.slot ?? booking.slot,
-        place: lastEvent?.place ?? createdEvent?.place,
-        description: lastEvent?.description ?? createdEvent?.description,
-        propertyId: createdEvent?.propertyId,
+        place,
+        notes,
+        propertyId: residentProfile?.propertyId,
         createdAt: createdEvent?.at,
         updatedAt: lastEvent?.at,
         closedAt: closedEvent?.at,
@@ -376,6 +400,7 @@ export function addBookingEvent(bookingId: string, event: Omit<BookingEvent, 'id
     };
 
     booking.timeline.push(newEvent);
+    persistBookings();
 }
 
 export function updateBookingStatusAction(bookingId: string, kind: BookingEventKind, authorId: string): void {
@@ -398,47 +423,58 @@ export function linkDocumentToBooking(bookingId: string, type: 'invoice' | 'quot
     } else if (type === 'intervention') {
         booking.interventionIds = [...(booking.interventionIds || []), documentId];
     }
+
+    persistBookings();
 }
 
 export function createBooking(booking: Booking): Booking {
+    // Create a shallow copy to avoid mutating the caller object unexpectedly.
+    const record: Booking = { ...booking };
+
     // Ensure booking has an id
-    if (!booking.id) {
-        booking.id = `bkg-new-${Math.random().toString(36).slice(2, 7)}`;
+    if (!record.id) {
+        record.id = `bkg-new-${Math.random().toString(36).slice(2, 7)}`;
     }
 
     // Resolve supplierId from the service if missing
-    const svc = services.find((s) => s.id === booking.serviceId);
-    if (!booking.supplierId && svc) booking.supplierId = svc.supplierId;
+    const svc = services.find((s) => s.id === record.serviceId);
+    if (!record.supplierId && svc) record.supplierId = svc.supplierId;
+
+    // If residentId is missing, infer it from the first event author
+    if (!record.residentId && record.timeline?.length) {
+        const firstEventAuthor = record.timeline[0]?.authorId;
+        if (firstEventAuthor) record.residentId = firstEventAuthor;
+    }
 
     const now = new Date().toISOString();
 
-    // Ensure there's at least one timeline event (booking_created)
-    if (!booking.timeline || booking.timeline.length === 0) {
-        booking.timeline = [
+    if (!record.timeline || record.timeline.length === 0) {
+        record.timeline = [
             {
-                id: `${booking.id}-e1`,
+                id: `${record.id}-e1`,
                 kind: 'booking_created',
-                authorId: booking.residentId,
+                authorId: record.residentId,
                 at: now,
-                slot: booking.slot,
-                // place/description/propertyId are intentionally left undefined if not provided
+                slot: record.slot,
+                notes: undefined
             }
         ];
     } else {
-        // Normalize first event
-        const first = booking.timeline[0];
-        if (!first.id) first.id = `${booking.id}-e1`;
-        if (!first.authorId) first.authorId = booking.residentId;
+        // Normalize first event if the booking already includes a timeline.
+        const first = record.timeline[0];
+        if (!first.id) first.id = `${record.id}-e1`;
+        if (!first.authorId) first.authorId = record.residentId;
         if (!first.at) first.at = now;
     }
 
     // Ensure message timeline exists
-    if (!booking.messageTimeline) booking.messageTimeline = [];
+    if (!record.messageTimeline) record.messageTimeline = [];
 
     // Keep top-level slot in sync with the last known slot
-    const lastEv = lastBookingEvent(booking);
-    booking.slot = lastEv?.slot ?? booking.slot;
+    const lastEv = lastBookingEvent(record);
+    record.slot = lastEv?.slot ?? record.slot;
 
-    bookings.push(booking);
-    return booking;
+    bookings.push(record);
+    persistBookings();
+    return record;
 }

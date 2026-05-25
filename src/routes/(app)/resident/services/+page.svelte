@@ -9,12 +9,23 @@
 	} from '$lib/data/ticket/booking';
 	import ActiveBookingCard from '$lib/components/shared/booking/booking-card/ActiveBookingCard.svelte';
 	import HistoryBookingCard from '$lib/components/shared/booking/booking-card/HistoryBookingCard.svelte';
+	import { onMount } from 'svelte';
 
 	const currentUser = getCurrentUser();
 	const residentId = currentUser?.id ?? '';
-	const allBookings = residentId ? getBookingsByResidentId(residentId) : [];
-	const activeBookings = getActiveBookings(allBookings);
-	const recentHistory = getRecentClosedBookings(allBookings, 3);
+	let allBookings = $state<Booking[]>([]);
+	let activeBookings = $state<Booking[]>([]);
+	let recentHistory = $state<Booking[]>([]);
+
+	function refreshBookings() {
+		allBookings = residentId ? getBookingsByResidentId(residentId) : [];
+		activeBookings = getActiveBookings(allBookings);
+		recentHistory = getRecentClosedBookings(allBookings, 3);
+	}
+
+	onMount(() => {
+		refreshBookings();
+	});
 </script>
 
 <svelte:head>
