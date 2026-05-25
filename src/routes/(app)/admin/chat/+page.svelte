@@ -321,7 +321,7 @@
 							isOwn={false} 
 						/>
 					{:else if item.type === 'payment'}
-						<ChatPaymentCard payment={item.data} />
+						<ChatPaymentCard payment={item.data} isOwn={item.data.fromId === adminId} />
 					{:else if item.type === 'intervention'}
 						<ChatInterventionCard task={item.data} />
 					{/if}

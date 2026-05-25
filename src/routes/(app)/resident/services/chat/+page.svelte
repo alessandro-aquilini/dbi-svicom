@@ -13,6 +13,7 @@
     import { getQuoteById } from '$lib/data/embeds/quotes';
     import { getInvoiceById } from '$lib/data/embeds/invoices';
     import { getPaymentById } from '$lib/data/embeds/payments';
+    import { formatChatDateLabel, isSameChatDay } from '$lib/utils/dates';
     import ChatBubble from '$lib/components/shared/chat-cards/ChatBubble.svelte';
     import ChatQuoteCard from '$lib/components/shared/chat-cards/ChatQuoteCard.svelte';
     import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
@@ -20,8 +21,9 @@
     import BookingTimelineEvent from '$lib/components/shared/booking/actions-cards/BookingTimelineEvent.svelte';
     import PaymentModal from '$lib/components/shared/chat-buttons/PaymentModal.svelte';
     import { HugeiconsIcon } from '@hugeicons/svelte';
-    import { ArrowLeft01Icon, SentIcon, Message01Icon, InformationCircleIcon, Cancel01Icon } from '@hugeicons/core-free-icons';
+    import { ArrowLeft01Icon, SentIcon, Message01Icon, InformationCircleIcon, Cancel01Icon, Add01Icon, Invoice01Icon } from '@hugeicons/core-free-icons';
     import { Button } from '$lib/components/ui/button';
+    import { tick } from 'svelte';
 
     const currentUser = getCurrentUser();
     const residentId = currentUser?.id ?? '';
@@ -33,9 +35,6 @@
     const chatSubtitle = $derived.by(() => (supplier?.name ? `Fornitore · ${supplier.name}` : 'Prenotazione in corso'));
 
     const bookingInfo = $derived(booking ? getBookingInfo(booking) : null);
-    let accordionOpen = $state(false);
-    let showPaymentModal = $state(false);
-
     const timelineItems = $derived.by(() => {
         const items: any[] = [];
         if (!booking) return items;
@@ -66,11 +65,56 @@
 
         return items.sort((a, b) => a.date.getTime() - b.date.getTime());
     });
+    let accordionOpen = $state(false);
+    let showPaymentModal = $state(false);
+    let showPlusMenu = $state(false);
+    let newMessageValue = $state('');
+    let scrollContainer = $state<HTMLElement | null>(null);
+
+    async function scrollToBottom() {
+        await tick();
+        if (scrollContainer) {
+            scrollContainer.scrollTo({
+                top: scrollContainer.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    }
+
+    $effect(() => {
+        scrollToBottom();
+    });
+
+    function sendMessage() {
+        if (!newMessageValue.trim() || !booking) return;
+
+        const msg = {
+            id: `msg-${Date.now()}`,
+            senderId: residentId,
+            text: newMessageValue.trim(),
+            timestamp: new Date().toISOString(),
+        };
+
+        if (!booking.messageTimeline) booking.messageTimeline = [];
+        booking.messageTimeline.push(msg);
+
+        newMessageValue = '';
+        showPlusMenu = false;
+        scrollToBottom();
+    }
 
     const isOwnMessage = (senderId: string) => senderId === residentId;
 
     function goBack() {
         goto('/resident/services');
+    }
+
+    function getChatDayLabel(date: Date) {
+        return formatChatDateLabel(date);
+    }
+
+    function shouldRenderDateSeparator(current: Date, previous?: Date) {
+        return !previous || !isSameChatDay(current, previous);
     }
 
     function formatSlot(slot?: { start: string; end: string }) {
@@ -112,107 +156,153 @@
                 <h1 class="text-base font-semibold text-slate-900 truncate">{chatTitle}</h1>
                 <p class="text-[11px] text-slate-500 truncate">{chatSubtitle}</p>
             </div>
-            <button 
-                type="button" 
-                onclick={() => accordionOpen = !accordionOpen}
-                class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-2xl transition md:flex {accordionOpen ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}"
-            >
-                <HugeiconsIcon icon={InformationCircleIcon} size={18} />
-            </button>
         </div>
-        {#if booking && bookingInfo && isBookingActive(booking) && accordionOpen}
-            <div class="border-t border-border px-4 py-4 bg-slate-50 animate-in slide-in-from-top duration-200">
-                <div class="max-w-4xl mx-auto">
-                    <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-sm">{bookingInfo.serviceName}</h3>
-                            <p class="text-xs text-slate-500 mt-1">{bookingInfo.place} • {bookingInfo.description}</p>
-                        </div>
-                        <div class="flex flex-col items-end gap-1">
-                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Stato attuale</span>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">
-                                {bookingInfo.status.toUpperCase()}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="grid gap-2 sm:grid-cols-2 mb-4">
-                        <div class="rounded-xl bg-white border border-border px-3 py-2 text-xs text-slate-600 shadow-sm flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
-                            {formatSlot(booking.slot)}
-                        </div>
-                        {#if bookingInfo.place}
-                            <div class="rounded-xl bg-white border border-border px-3 py-2 text-xs text-slate-600 shadow-sm flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
-                                {bookingInfo.place}
-                            </div>
-                        {/if}
-                    </div>
-
-                    <div class="flex justify-end">
-                        <Button size="sm" variant="outline" class="text-red-600 border-red-200 hover:bg-red-50 h-8 text-xs px-3" onclick={handleCancelBooking}>
-                            <HugeiconsIcon icon={Cancel01Icon} size={14} class="mr-1.5" />
-                            Annulla Prenotazione
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        {:else if booking}
-            <div class="border-t border-border px-4 py-3 bg-slate-50">
-                <div class="grid gap-2 sm:grid-cols-2">
-                    <div class="rounded-3xl bg-white px-3 py-2 text-xs text-slate-500 shadow-sm">{formatSlot(booking.slot)}</div>
-                    {#if booking.timeline?.[0]?.place}
-                        <div class="rounded-3xl bg-white px-3 py-2 text-xs text-slate-500 shadow-sm">{booking.timeline[0].place}</div>
-                    {/if}
-                </div>
-            </div>
-        {/if}
     </div>
 
     {#if booking}
-        <main class="flex min-h-[calc(100vh-164px)] flex-col overflow-hidden">
-            <section class="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4">
+        <main class="flex h-[calc(100vh-64px)] flex-col bg-white overflow-hidden">
+            <div 
+                bind:this={scrollContainer}
+                class="flex-1 overflow-y-auto p-4 md:p-6 bg-white"
+            >
+                <div class="w-full h-full flex flex-col space-y-4">
                 {#if timelineItems.length > 0}
-                    {#each timelineItems as item}
+                    {#each timelineItems as item, index}
+                        {#if shouldRenderDateSeparator(item.date, index > 0 ? timelineItems[index - 1].date : undefined)}
+                            <div class="flex justify-center my-6 sticky top-2 z-10">
+                                <div class="bg-white/90 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/50 px-4 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                                    {getChatDayLabel(item.date)}
+                                </div>
+                            </div>
+                        {/if}
+
                         {#if item.type === 'message'}
                             <ChatBubble message={item.data} isOwn={isOwnMessage(item.data.senderId)} />
                         {:else if item.type === 'event'}
-                            <BookingTimelineEvent event={item.data} currentUserId={residentId} />
+                            <div class="flex justify-center w-full my-2">
+                                <BookingTimelineEvent event={item.data} currentUserId={residentId} />
+                            </div>
                         {:else if item.type === 'quote'}
-                            <ChatQuoteCard quote={item.data} isOwn={item.data.supplierId === service?.supplierId} />
+                            <ChatQuoteCard quote={item.data} isOwn={false} />
                         {:else if item.type === 'invoice'}
-                            <ChatInvoiceCard invoice={item.data} isOwn={item.data.supplierId === service?.supplierId} />
+                            <ChatInvoiceCard invoice={item.data} isOwn={false} />
                         {:else if item.type === 'payment'}
-                            <ChatPaymentCard payment={item.data} />
+                            <ChatPaymentCard payment={item.data} isOwn={item.data.fromId === residentId} />
                         {/if}
                     {/each}
                 {:else}
-                    <div class="flex flex-col items-center justify-center gap-3 rounded-3xl border border-border bg-white px-5 py-8 text-center shadow-sm">
-                        <HugeiconsIcon icon={Message01Icon} size={28} class="text-primary" />
-                        <p class="text-sm font-semibold text-slate-900">Ancora nessun messaggio</p>
-                        <p class="text-sm text-slate-500">Invia il primo messaggio per avviare la conversazione con il fornitore.</p>
+                    <div class="flex flex-col items-center justify-center text-center p-8 h-full">
+                        <div class="w-16 h-16 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-300 mb-4">
+                            <HugeiconsIcon icon={Message01Icon} size={32} />
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Ancora nessun messaggio</h3>
+                        <p class="text-sm text-slate-500 max-w-xs mt-1">Invia il primo messaggio per avviare la conversazione con il fornitore.</p>
                     </div>
                 {/if}
-            </section>
+                </div>
+            </div>
 
-            <footer class="sticky bottom-0 z-10 border-t border-border bg-white px-4 py-4">
-                <div class="max-w-4xl mx-auto flex flex-col gap-3">
-                    {#if isBookingActive(booking)}
-                        <div class="flex gap-2 px-1 overflow-x-auto no-scrollbar pb-1">
-                            <Button variant="outline" size="sm" class="rounded-full bg-white border-slate-200 text-xs h-8 shadow-sm" onclick={() => showPaymentModal = true}>
-                                💳 Nuovo Pagamento
-                            </Button>
+            <footer class="p-4 bg-white border-t border-slate-100 sticky bottom-0 z-20">
+                <div class="w-full flex flex-col gap-3 relative">
+                    <!-- Active Booking Info Popup -->
+                    {#if booking && isBookingActive(booking) && accordionOpen}
+                        <div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
+                                        <HugeiconsIcon icon={InformationCircleIcon} size={20} />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest leading-tight">
+                                            {bookingInfo?.serviceName}
+                                        </h3>
+                                        <p class="text-[11px] font-medium text-slate-400 leading-tight">
+                                            {bookingInfo?.place}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {#if bookingInfo?.description}
+                                <div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                    <p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
+                                        "{bookingInfo.description}"
+                                    </p>
+                                </div>
+                            {/if}
+
+                            <div class="flex items-center gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    class="w-full h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50"
+                                    onclick={() => { handleCancelBooking(); accordionOpen = false; }}
+                                >Annulla prenotazione</Button>
+                            </div>
                         </div>
                     {/if}
-                    <div class="flex items-center gap-3 rounded-2xl border border-border bg-slate-50 px-3 py-2 shadow-sm">
-                        <input
-                            type="text"
-                            placeholder="Scrivi un messaggio..."
-                            class="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                        />
-                        <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white transition hover:opacity-90">
-                            <HugeiconsIcon icon={SentIcon} size={18} />
-                        </button>
+
+                    <!-- Plus Menu Popup -->
+                    {#if showPlusMenu}
+                        <div 
+                            class="absolute bottom-full left-0 mb-4 w-56 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-2 flex flex-col gap-1 animate-in slide-in-from-bottom-2 duration-200"
+                        >
+                            <button 
+                                onclick={() => { showPaymentModal = true; showPlusMenu = false; }}
+                                class="flex items-center gap-3 w-full p-2.5 hover:bg-slate-50 rounded-xl transition-colors text-left"
+                            >
+                                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <HugeiconsIcon icon={Invoice01Icon} size={18} />
+                                </div>
+                                <div>
+                                    <p class="text-[13px] font-bold text-slate-900">Nuovo pagamento</p>
+                                    <p class="text-[10px] text-slate-500">Invia una richiesta di incasso</p>
+                                </div>
+                            </button>
+                        </div>
+                    {/if}
+
+                    <div class="flex gap-2 items-center">
+                        <div class="flex items-center">
+                            <button 
+                                onclick={() => { showPlusMenu = !showPlusMenu; accordionOpen = false; }}
+                                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {showPlusMenu ? 'rotate-45' : ''}"
+                                type="button"
+                            >
+                                <HugeiconsIcon icon={Add01Icon} size={24} />
+                            </button>
+
+                            {#if booking && isBookingActive(booking)}
+                                <button 
+                                    onclick={() => { accordionOpen = !accordionOpen; showPlusMenu = false; }}
+                                    class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {accordionOpen ? 'rotate-180 text-[#5D7D94]' : ''}"
+                                    type="button"
+                                >
+                                    <HugeiconsIcon icon={InformationCircleIcon} size={22} />
+                                </button>
+                            {/if}
+                        </div>
+                        
+                        <form
+                            onsubmit={(e) => { e.preventDefault(); sendMessage(); }}
+                            class="flex items-center gap-2 w-full"
+                        >
+                            <div class="bg-white flex items-center gap-2 border border-slate-200 shadow-sm rounded-2xl p-1.5 flex-1 ring-1 ring-black/5">
+                                <input
+                                    type="text"
+                                    placeholder="Scrivi un messaggio..."
+                                    bind:value={newMessageValue}
+                                    onfocus={() => { showPlusMenu = false; accordionOpen = false; }}
+                                    class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                class="bg-[#5D7D94] text-white w-10 h-10 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center shrink-0 shadow-sm"
+                            >
+                                <HugeiconsIcon icon={SentIcon} size={18} />
+                            </button>
+                        </form>
                     </div>
                 </div>
             </footer>

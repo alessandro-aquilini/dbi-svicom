@@ -2,17 +2,18 @@
     import type { Payment } from '$lib/data/embeds/payments';
     import { HugeiconsIcon } from '@hugeicons/svelte';
     import { CreditCardIcon, Tick02Icon } from '@hugeicons/core-free-icons';
-    import { formatChatTime, formatChatTooltip } from '$lib/utils/dates';
+    import { formatChatTime } from '$lib/utils/dates';
 
     interface Props {
         payment: Payment;
+        isOwn?: boolean;
     }
 
-    let { payment }: Props = $props();
+    let { payment, isOwn = false }: Props = $props();
 </script>
 
-<div class="flex flex-col items-end w-full mb-1">
-    <div class="w-full max-w-[320px] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 rounded-tr-none">
+<div class="flex flex-col {isOwn ? 'items-end' : 'items-start'} w-full mb-1">
+    <div class="w-full max-w-[320px] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 {isOwn ? 'rounded-tr-none' : 'rounded-tl-none'}">
         <div class="flex items-center gap-3 bg-emerald-50/50 px-4 py-3">
             <div class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
                 <HugeiconsIcon icon={CreditCardIcon} size={18} />

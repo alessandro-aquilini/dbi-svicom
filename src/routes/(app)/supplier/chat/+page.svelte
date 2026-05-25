@@ -708,7 +708,7 @@
 								isOwn={item.data.supplierId === supplierId}
 							/>
 						{:else if item.type === "payment"}
-							<ChatPaymentCard payment={item.data} />
+							<ChatPaymentCard payment={item.data} isOwn={item.data.fromId === supplierId} />
 						{:else if item.type === "intervention"}
 							<ChatInterventionCard task={item.data} />
 						{/if}

@@ -24,7 +24,7 @@
 <div class="mx-auto max-w-xl px-4 py-6 sm:px-6 lg:px-8">
 	<div class="mb-6">
 		<p class="text-sm uppercase tracking-[0.24em] text-primary">Servizi</p>
-		<h1 class="mt-3 text-3xl font-semibold tracking-tight">I miei interventi</h1>
+		<h1 class="mt-3 text-3xl font-semibold tracking-tight">Le mie prenotazioni</h1>
 		<p class="mt-2 text-sm text-muted-foreground">Controlla le richieste che hai già inviato e consulta lo storico dei servizi completati.</p>
 	</div>
 

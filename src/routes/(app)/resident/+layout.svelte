@@ -13,7 +13,10 @@
 		MenuSquareIcon,
 		Megaphone01Icon,
 		Notification01Icon,
-		UserIcon
+		UserIcon,
+
+        Bookmark01Icon
+
 	} from '@hugeicons/core-free-icons';
 
 	let { children } = $props();
@@ -23,7 +26,7 @@
 	const navItems = [
 		{ label: 'Home', href: '/resident', icon: Home01Icon },
 		{ label: 'Chat', href: '/resident/chat', icon: Chat01Icon },
-		{ label: 'Servizi', href: '/resident/services', icon: Calendar03Icon },
+		{ label: 'Servizi', href: '/resident/services', icon: Bookmark01Icon },
 		{ label: 'Pagamenti', href: '/resident/payments', icon: CreditCardIcon },
 		{ label: 'Profilo', href: '/resident/profile', icon: UserIcon }
 	];
