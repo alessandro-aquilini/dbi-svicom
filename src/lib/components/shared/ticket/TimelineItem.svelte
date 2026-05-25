@@ -40,12 +40,9 @@
 					case 'reportCompletion':
 						return { icon: Tick01Icon, color: 'text-emerald-600', label: 'Lavoro completato' };
 					case 'closeTicket':
-					case 'validateAndClose':
 						return { icon: Tick01Icon, color: 'text-emerald-600', label: 'Chiusura' };
 					case 'archiveTicket':
 						return { icon: CircleIcon, color: 'text-muted-foreground', label: 'Archiviazione' };
-					case 'closed':
-						return { icon: CircleIcon, color: 'text-muted-foreground', label: 'Chiuso' };
 					default:
 						return { icon: CircleIcon, color: 'text-muted-foreground', label: 'Evento' };
 				}
@@ -140,12 +137,9 @@
 					case 'reportCompletion':
 						return 'Completamento lavori';
 					case 'closeTicket':
-					case 'validateAndClose':
 						return 'Chiusura';
 					case 'archiveTicket':
 						return 'Archiviazione';
-					case 'closed':
-						return 'Chiusura';
 					case 'createTicket':
 					default:
 						return 'Apertura ticket';
@@ -184,31 +178,20 @@
 		<HugeiconsIcon icon={config.icon} size={14} class={config.color} strokeWidth={2.25} />
 	</span>
 
-	<div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm transition hover:shadow-md sm:p-5">
-		<div class="flex flex-wrap items-start justify-between gap-3">
-			<div class="min-w-0">
-				<p class="text-sm font-semibold text-foreground">{getActorLabel(item)}</p>
-				<p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{getActionLabel(item)}</p>
+		<div class="rounded-xl border border-border/80 bg-card p-4 shadow-sm transition hover:shadow-md sm:p-5">
+			<div class="flex flex-wrap items-start justify-between gap-3">
+				<div class="min-w-0">
+					<p class="text-sm font-semibold text-foreground">{getActorLabel(item)}</p>
+					<p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{getActionLabel(item)}</p>
+				</div>
+				<time
+					datetime={item.at}
+					title={formatAbsolute(item.at)}
+					class="text-xs font-medium text-muted-foreground"
+				>
+					{relativeTime(item.at)}
+				</time>
 			</div>
-			<time
-				datetime={item.at}
-				title={formatAbsolute(item.at)}
-				class="text-xs font-medium text-muted-foreground"
-			>
-				{relativeTime(item.at)}
-			</time>
-		</div>
-
-		{#if item.type === 'ticket-event' && item.data.body}
-			<p class="mt-2 text-sm text-foreground/90 leading-relaxed">{item.data.body}</p>
-		{/if}
-
-		{#if item.type === 'ticket-event' && item.data.kind === 'assignToSupplier' && item.data.supplierId}
-			{@const supplier = getUserById(item.data.supplierId)}
-			<div class="mt-2 text-sm font-medium text-foreground">
-				Assegnata a: <span class="font-semibold">{supplier?.name ?? 'Fornitore'}</span>
-			</div>
-		{/if}
 
 		{#if item.type === 'admin-metadata'}
 			{#if item.data.kind === 'updatePriority'}

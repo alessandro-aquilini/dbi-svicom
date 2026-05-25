@@ -6,6 +6,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { createPayment } from '$lib/data/embeds/payments';
 	import { linkDocumentToBooking } from '$lib/data/ticket/booking';
+	import { linkDocumentToTicket } from '$lib/data/ticket/tickets';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { 
 		Wallet02Icon,
@@ -13,9 +14,10 @@
 		InformationCircleIcon
 	} from '@hugeicons/core-free-icons';
 
-	let { open = $bindable(false), bookingId, fromId, toId, propertyId, onCreated } = $props<{
+	let { open = $bindable(false), bookingId, ticketId, fromId, toId, propertyId, onCreated } = $props<{
 		open: boolean;
-		bookingId: string;
+		bookingId?: string;
+		ticketId?: string;
 		fromId: string;
 		toId: string;
 		propertyId: string;
@@ -31,11 +33,16 @@
 			toId,
 			amount,
 			currency: 'EUR',
-			bookingId,
+			bookingId: bookingId || '',
 			propertyId,
 			description
 		});
-		linkDocumentToBooking(bookingId, 'payment', payment.id);
+		if (bookingId) {
+			linkDocumentToBooking(bookingId, 'payment', payment.id);
+		}
+		if (ticketId) {
+			linkDocumentToTicket(ticketId, 'payment', payment.id);
+		}
 		open = false;
 		onCreated?.();
 		// Reset

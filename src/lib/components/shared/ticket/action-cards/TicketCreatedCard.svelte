@@ -9,26 +9,16 @@
     }
 
     let { event }: Props = $props();
-    const note = $derived(event.body ?? 'Pratica operativa creata.');
 </script>
 
-<div class="flex flex-col items-center w-full mb-4">
-    <div class="w-full max-w-85 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-        <div class="flex items-center gap-3 px-4 py-4 bg-slate-50/80">
-            <div class="grid h-10 w-10 place-items-center rounded-xl bg-sky-900 text-white">
-                <HugeiconsIcon icon={Add01Icon} size={20} />
-            </div>
-            <div>
-                <h4 class="text-sm font-bold text-slate-900 leading-tight">Ticket aperto</h4>
-                <p class="text-xs uppercase tracking-[0.24em] text-slate-500 mt-1">Nuova azione operativa</p>
-            </div>
-        </div>
-
-        <div class="space-y-3 px-4 py-4 text-sm text-slate-600">
-            <p>{note}</p>
-        </div>
+<div class="flex flex-col items-center w-full my-2">
+    <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full ring-1 ring-blue-200 bg-blue-50 text-blue-700 shadow-sm">
+        <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+        <span class="text-[11px] font-bold uppercase tracking-widest leading-none">
+            Ticket aperto
+        </span>
     </div>
-    <span class="mt-1 text-[10px] font-medium text-slate-400 text-center w-full">
+    <span class="mt-2 text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
         {formatChatTime(event.at)}
     </span>
 </div>

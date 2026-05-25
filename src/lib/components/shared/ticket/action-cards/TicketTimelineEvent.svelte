@@ -25,7 +25,7 @@
     <TicketDeclinedCard event={event} />
 {:else if event.kind === 'reportCompletion'}
     <TicketCompletedCard event={event} />
-{:else if event.kind === 'closeTicket' || event.kind === 'closed' || event.kind === 'validateAndClose'}
+{:else if event.kind === 'closeTicket'}
     <TicketCloseCard event={event} />
 {:else if event.kind === 'archiveTicket'}
     <TicketArchivedCard event={event} />

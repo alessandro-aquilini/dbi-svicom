@@ -12,6 +12,7 @@
 		getCurrentStatus,
 		getSupplierRelevantTimeline,
 		getTicketById,
+		addTicketEvent,
 	} from "$lib/data/ticket/tickets";
 	import { services } from "$lib/data/services";
 	import { residents } from "$lib/data/residents";
@@ -78,6 +79,34 @@
 	let isProcessingStatus = $state(false);
 	let newMessageValue = $state("");
 	let scrollContainer = $state<HTMLElement | null>(null);
+
+	function getLastSupplierResponse(ticket: any) {
+		return [...ticket.eventTimeline]
+			.reverse()
+			.find((event: any) => event.kind === 'accepted' || event.kind === 'declined');
+	}
+
+	function canSupplierAccept(ticket: any) {
+		return getCurrentStatus(ticket) === 'in_progress';
+	}
+
+	function canSupplierReportCompletion(ticket: any) {
+		const lastResponse = getLastSupplierResponse(ticket);
+		return (
+			getCurrentStatus(ticket) === 'estimating' &&
+			lastResponse?.kind === 'accepted'
+		);
+	}
+
+	function handleSupplierTicketAction(kind: 'accepted' | 'declined' | 'reportCompletion') {
+		if (!activeTicket || isProcessingStatus) return;
+		isProcessingStatus = true;
+		addTicketEvent(activeTicket.id, kind, supplierId);
+		refreshTrigger++;
+		setTimeout(() => {
+			isProcessingStatus = false;
+		}, 100);
+	}
 
 	async function scrollToBottom() {
 		await tick();
@@ -712,7 +741,7 @@
 						{:else if item.type === "payment"}
 							<ChatPaymentCard payment={item.data} isOwn={item.data.fromId === supplierId} />
 						{:else if item.type === "intervention"}
-							<ChatInterventionCard task={item.data} />
+							<ChatInterventionCard task={item.data} isOwn={item.data.supplierId === supplierId} />
 						{/if}
 					{/each}
 				</div>
@@ -721,59 +750,100 @@
 			<footer class="p-4 bg-white border-t border-slate-100 sticky bottom-0 z-20">
 				<div class="w-full flex flex-col gap-3 relative">
 					<!-- Active Booking Info Popup -->
-					{#if activeBooking && isBookingActive(activeBooking) && accordionOpen}
-						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
-							<div class="flex items-center justify-between mb-4">
-								<div class="flex items-center gap-3">
-									<div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
-										<HugeiconsIcon icon={InformationCircleIcon} size={20} />
+					{#if accordionOpen}
+							<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
+								{#if activeTab === 'resident' && activeBooking && isBookingActive(activeBooking)}
+									<div class="flex items-center justify-between mb-4">
+										<div class="flex items-center gap-3">
+											<div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
+												<HugeiconsIcon icon={InformationCircleIcon} size={20} />
+											</div>
+											<div class="min-w-0">
+												<h3 class="text-xs font-black text-slate-900 uppercase tracking-widest leading-tight">
+													{bookingInfo?.serviceName}
+												</h3>
+												<p class="text-[11px] font-medium text-slate-400 leading-tight">
+													{bookingInfo?.place}
+												</p>
+											</div>
+										</div>
 									</div>
-									<div class="min-w-0">
-										<h3 class="text-xs font-black text-slate-900 uppercase tracking-widest leading-tight">
-											{bookingInfo?.serviceName}
-										</h3>
-										<p class="text-[11px] font-medium text-slate-400 leading-tight">
-											{bookingInfo?.place}
-										</p>
+
+									{#if bookingInfo?.notes}
+										<div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+											<p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
+												"{bookingInfo.notes}"
+											</p>
+										</div>
+									{/if}
+
+									<div class="flex items-center gap-2">
+										{#if bookingInfo?.status === "requested"}
+											<Button
+												size="sm"
+												variant="default"
+												disabled={isProcessingStatus}
+												class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90"
+												onclick={() => { handleUpdateStatus("confirmed"); accordionOpen = false; }}
+											>
+												Approva
+											</Button>
+											<Button
+												size="sm"
+												variant="outline"
+												disabled={isProcessingStatus}
+												class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50"
+												onclick={() => { handleUpdateStatus("declined"); accordionOpen = false; }}
+											>
+												Rifiuta
+											</Button>
+										{:else if ["confirmed", "booking_updated"].includes(bookingInfo?.status ?? "")}
+											<Button
+												size="sm"
+												variant="default"
+												class="w-full h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700"
+												onclick={() => { handleUpdateStatus("closed"); accordionOpen = false; }}
+											>
+												Chiudi prenotazione
+											</Button>
+										{/if}
 									</div>
-								</div>
-							</div>
-
-							{#if bookingInfo?.notes}
-								<div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-									<p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
-										"{bookingInfo.notes}"
-									</p>
-								</div>
-							{/if}
-
-							<div class="flex items-center gap-2">
-								{#if bookingInfo?.status === "requested"}
-									<Button
-										size="sm"
-										variant="default"
-										disabled={isProcessingStatus}
-										class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90"
-										onclick={() => { handleUpdateStatus("confirmed"); accordionOpen = false; }}
-									>Approva</Button>
-									<Button
-										size="sm"
-										variant="outline"
-										disabled={isProcessingStatus}
-										class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50"
-										onclick={() => { handleUpdateStatus("declined"); accordionOpen = false; }}
-									>Rifiuta</Button>
-								{:else if ["confirmed", "booking_updated"].includes(bookingInfo?.status ?? "")}
-									<Button
-										size="sm"
-										variant="default"
-										class="w-full h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700"
-										onclick={() => { handleUpdateStatus("closed"); accordionOpen = false; }}
-									>Chiudi prenotazione</Button>
+								{:else if activeTab === 'admin' && activeTicket}
+									<div class="space-y-4">
+										<div class="flex items-center gap-3">
+											<div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+												<HugeiconsIcon icon={CustomerServiceIcon} size={20} />
+											</div>
+											<div>
+												<p class="text-xs uppercase tracking-[0.24em] text-slate-500">Ticket attivo</p>
+												<p class="text-sm font-semibold text-slate-900 leading-tight">{activeTicket.title}</p>
+											</div>
+										</div>
+										<div class="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+											<span class="font-semibold text-slate-900">Stato:</span> {getCurrentStatus(activeTicket)}
+										</div>
+										<div class="grid gap-2">
+											{#if canSupplierAccept(activeTicket)}
+												<Button size="sm" variant="default" class="h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90" onclick={() => { handleSupplierTicketAction('accepted'); accordionOpen = false; }}>
+													Accetta
+												</Button>
+												<Button size="sm" variant="outline" class="h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50" onclick={() => { handleSupplierTicketAction('declined'); accordionOpen = false; }}>
+													Rifiuta
+												</Button>
+											{:else if canSupplierReportCompletion(activeTicket)}
+												<Button size="sm" variant="default" class="h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700" onclick={() => { handleSupplierTicketAction('reportCompletion'); accordionOpen = false; }}>
+													Segnala completamento
+												</Button>
+											{:else}
+												<div class="text-sm text-slate-700">
+													{getCurrentStatus(activeTicket) === 'completed' ? 'Intervento già completato' : getCurrentStatus(activeTicket) === 'closed' ? 'Ticket chiuso' : 'Azioni non disponibili al momento'}
+												</div>
+											{/if}
+										</div>
+									</div>
 								{/if}
 							</div>
-						</div>
-					{/if}
+						{/if}
 
 					<!-- Plus Menu Popup -->
 					{#if showPlusMenu}
@@ -789,7 +859,6 @@
 								</div>
 								<div>
 									<p class="text-[13px] font-bold text-slate-900">Nuova Fattura</p>
-									<p class="text-[10px] text-slate-500">Invia richiesta pagamento</p>
 								</div>
 							</button>
 							<button 
@@ -801,37 +870,35 @@
 								</div>
 								<div>
 									<p class="text-[13px] font-bold text-slate-900">Nuovo Preventivo</p>
-									<p class="text-[10px] text-slate-500">Proponi i costi del servizio</p>
 								</div>
 							</button>
 							<button 
 								onclick={() => { showTaskModal = true; showPlusMenu = false; }}
 								class="flex items-center gap-3 w-full p-2.5 hover:bg-slate-50 rounded-xl transition-colors text-left"
 							>
-								<div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+								<div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
 									<HugeiconsIcon icon={WrenchIcon} size={18} />
 								</div>
 								<div>
 									<p class="text-[13px] font-bold text-slate-900">Nuovo Intervento</p>
-									<p class="text-[10px] text-slate-500">Pianifica un'uscita tecnica</p>
 								</div>
 							</button>
 						</div>
 					{/if}
 
-					<div class="flex gap-2 items-center">
-						<div class="flex items-center">
+					<div class="flex items-center gap-1 w-full">
+						<div class="flex items-center shrink-0">
 							<button 
 								onclick={() => { showPlusMenu = !showPlusMenu; accordionOpen = false; }}
-								class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {showPlusMenu ? 'rotate-45' : ''}"
+								class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {showPlusMenu ? 'bg-[#5D7D94]/10 text-[#5D7D94]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}"
 							>
 								<HugeiconsIcon icon={Add01Icon} size={24} />
 							</button>
 
-							{#if activeBooking && isBookingActive(activeBooking)}
+							{#if activeBooking && isBookingActive(activeBooking) || (activeTab === 'admin' && activeTicket)}
 								<button 
 									onclick={() => { accordionOpen = !accordionOpen; showPlusMenu = false; }}
-									class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {accordionOpen ? 'rotate-180 text-[#5D7D94]' : ''}"
+									class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {accordionOpen ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'} {accordionOpen ? 'rotate-180' : ''}"
 								>
 									<HugeiconsIcon icon={InformationCircleIcon} size={22} />
 								</button>
@@ -840,10 +907,10 @@
 						
 						<form
 							onsubmit={(e) => { e.preventDefault(); sendMessage(); }}
-							class="flex items-center gap-2 w-full"
+							class="flex items-center gap-2 flex-1 ml-1"
 						>
 							<div
-								class="bg-white flex items-center gap-2 border border-slate-200 shadow-sm rounded-2xl p-1.5 flex-1 ring-1 ring-black/5"
+								class="bg-white flex items-center gap-2 border border-slate-200 shadow-sm rounded-2xl p-1 flex-1 ring-1 ring-black/5 focus-within:ring-primary/20 transition-all"
 							>
 								<input
 									type="text"

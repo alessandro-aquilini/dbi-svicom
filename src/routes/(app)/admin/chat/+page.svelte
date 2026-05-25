@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { reports, inferReportStatus } from '$lib/data/ticket/reports';
-	import { tickets, getCurrentStatus, getCurrentSupplier, getSupplierRelevantTimeline } from '$lib/data/ticket/tickets';
+	import { tickets, getCurrentStatus, getCurrentSupplier, getSupplierRelevantTimeline, addTicketEvent } from '$lib/data/ticket/tickets';
 	import { users } from '$lib/data/users';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -19,10 +19,15 @@
 		UserCircleIcon,
 		CustomerServiceIcon,
 		Settings02Icon,
-		SentIcon
+		SentIcon,
+		Add01Icon,
+		CreditCardIcon,
+		Upload01Icon,
+		File01Icon
 	} from '@hugeicons/core-free-icons';
 	import { format } from 'date-fns';
 	import { it } from 'date-fns/locale';
+	import { formatChatDateLabel, isSameChatDay } from '$lib/utils/dates';
 	
 	import ChatBubble from '$lib/components/shared/chat-cards/ChatBubble.svelte';
 	import ChatQuoteCard from '$lib/components/shared/chat-cards/ChatQuoteCard.svelte';
@@ -30,6 +35,8 @@
 	import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
 	import ChatInterventionCard from '$lib/components/shared/chat-cards/ChatInterventionCard.svelte';
 	import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
+	import PaymentModal from '$lib/components/shared/chat-buttons/PaymentModal.svelte';
+	import { tick } from 'svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -40,12 +47,17 @@
 	// State for active view and selection
 	type ChatType = 'resident' | 'supplier';
 	let activeTab = $state<ChatType>('resident');
+	let showPaymentModal = $state(false);
+	let showPlusMenu = $state(false);
+	let refreshTrigger = $state(0);
+	let newMessageValue = $state("");
 	
 	// Synchronization with URL
 	const selectedId = $derived(page.url.searchParams.get('id'));
 
 	// Grouped Resident Chats: all reports and tickets for a resident
 	const residentChats = $derived.by(() => {
+		refreshTrigger;
 		const groups = new Map<string, { userId: string, lastDate: Date, reports: any[] }>();
 		
 		reports.filter(r => r.adminId === adminId).forEach(r => {
@@ -64,6 +76,7 @@
 
 	// Grouped Supplier Chats: all tickets for a supplier
 	const supplierChats = $derived.by(() => {
+		refreshTrigger;
 		const groups = new Map<string, { supplierId: string, lastDate: Date, tickets: any[] }>();
 		
 		for (const t of tickets) {
@@ -106,6 +119,7 @@
 
 	// Unified timeline for the selected conversation
 	const timelineItems = $derived.by(() => {
+		refreshTrigger;
 		const items: any[] = [];
 		if (!activeChat) return [];
 
@@ -177,11 +191,98 @@
 		paid: 'bg-slate-100 text-slate-700',
 		closed: 'bg-slate-100 text-slate-500'
 	};
+
+	const activeTicket = $derived(
+		activeTab === 'supplier' && activeChat
+			? (activeChat as any).tickets[(activeChat as any).tickets.length - 1]
+			: null,
+	);
+
+	const activeReport = $derived(
+		activeTab === 'resident' && activeChat
+			? (activeChat as any).reports[(activeChat as any).reports.length - 1]
+			: null,
+	);
+
+	let actionOpen = $state(false);
+
+	function handleAdminAssignToSupplier() {
+		if (!activeTicket || !activeChat) return;
+		const supplierId = (activeChat as any).supplierId;
+		addTicketEvent(activeTicket.id, 'assignToSupplier', adminId, supplierId);
+		refreshTrigger++;
+	}
+
+	function handleAdminCloseTicket() {
+		if (!activeTicket) return;
+		addTicketEvent(activeTicket.id, 'closeTicket', adminId);
+		refreshTrigger++;
+	}
+
+	function sendMessage() {
+		if (!newMessageValue.trim() || !activeChat) return;
+
+		const msg = {
+			id: `msg-${Date.now()}`,
+			senderId: adminId,
+			text: newMessageValue.trim(),
+			timestamp: new Date().toISOString(),
+		};
+
+		if (activeTab === "resident") {
+			if (activeReport) {
+				if (!activeReport.messageTimeline) activeReport.messageTimeline = [];
+				activeReport.messageTimeline.push(msg);
+			}
+		} else {
+			if (activeTicket) {
+				if (!activeTicket.messageTimeline) activeTicket.messageTimeline = [];
+				activeTicket.messageTimeline.push(msg);
+			}
+		}
+
+		newMessageValue = "";
+		refreshTrigger++;
+		scrollToBottom();
+	}
+
+	let scrollContainer = $state<HTMLElement | null>(null);
+
+	async function scrollToBottom() {
+		await tick();
+		if (scrollContainer) {
+			scrollContainer.scrollTo({
+				top: scrollContainer.scrollHeight,
+				behavior: "smooth",
+			});
+		}
+	}
+
+	$effect(() => {
+		if (selectedId) {
+			scrollToBottom();
+		}
+	});
+
+	$effect(() => {
+		if (timelineItems.length > 0) {
+			scrollToBottom();
+		}
+	});
 </script>
 
-<div class="flex h-[calc(100vh-64px)] bg-white overflow-hidden">
+<PaymentModal
+	bind:open={showPaymentModal}
+	bookingId=""
+	ticketId={activeTicket?.id}
+	fromId={adminId}
+	toId={activeTab === 'supplier' ? selectedId ?? '' : ''}
+	propertyId={activeTicket?.propertyId ?? ''}
+/>
+
+<div class="flex h-full min-h-full bg-white overflow-hidden">
 	<!-- Sidebar: Conversation List -->
-	<aside class="w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-slate-50/30 {selectedId ? 'hidden md:flex' : 'flex'}">
+	<aside class="w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-slate-50/30 min-h-0 {selectedId ? 'hidden md:flex' : 'flex'}">
 		<div class="p-4 bg-white border-b border-border">
 			<div class="flex items-center justify-between mb-4">
 				<h1 class="text-xl font-bold text-slate-900">Messaggi</h1>
@@ -271,7 +372,7 @@
 	</aside>
 
 	<!-- Main Chat Area -->
-	<main class="flex-1 flex flex-col bg-slate-50/50 {selectedId ? 'flex' : 'hidden md:flex'}">
+	<main class="relative flex-1 min-h-0 flex flex-col bg-slate-50/50 {selectedId ? 'flex' : 'hidden md:flex'}">
 		{#if selectedId && counterparty}
 			<header class="h-16 shrink-0 bg-white border-b border-border px-4 flex items-center gap-3 relative z-10">
 				<button 
@@ -295,51 +396,173 @@
 				</div>
 
 				<div class="flex items-center gap-1">
-					<Button variant="ghost" size="icon" class="text-slate-400">
-						<HugeiconsIcon icon={InformationCircleIcon} size={20} />
-					</Button>
+					<!-- Removed header info button per user request to move it to footer -->
 				</div>
 			</header>
 
-			<div class="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col">
-				{#each timelineItems as item}
-					{#if item.type === 'message'}
-						<ChatBubble 
-							message={item.data} 
-							isOwn={item.data.senderId === adminId}
-						/>
-					{:else if item.type === 'event'}
-						<ChatTimelineEvent event={item.data} />
-					{:else if item.type === 'quote'}
-						<ChatQuoteCard 
-							quote={item.data} 
-							isOwn={false} 
-						/>
-					{:else if item.type === 'invoice'}
-						<ChatInvoiceCard 
-							invoice={item.data} 
-							isOwn={false} 
-						/>
-					{:else if item.type === 'payment'}
-						<ChatPaymentCard payment={item.data} isOwn={item.data.fromId === adminId} />
-					{:else if item.type === 'intervention'}
-						<ChatInterventionCard task={item.data} />
-					{/if}
-				{/each}
+			<div 
+				bind:this={scrollContainer}
+				class="flex-1 overflow-y-auto p-4 md:p-6 bg-white shrink-0 scroll-smooth"
+			>
+				<div class="w-full h-full flex flex-col space-y-4">
+					{#each timelineItems as item, index}
+						{#if index === 0 || !isSameChatDay(item.date, timelineItems[index - 1].date)}
+							<div class="flex justify-center my-6 sticky top-2 z-10">
+								<div class="bg-white/90 backdrop-blur-sm shadow-sm ring-1 ring-slate-200/50 px-4 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+									{formatChatDateLabel(item.date)}
+								</div>
+							</div>
+						{/if}
+
+						{#if item.type === 'message'}
+							<ChatBubble 
+								message={item.data} 
+								isOwn={item.data.senderId === adminId}
+							/>
+						{:else if item.type === 'event'}
+							<div class="flex justify-center w-full my-2">
+								<ChatTimelineEvent event={item.data} />
+							</div>
+						{:else if item.type === 'quote'}
+							<ChatQuoteCard 
+								quote={item.data} 
+								isOwn={false} 
+							/>
+						{:else if item.type === 'invoice'}
+							<ChatInvoiceCard 
+								invoice={item.data} 
+								isOwn={false} 
+							/>
+						{:else if item.type === 'payment'}
+							<ChatPaymentCard payment={item.data} isOwn={item.data.fromId === adminId} />
+						{:else if item.type === 'intervention'}
+							<ChatInterventionCard task={item.data} isOwn={false} />
+						{/if}
+					{/each}
+				</div>
 			</div>
 
-			<footer class="p-4 bg-white border-t border-border">
-				<div class="flex gap-3 max-w-4xl mx-auto items-center">
-					<div class="bg-slate-50 flex items-center gap-2 border border-slate-200 rounded-2xl p-1.5 w-full">
-						<input 
-							type="text" 
-							placeholder="Scrivi a {activeTab === 'resident' ? 'Marco' : 'Idroclima'}..." 
-							class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
-						/>
-						<Button size="icon" class="rounded-xl h-9 w-9">
-							<HugeiconsIcon icon={SentIcon} size={18} />
-						</Button>
+			<footer class="p-4 bg-white border-t border-slate-100 sticky bottom-0 z-20">
+				<div class="w-full flex items-center gap-1 relative">
+					<!-- Ticket Actions Popup -->
+					{#if actionOpen && activeTab === 'supplier' && activeTicket}
+						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-sm bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
+							<div class="flex items-center gap-3 mb-3">
+								<div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+									<HugeiconsIcon icon={CustomerServiceIcon} size={20} />
+								</div>
+								<div>
+									<p class="text-xs uppercase tracking-[0.24em] text-slate-500">Ticket attivo</p>
+									<p class="text-sm font-semibold text-slate-900 leading-tight">{activeTicket.title}</p>
+								</div>
+							</div>
+							<div class="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600 mb-3">
+								<span class="font-semibold text-slate-900">Stato:</span> {getCurrentStatus(activeTicket)}
+							</div>
+							<div class="grid gap-2">
+								{#if !getCurrentSupplier(activeTicket)}
+									<Button variant="default" class="h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90" onclick={() => { handleAdminAssignToSupplier(); actionOpen = false; }}>
+										Assegna a {counterparty.name}
+									</Button>
+								{:else}
+									<div class="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Fornitore assegnato</div>
+									<div class="flex items-center gap-2 p-2 bg-slate-50 rounded-xl mb-1">
+										<div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+											<HugeiconsIcon icon={UserCircleIcon} size={14} />
+										</div>
+										<span class="text-sm font-medium text-slate-900">{counterparty.name}</span>
+									</div>
+								{/if}
+								{#if getCurrentStatus(activeTicket) !== 'closed'}
+									<Button variant="default" class="h-9 text-[11px] font-bold uppercase tracking-widest bg-rose-600 hover:bg-rose-700 mt-1" onclick={() => { handleAdminCloseTicket(); actionOpen = false; }}>
+										Chiudi ticket
+									</Button>
+								{/if}
+							</div>
+						</div>
+					{/if}
+
+					<div class="flex items-center relative">
+						<button 
+							onclick={() => { showPlusMenu = !showPlusMenu; actionOpen = false; }}
+							class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {showPlusMenu ? 'bg-[#5D7D94]/10 text-[#5D7D94]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}"
+						>
+							<HugeiconsIcon icon={Add01Icon} size={24} />
+						</button>
+
+						{#if showPlusMenu}
+							<div class="absolute left-0 bottom-full mb-3 w-64 rounded-[1.75rem] bg-white shadow-xl ring-1 ring-black/5 p-2 space-y-1">
+								<button
+									type="button"
+									class="w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-slate-50 transition-colors"
+									onclick={() => { showPaymentModal = true; showPlusMenu = false; }}
+								>
+									<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+										<HugeiconsIcon icon={CreditCardIcon} size={18} />
+									</div>
+									<div class="text-left">
+										<p class="text-sm font-semibold text-slate-900">Nuovo pagamento</p>
+									</div>
+								</button>
+
+								<button
+									type="button"
+									class="w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-slate-50 transition-colors"
+									onclick={() => { showPlusMenu = false; }}
+								>
+									<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+										<HugeiconsIcon icon={Upload01Icon} size={18} />
+									</div>
+									<div class="text-left">
+										<p class="text-sm font-semibold text-slate-900">Nuova immagine</p>
+									</div>
+								</button>
+
+								<button
+									type="button"
+									class="w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-slate-50 transition-colors"
+									onclick={() => { showPlusMenu = false; }}
+								>
+									<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+										<HugeiconsIcon icon={File01Icon} size={18} />
+									</div>
+									<div class="text-left">
+										<p class="text-sm font-semibold text-slate-900">Nuovo file</p>
+									</div>
+								</button>
+							</div>
+						{/if}
 					</div>
+
+					{#if activeTab === 'supplier' && activeTicket}
+						<button 
+							onclick={() => { actionOpen = !actionOpen; showPlusMenu = false; }}
+							class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {actionOpen ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'} {actionOpen ? 'rotate-180' : ''}"
+						>
+							<HugeiconsIcon icon={InformationCircleIcon} size={22} />
+						</button>
+					{/if}
+
+					<form 
+						onsubmit={(e) => { e.preventDefault(); sendMessage(); }}
+						class="flex items-center gap-2 flex-1 ml-1"
+					>
+						<div class="bg-white flex items-center gap-2 border border-slate-200 shadow-sm rounded-2xl p-1 flex-1 ring-1 ring-black/5 focus-within:ring-primary/20 transition-all">
+							<input 
+								type="text" 
+								placeholder="Scrivi a {counterparty.name}..." 
+								bind:value={newMessageValue}
+								onfocus={() => { showPlusMenu = false; actionOpen = false; }}
+								class="flex-1 bg-transparent border-none px-3 py-1.5 text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400"
+							/>
+						</div>
+						<button
+							type="submit"
+							class="bg-[#5D7D94] text-white w-10 h-10 rounded-2xl hover:opacity-90 transition-opacity flex items-center justify-center shrink-0 shadow-sm"
+						>
+							<HugeiconsIcon icon={SentIcon} size={18} />
+						</button>
+					</form>
 				</div>
 			</footer>
 		{:else}
