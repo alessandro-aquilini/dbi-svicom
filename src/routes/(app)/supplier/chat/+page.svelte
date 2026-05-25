@@ -751,48 +751,55 @@
 				<div class="w-full flex flex-col gap-3 relative">
 					<!-- Active Booking Info Popup -->
 					{#if accordionOpen}
-							<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
-								{#if activeTab === 'resident' && activeBooking && isBookingActive(activeBooking)}
-									<div class="flex items-center justify-between mb-4">
-										<div class="flex items-center gap-3">
-											<div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
-												<HugeiconsIcon icon={InformationCircleIcon} size={20} />
-											</div>
-											<div class="min-w-0">
-												<h3 class="text-xs font-black text-slate-900 uppercase tracking-widest leading-tight">
-													{bookingInfo?.serviceName}
-												</h3>
-												<p class="text-[11px] font-medium text-slate-400 leading-tight">
-													{bookingInfo?.place}
+						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 p-6 animate-in slide-in-from-bottom-2 duration-200">
+							{#if activeTab === 'resident' && activeBooking && isBookingActive(activeBooking)}
+								<div class="space-y-5">
+									<div class="flex items-start justify-between">
+										<div class="space-y-1">
+											<p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#5D7D94]">Servizio Prenotato</p>
+											<h3 class="text-lg font-bold text-slate-900 leading-tight">
+												{bookingInfo?.serviceName}
+											</h3>
+										</div>
+										<div class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider ring-1 ring-emerald-100">
+											{bookingInfo?.status}
+										</div>
+									</div>
+
+									<div class="space-y-4">
+										{#if bookingInfo?.notes}
+											<div class="space-y-1.5">
+												<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">Note Residente</p>
+												<p class="text-[14px] text-slate-600 leading-relaxed font-medium italic px-1">
+													"{bookingInfo.notes}"
 												</p>
+											</div>
+										{/if}
+
+										<div class="flex gap-4 pt-1 border-t border-slate-50 mt-2">
+											<div class="flex-1">
+												<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Ubicazione</p>
+												<p class="text-[13px] font-semibold text-slate-800 px-1 truncate">{bookingInfo?.place || 'Complesso Condominiale'}</p>
 											</div>
 										</div>
 									</div>
 
-									{#if bookingInfo?.notes}
-										<div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-											<p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
-												"{bookingInfo.notes}"
-											</p>
-										</div>
-									{/if}
-
-									<div class="flex items-center gap-2">
+									<div class="pt-4 flex items-center gap-2">
 										{#if bookingInfo?.status === "requested"}
 											<Button
 												size="sm"
 												variant="default"
 												disabled={isProcessingStatus}
-												class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90"
+												class="flex-1 h-11 text-[11px] font-bold uppercase tracking-widest bg-slate-900 hover:bg-slate-800 rounded-2xl shadow-lg shadow-slate-200"
 												onclick={() => { handleUpdateStatus("confirmed"); accordionOpen = false; }}
 											>
 												Approva
 											</Button>
 											<Button
 												size="sm"
-												variant="outline"
+												variant="ghost"
 												disabled={isProcessingStatus}
-												class="flex-1 h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50"
+												class="flex-1 h-11 text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-2xl"
 												onclick={() => { handleUpdateStatus("declined"); accordionOpen = false; }}
 											>
 												Rifiuta
@@ -801,49 +808,72 @@
 											<Button
 												size="sm"
 												variant="default"
-												class="w-full h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700"
+												class="w-full h-11 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 rounded-2xl shadow-lg shadow-emerald-50"
 												onclick={() => { handleUpdateStatus("closed"); accordionOpen = false; }}
 											>
-												Chiudi prenotazione
+												Concludi Intervento
 											</Button>
 										{/if}
 									</div>
-								{:else if activeTab === 'admin' && activeTicket}
-									<div class="space-y-4">
-										<div class="flex items-center gap-3">
-											<div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
-												<HugeiconsIcon icon={CustomerServiceIcon} size={20} />
-											</div>
-											<div>
-												<p class="text-xs uppercase tracking-[0.24em] text-slate-500">Ticket attivo</p>
-												<p class="text-sm font-semibold text-slate-900 leading-tight">{activeTicket.title}</p>
-											</div>
+								</div>
+							{:else if activeTab === 'admin' && activeTicket}
+								<div class="space-y-5">
+									<div class="flex items-start justify-between">
+										<div class="space-y-1">
+											<p class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Ticket Amministrativo</p>
+											<h3 class="text-lg font-bold text-slate-900 leading-tight">{activeTicket.title}</h3>
 										</div>
-										<div class="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
-											<span class="font-semibold text-slate-900">Stato:</span> {getCurrentStatus(activeTicket)}
-										</div>
-										<div class="grid gap-2">
-											{#if canSupplierAccept(activeTicket)}
-												<Button size="sm" variant="default" class="h-9 text-[11px] font-bold uppercase tracking-widest bg-[#5D7D94] hover:bg-[#5D7D94]/90" onclick={() => { handleSupplierTicketAction('accepted'); accordionOpen = false; }}>
-													Accetta
-												</Button>
-												<Button size="sm" variant="outline" class="h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50" onclick={() => { handleSupplierTicketAction('declined'); accordionOpen = false; }}>
-													Rifiuta
-												</Button>
-											{:else if canSupplierReportCompletion(activeTicket)}
-												<Button size="sm" variant="default" class="h-9 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700" onclick={() => { handleSupplierTicketAction('reportCompletion'); accordionOpen = false; }}>
-													Segnala completamento
-												</Button>
-											{:else}
-												<div class="text-sm text-slate-700">
-													{getCurrentStatus(activeTicket) === 'completed' ? 'Intervento già completato' : getCurrentStatus(activeTicket) === 'closed' ? 'Ticket chiuso' : 'Azioni non disponibili al momento'}
-												</div>
-											{/if}
+										<div class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider ring-1 ring-amber-100">
+											{getCurrentStatus(activeTicket).replace('_', ' ')}
 										</div>
 									</div>
-								{/if}
-							</div>
-						{/if}
+
+									<div class="space-y-4">
+										<div class="space-y-1.5">
+											<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">Descrizione</p>
+											<p class="text-[14px] text-slate-600 leading-relaxed font-medium px-1">
+												{activeTicket.description || 'Nessuna descrizione fornita.'}
+											</p>
+										</div>
+
+										{#if activeTicket.location || activeTicket.category}
+											<div class="flex gap-4 pt-1 border-t border-slate-50 mt-2">
+												{#if activeTicket.category}
+													<div class="flex-1">
+														<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Categoria</p>
+														<p class="text-[13px] font-semibold text-slate-800 px-1">{activeTicket.category}</p>
+													</div>
+												{/if}
+												{#if activeTicket.location}
+													<div class="flex-1">
+														<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Posizione</p>
+														<p class="text-[13px] font-semibold text-slate-800 px-1">{activeTicket.location}</p>
+													</div>
+												{/if}
+											</div>
+										{/if}
+									</div>
+
+									<div class="pt-4 grid gap-2">
+										{#if canSupplierAccept(activeTicket)}
+											<div class="flex gap-2">
+												<Button size="sm" variant="default" class="flex-1 h-11 text-[11px] font-bold uppercase tracking-widest bg-slate-900 hover:bg-slate-800 rounded-2xl shadow-lg shadow-slate-200" onclick={() => { handleSupplierTicketAction('accepted'); accordionOpen = false; }}>
+													Accetta
+												</Button>
+												<Button size="sm" variant="ghost" class="flex-1 h-11 text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-2xl" onclick={() => { handleSupplierTicketAction('declined'); accordionOpen = false; }}>
+													Rifiuta
+												</Button>
+											</div>
+										{:else if canSupplierReportCompletion(activeTicket)}
+											<Button size="sm" variant="default" class="h-11 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 rounded-2xl shadow-lg shadow-emerald-50" onclick={() => { handleSupplierTicketAction('reportCompletion'); accordionOpen = false; }}>
+												Segnala completamento
+											</Button>
+										{/if}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
 
 					<!-- Plus Menu Popup -->
 					{#if showPlusMenu}
@@ -895,9 +925,12 @@
 								<HugeiconsIcon icon={Add01Icon} size={24} />
 							</button>
 
-							{#if activeBooking && isBookingActive(activeBooking) || (activeTab === 'admin' && activeTicket)}
-								<button 
-									onclick={() => { accordionOpen = !accordionOpen; showPlusMenu = false; }}
+							{#if (activeTab === "resident" && activeBooking && isBookingActive(activeBooking)) || (activeTab === "admin" && activeTicket && getCurrentStatus(activeTicket) !== "closed")}
+								<button
+									onclick={() => {
+										accordionOpen = !accordionOpen;
+										showPlusMenu = false;
+									}}
 									class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {accordionOpen ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'} {accordionOpen ? 'rotate-180' : ''}"
 								>
 									<HugeiconsIcon icon={InformationCircleIcon} size={22} />
