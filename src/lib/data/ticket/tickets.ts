@@ -21,9 +21,10 @@ export type TicketEventKind =
 	| 'accepted'
 	| 'declined'
 	| 'reportCompletion'
-	| 'validateAndClose'
+	| 'closeTicket'
+	| 'closed'
 	| 'archiveTicket'
-	| 'closed';
+	| 'validateAndClose';
 
 export type TicketAdminMetadataKind = 'updatePriority' | 'addInternalNote' | 'ai';
 
@@ -122,8 +123,8 @@ export function getCurrentStatus(ticket: Ticket): TicketStatus {
 		switch (ev.kind) {
 			case 'reportCompletion':
 				return 'completed';
+			case 'closeTicket':
 			case 'validateAndClose':
-				return 'closed';
 			case 'archiveTicket':
 				return 'closed';
 			case 'assignToSupplier':
@@ -160,7 +161,7 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-3', kind: 'assignToSupplier', at: '2026-05-01T10:05:00', authorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord'},
 			{ id: 'ev-4', kind: 'accepted', at: '2026-05-01T11:45:00', authorId: 'frn-idroclima-nord' },
 			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
-			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
+			{ id: 'ev-7', kind: 'closeTicket', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
 		],
 		messageTimeline: [
 			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B.', timestamp: '2026-05-01T10:06:00' },
@@ -304,7 +305,7 @@ export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string):
 			result.push(ev);
 		}
 
-		if (ev.kind === 'closed' || ev.kind === 'archiveTicket') {
+		if (ev.kind === 'closed' || ev.kind === 'closeTicket' || ev.kind === 'validateAndClose' || ev.kind === 'archiveTicket') {
 			relevant = false;
 		}
 	}

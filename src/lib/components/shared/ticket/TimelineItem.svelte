@@ -39,6 +39,7 @@
 						return { icon: CircleIcon, color: 'text-destructive', label: 'Rifiutato' };
 					case 'reportCompletion':
 						return { icon: Tick01Icon, color: 'text-emerald-600', label: 'Lavoro completato' };
+					case 'closeTicket':
 					case 'validateAndClose':
 						return { icon: Tick01Icon, color: 'text-emerald-600', label: 'Chiusura' };
 					case 'archiveTicket':
@@ -138,8 +139,9 @@
 						return 'Rifiuto';
 					case 'reportCompletion':
 						return 'Completamento lavori';
+					case 'closeTicket':
 					case 'validateAndClose':
-						return 'Verifica e chiusura';
+						return 'Chiusura';
 					case 'archiveTicket':
 						return 'Archiviazione';
 					case 'closed':

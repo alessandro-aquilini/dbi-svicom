@@ -103,7 +103,7 @@ export function getReportOperationalContext(report: Report): ReportOperationalCo
 export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEvent[] {
 	return ticket.eventTimeline.map((event) => {
 		// map new kinds into the report timeline representation
-		if (event.kind === 'reportCompletion' || event.kind === 'validateAndClose' || event.kind === 'archiveTicket') {
+		if (event.kind === 'reportCompletion' || event.kind === 'closeTicket' || event.kind === 'validateAndClose' || event.kind === 'archiveTicket') {
 			const toStatus = event.kind === 'reportCompletion' ? 'completed' : 'closed';
 			return {
 				id: event.id,
