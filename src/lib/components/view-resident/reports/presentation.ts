@@ -103,7 +103,7 @@ export function getReportOperationalContext(report: Report): ReportOperationalCo
 export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEvent[] {
 	return ticket.eventTimeline.map((event) => {
 		// map new kinds into the report timeline representation
-		if (event.kind === 'reportCompletion' || event.kind === 'validateAndClose' || event.kind === 'archiveTicket') {
+		if (event.kind === 'reportCompletion' || event.kind === 'closeTicket' || event.kind === 'archiveTicket') {
 			const toStatus = event.kind === 'reportCompletion' ? 'completed' : 'closed';
 			return {
 				id: event.id,
@@ -113,29 +113,6 @@ export function buildOperationalTimelineEvents(ticket: Ticket): ReportTimelineEv
 				label: ticketStatusLabels[toStatus]
 			};
 		}
-
-		if (event.kind === 'createTicket') {
-			return {
-				id: event.id,
-				at: event.at,
-				actorId: ticket.creatorId,
-				label: 'Pratica operativa aperta',
-				note: 'L amministrazione ha trasformato la segnalazione in una pratica operativa.'
-			};
-		}
-
-		if (event.kind === 'assignToSupplier') {
-			return {
-				id: event.id,
-				at: event.at,
-				actorId: event.supplierId,
-				label: 'Fornitore assegnato',
-				note: event.supplierId
-					? `Assegnata a ${getUserById(event.supplierId)?.name ?? 'fornitore esterno'}.`
-					: 'Fornitore assegnato alla pratica.'
-			};
-		}
-
 
 		return buildOperationalNarrativeEvent(event);
 	});
@@ -147,6 +124,6 @@ function buildOperationalNarrativeEvent(event: TicketEvent): ReportTimelineEvent
 		at: event.at,
 		actorId: event.supplierId ?? undefined,
 		label: 'Aggiornamento operativo',
-		note: event.body ?? 'Nuovo aggiornamento registrato sulla pratica operativa.'
+		note: 'Nuovo aggiornamento registrato sulla pratica operativa.'
 	};
 }

@@ -57,3 +57,13 @@ export function getSupplierTasksByPropertyId(propertyId: string): supplierTask[]
 export function getSupplierTasksByTicketId(ticketId: string): supplierTask[] {
 	return supplierTasks.filter((m) => m.ticketId === ticketId);
 }
+
+export function createSupplierTask(task: Omit<supplierTask, 'id' | 'createdAt'>): supplierTask {
+	const newTask: supplierTask = {
+		...task,
+		id: `int-${Math.random().toString(36).substr(2, 9)}`,
+		createdAt: new Date().toISOString()
+	};
+	supplierTasks.push(newTask);
+	return newTask;
+}

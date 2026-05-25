@@ -66,3 +66,13 @@ export function getInvoiceById(id: string): Invoice | undefined {
 export function getInvoicesBySupplierId(supplierId: string): Invoice[] {
 	return invoices.filter((i) => i.supplierId === supplierId);
 }
+
+export function createInvoice(invoice: Omit<Invoice, 'id' | 'createdAt'>): Invoice {
+	const newInvoice: Invoice = {
+		...invoice,
+		id: `inv-${Math.random().toString(36).substr(2, 9)}`,
+		createdAt: new Date().toISOString()
+	};
+	invoices.push(newInvoice);
+	return newInvoice;
+}

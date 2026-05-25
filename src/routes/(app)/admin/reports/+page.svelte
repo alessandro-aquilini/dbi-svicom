@@ -16,14 +16,12 @@
 		nuova: 'Nuova',
 		presa_in_carico: 'In carico',
 		completata: 'Completata',
-		archiviata: 'Archiviata',
 	};
 
 	const statusColors: Record<ReportStatus, string> = {
 		nuova: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
 		presa_in_carico: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
 		completata: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-		archiviata: 'bg-gray-500/10 text-gray-500 border-gray-500/20'
 	};
 
 	const priorityLabels: Record<ReportPriority, string> = {

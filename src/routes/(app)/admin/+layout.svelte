@@ -24,7 +24,7 @@
 		{ label: 'Segnalazioni', href: '/admin/reports', icon: InformationCircleIcon },
 		{ label: 'Calendario', href: '/admin/calendar', icon: Calendar03Icon },
 		{ label: 'Fornitori', href: '/admin/suppliers', icon: Wrench01Icon },
-		{ label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
+		// { label: 'Servizi', href: '/admin/services', icon: Wrench01Icon },
 		{ label: 'Chat', href: '/admin/chat', icon: BubbleChatIcon },
 		{ label: 'Contabilità', href: '/admin/finances', icon: CreditCardIcon },
 		{ label: 'Impostazioni', href: '/admin/settings', icon: Settings02Icon }

@@ -21,9 +21,8 @@ export type TicketEventKind =
 	| 'accepted'
 	| 'declined'
 	| 'reportCompletion'
-	| 'validateAndClose'
-	| 'archiveTicket'
-	| 'closed';
+	| 'closeTicket'
+	| 'archiveTicket';
 
 export type TicketAdminMetadataKind = 'updatePriority' | 'addInternalNote' | 'ai';
 
@@ -35,7 +34,6 @@ export interface TicketEvent {
 
 	// optional payloads for certain kinds
 	supplierId?: string; // assignToSupplier (may appear multiple times for reassignments)
-	body?: string;
 	// updatePriority payload
 	fromPriority?: string;
 	toPriority?: string;
@@ -122,8 +120,7 @@ export function getCurrentStatus(ticket: Ticket): TicketStatus {
 		switch (ev.kind) {
 			case 'reportCompletion':
 				return 'completed';
-			case 'validateAndClose':
-				return 'closed';
+			case 'closeTicket':
 			case 'archiveTicket':
 				return 'closed';
 			case 'assignToSupplier':
@@ -134,9 +131,6 @@ export function getCurrentStatus(ticket: Ticket): TicketStatus {
 				return 'estimating';
 			case 'createTicket':
 				return 'opened';
-			// Legacy support
-			case 'closed':
-				return 'closed';
 		}
 	}
 	return 'opened';
@@ -160,7 +154,7 @@ export const tickets: Ticket[] = [
 			{ id: 'ev-3', kind: 'assignToSupplier', at: '2026-05-01T10:05:00', authorId: 'adm-giorgio-01', supplierId: 'frn-idroclima-nord'},
 			{ id: 'ev-4', kind: 'accepted', at: '2026-05-01T11:45:00', authorId: 'frn-idroclima-nord' },
 			{ id: 'ev-6', kind: 'reportCompletion', at: '2026-05-01T18:00:00', authorId: 'frn-idroclima-nord' },
-			{ id: 'ev-7', kind: 'validateAndClose', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
+			{ id: 'ev-7', kind: 'closeTicket', at: '2026-05-03T19:00:00', authorId: 'adm-giorgio-01' }
 		],
 		messageTimeline: [
 			{ id: 'msg-101', senderId: 'adm-giorgio-01', text: 'Ciao, abbiamo un\'emergenza a Via Marconi 14. Perdita nel locale caldaia e manca acqua calda nella scala B.', timestamp: '2026-05-01T10:06:00' },
@@ -205,7 +199,7 @@ export const tickets: Ticket[] = [
 		eventTimeline: [
 			{ id: 'ev-201', kind: 'createTicket', at: '2026-05-03T16:30:00', authorId: 'adm-giorgio-01' },
 			{ id: 'ev-202', kind: 'assignToSupplier', at: '2026-05-03T16:35:00', authorId: 'adm-giorgio-01', supplierId: 'frn-secure-entry' },
-			{ id: 'ev-203', kind: 'accepted', at: '2026-05-03T17:30:00', authorId: 'frn-secure-entry', body: 'Passiamo domani mattina a controllare.' }
+			{ id: 'ev-203', kind: 'accepted', at: '2026-05-03T17:30:00', authorId: 'frn-secure-entry' }
 		],
 		adminMetadata: [
 			{
@@ -304,7 +298,7 @@ export function getSupplierRelevantTimeline(ticket: Ticket, supplierId: string):
 			result.push(ev);
 		}
 
-		if (ev.kind === 'closed' || ev.kind === 'archiveTicket') {
+		if (ev.kind === 'closeTicket' || ev.kind === 'archiveTicket') {
 			relevant = false;
 		}
 	}
@@ -321,6 +315,25 @@ export function getTicketsBySupplierId(supplierId: string): Ticket[] {
 
 export function getTicketsByResidentCc(residentId: string): Ticket[] {
 	return tickets.filter((t) => t.cc.includes(residentId));
+}
+
+export function linkDocumentToTicket(
+	ticketId: string,
+	type: 'invoice' | 'quote' | 'payment' | 'intervention',
+	documentId: string
+): void {
+	const ticket = getTicketById(ticketId);
+	if (!ticket) return;
+
+	if (type === 'invoice') {
+		ticket.invoiceIds = [...(ticket.invoiceIds || []), documentId];
+	} else if (type === 'quote') {
+		ticket.quoteIds = [...(ticket.quoteIds || []), documentId];
+	} else if (type === 'payment') {
+		ticket.paymentIds = [...(ticket.paymentIds || []), documentId];
+	} else if (type === 'intervention') {
+		ticket.interventionIds = [...(ticket.interventionIds || []), documentId];
+	}
 }
 
 // ─── AI-derived narratives ────────────────────────────────────────────────────
@@ -373,4 +386,29 @@ export function getTicketNextStep(ticketId: string): TicketNextStep | undefined 
 				detail: 'La pratica è chiusa. Nuove segnalazioni sullo stesso punto andrebbero aperte come nuovo ticket con riferimento a questo.'
 			};
 	}
+}
+
+/** Append a new timeline event to a ticket.
+ * Used for actions like assign, accept, decline, report completion, and close.
+ */
+export function addTicketEvent(
+	ticketId: string,
+	kind: TicketEventKind,
+	authorId?: string,
+	supplierId?: string,
+): TicketEvent | undefined {
+	const ticket = getTicketById(ticketId);
+	if (!ticket) return undefined;
+	if (kind === 'assignToSupplier' && !supplierId) return undefined;
+
+	const event: TicketEvent = {
+		id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+		kind,
+		at: new Date().toISOString(),
+		authorId,
+		supplierId,
+	};
+
+	ticket.eventTimeline = [...ticket.eventTimeline, event];
+	return event;
 }

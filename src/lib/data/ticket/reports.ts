@@ -1,10 +1,10 @@
 // NOTE: Segnalazioni
 
-export type ReportStatus = 'nuova' | 'presa_in_carico' | 'completata' | 'archiviata';
+export type ReportStatus = 'nuova' | 'presa_in_carico' | 'completata';
 export type ReportPriority = 'bassa' | 'media' | 'alta' | 'critica';
 
 // Timeline event kinds for reports
-export type ReportEventKind = 'reported' | 'acknowledged' | 'escalated' | 'resolved' | 'archived';
+export type ReportEventKind = 'reported' | 'acknowledged' | 'escalated' | 'resolved';
 
 export interface ReportEvent {
 	id: string;
@@ -72,8 +72,7 @@ export const reports: Report[] = [
 		timeline: [
 			{ id: 'rep-002-e1', kind: 'reported', authorId: 'res-bellini-05', at: '2026-05-01T07:45:00' },
 			{ id: 'rep-002-e2', kind: 'acknowledged', authorId: 'adm-giorgio-01', at: '2026-05-01T09:15:00' },
-			{ id: 'rep-002-e3', kind: 'resolved', authorId: 'adm-giorgio-01', at: '2026-05-01T10:00:00' },
-			{ id: 'rep-002-e4', kind: 'archived', authorId: 'adm-giorgio-01', at: '2026-05-08T10:00:00' }
+			{ id: 'rep-002-e3', kind: 'resolved', authorId: 'adm-giorgio-01', at: '2026-05-01T10:00:00' }
 		],
 		messageTimeline: [
 			{ id: 'msg-res-101', senderId: 'res-bellini-05', text: 'Manca l\'acqua calda nella scala B da stamattina!', timestamp: '2026-05-01T07:45:00' },
@@ -163,8 +162,6 @@ export function inferReportStatus(report: Report): ReportStatus {
 			return 'presa_in_carico';
 		case 'resolved':
 			return 'completata';
-		case 'archived':
-			return 'archiviata';
 		default:
 			return 'nuova';
 	}
@@ -178,4 +175,42 @@ export function getReportCreatedAt(report: Report): string | undefined {
 export function getReportUpdatedAt(report: Report): string | undefined {
 	const last = lastReportEvent(report);
 	return last?.at;
+}
+
+// Actions
+const STORAGE_KEY = 'svicom.reports';
+
+function persistReports(): void {
+	if (typeof window === 'undefined') return;
+	const baseIds = new Set(['rep-001', 'rep-002', 'rep-003', 'rep-004', 'rep-005']);
+	const dynamicReports = reports.filter((r) => !baseIds.has(r.id));
+	localStorage.setItem(STORAGE_KEY, JSON.stringify(dynamicReports));
+}
+
+export function addReportEvent(reportId: string, event: Omit<ReportEvent, 'id' | 'at'>): void {
+	const report = getReportById(reportId);
+	if (!report) return;
+
+	if (!report.timeline) report.timeline = [];
+
+	const newEvent: ReportEvent = {
+		...event,
+		id: `rep-${reportId.split('-').pop()}-e${report.timeline.length + 1}`,
+		at: new Date().toISOString()
+	};
+
+	report.timeline.push(newEvent);
+	persistReports();
+}
+
+export function acknowledgeReport(reportId: string, authorId: string): void {
+	addReportEvent(reportId, { kind: 'acknowledged', authorId });
+}
+
+export function resolveReport(reportId: string, authorId: string): void {
+	addReportEvent(reportId, { kind: 'resolved', authorId });
+}
+
+export function escalateReport(reportId: string, authorId: string, assignedToId: string): void {
+	addReportEvent(reportId, { kind: 'escalated', authorId, assignedToId });
 }
