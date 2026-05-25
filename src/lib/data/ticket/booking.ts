@@ -221,7 +221,7 @@ const baseBookings: Booking[] = [
     // 5) Installazione Climatizzatore: New request for another property
     {
         id: 'bkg-005',
-        residentId: 'res-rossi-01',
+        residentId: 'res-rossi-03',
         serviceId: 'srv-installazione-climatizzatore',
         timeline: [
             {
