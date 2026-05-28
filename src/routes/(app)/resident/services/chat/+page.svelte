@@ -19,6 +19,7 @@
     import ChatInvoiceCard from '$lib/components/shared/chat-cards/ChatInvoiceCard.svelte';
     import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
     import BookingTimelineEvent from '$lib/components/shared/booking/actions-cards/BookingTimelineEvent.svelte';
+    import BookingChatInfo from '$lib/components/shared/chat-cards/BookingChatInfo.svelte';
     import PaymentModal from '$lib/components/shared/chat-buttons/PaymentModal.svelte';
     import { HugeiconsIcon } from '@hugeicons/svelte';
     import { ArrowLeft01Icon, SentIcon, Message01Icon, InformationCircleIcon, Cancel01Icon, Add01Icon, Invoice01Icon } from '@hugeicons/core-free-icons';
@@ -210,40 +211,14 @@
             <footer class="p-4 bg-white border-t border-slate-100 sticky bottom-0 z-20">
                 <div class="w-full flex flex-col gap-3 relative">
                     <!-- Active Booking Info Popup -->
-                    {#if booking && isBookingActive(booking) && accordionOpen}
+                    {#if booking && accordionOpen}
                         <div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shrink-0">
-                                        <HugeiconsIcon icon={InformationCircleIcon} size={20} />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest leading-tight">
-                                            {bookingInfo?.serviceName}
-                                        </h3>
-                                        <p class="text-[11px] font-medium text-slate-400 leading-tight">
-                                            {bookingInfo?.place}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {#if bookingInfo?.notes}
-                                <div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <p class="text-[11px] text-slate-600 leading-relaxed italic line-clamp-3">
-                                        "{bookingInfo.notes}"
-                                    </p>
-                                </div>
-                            {/if}
-
-                            <div class="flex items-center gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    class="w-full h-9 text-[11px] font-bold uppercase tracking-widest border-red-100 text-red-500 hover:bg-red-50"
-                                    onclick={() => { handleCancelBooking(); accordionOpen = false; }}
-                                >Annulla prenotazione</Button>
-                            </div>
+                            <BookingChatInfo
+                                bookingInfo={bookingInfo}
+                                serviceName={bookingInfo?.serviceName ?? ''}
+                                place={bookingInfo?.place ?? ''}
+                                onCancel={isBookingActive(booking) ? () => { handleCancelBooking(); accordionOpen = false; } : undefined}
+                            />
                         </div>
                     {/if}
 
@@ -277,7 +252,7 @@
                                 <HugeiconsIcon icon={Add01Icon} size={24} />
                             </button>
 
-                            {#if booking && isBookingActive(booking)}
+                            {#if booking}
                                 <button 
                                     onclick={() => { accordionOpen = !accordionOpen; showPlusMenu = false; }}
                                     class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {accordionOpen ? 'rotate-180 text-[#5D7D94]' : ''}"

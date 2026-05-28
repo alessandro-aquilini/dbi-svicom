@@ -68,7 +68,7 @@ export function openReportsByProperty(propertyId: string): number {
 		.filter((r) => r.propertyId === propertyId)
 		.filter((r) => {
 			const s = inferReportStatus(r);
-			return s === 'nuova' || s === 'presa_in_carico';
+			return s === 'nuova' || s === 'presa in carico';
 		}).length;
 }
 

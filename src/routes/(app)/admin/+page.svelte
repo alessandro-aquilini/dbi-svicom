@@ -144,7 +144,7 @@
 
 	<!-- Map card -->
 	<div class="mt-6 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-		<div class="h-[360px] w-full">
+		<div class="h-90 w-full">
 			<PropertiesMap {properties} />
 		</div>
 	</div>

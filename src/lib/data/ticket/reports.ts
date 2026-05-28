@@ -1,10 +1,10 @@
 // NOTE: Segnalazioni
 
-export type ReportStatus = 'nuova' | 'presa_in_carico' | 'completata';
+export type ReportStatus = 'nuova' | 'presa in carico' | 'chiusa';
 export type ReportPriority = 'bassa' | 'media' | 'alta' | 'critica';
 
 // Timeline event kinds for reports
-export type ReportEventKind = 'reported' | 'acknowledged' | 'escalated' | 'resolved';
+export type ReportEventKind = 'reported' | 'acknowledged' | 'resolved';
 
 export interface ReportEvent {
 	id: string;
@@ -158,10 +158,9 @@ export function inferReportStatus(report: Report): ReportStatus {
 		case 'reported':
 			return 'nuova';
 		case 'acknowledged':
-		case 'escalated':
-			return 'presa_in_carico';
+			return 'presa in carico';
 		case 'resolved':
-			return 'completata';
+			return 'chiusa';
 		default:
 			return 'nuova';
 	}
@@ -209,8 +208,4 @@ export function acknowledgeReport(reportId: string, authorId: string): void {
 
 export function resolveReport(reportId: string, authorId: string): void {
 	addReportEvent(reportId, { kind: 'resolved', authorId });
-}
-
-export function escalateReport(reportId: string, authorId: string, assignedToId: string): void {
-	addReportEvent(reportId, { kind: 'escalated', authorId, assignedToId });
 }

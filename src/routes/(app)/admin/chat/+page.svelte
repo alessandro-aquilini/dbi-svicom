@@ -40,6 +40,8 @@
 	import ChatPaymentCard from '$lib/components/shared/chat-cards/ChatPaymentCard.svelte';
 	import ChatInterventionCard from '$lib/components/shared/chat-cards/ChatInterventionCard.svelte';
 	import ChatTimelineEvent from '$lib/components/shared/chat-cards/ChatTimelineEvent.svelte';
+	import TicketChatInfo from '$lib/components/shared/chat-cards/TicketChatInfo.svelte';
+	import ReportChatInfo from '$lib/components/shared/chat-cards/ReportChatInfo.svelte';
 	import PaymentModal from '$lib/components/shared/chat-buttons/PaymentModal.svelte';
 	import { tick } from 'svelte';
 	import { Badge } from '$lib/components/ui/badge';
@@ -186,7 +188,7 @@
 	const statusColors: Record<string, string> = {
 		nuova: 'bg-amber-100 text-amber-700',
 		presa_in_carico: 'bg-blue-100 text-blue-700',
-		completata: 'bg-emerald-100 text-emerald-700',
+		chiusa: 'bg-emerald-100 text-emerald-700',
 		archiviata: 'bg-slate-100 text-slate-500',
 		opened: 'bg-amber-100 text-amber-700',
 		estimating: 'bg-blue-100 text-blue-700',
@@ -464,104 +466,22 @@
 					<!-- Ticket Actions Popup -->
 					{#if actionOpen && activeTab === 'supplier' && activeTicket}
 						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 p-6 animate-in slide-in-from-bottom-2 duration-200">
-							<div class="space-y-5">
-								<div class="flex items-start justify-between">
-									<div class="space-y-1">
-										<p class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Ticket Amministrativo</p>
-										<h3 class="text-lg font-bold text-slate-900 leading-tight">{activeTicket.title}</h3>
-									</div>
-									<div class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider ring-1 ring-amber-100">
-										{getCurrentStatus(activeTicket).replace('_', ' ')}
-									</div>
-								</div>
-
-								<div class="space-y-4">
-									<div class="space-y-1.5">
-										<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">Descrizione</p>
-										<p class="text-[14px] text-slate-600 leading-relaxed font-medium px-1">
-											{activeTicket.description || 'Nessuna descrizione fornita.'}
-										</p>
-									</div>
-
-									<div class="flex gap-4 pt-1 border-t border-slate-50 mt-2">
-										{#if activeTicket.category}
-											<div class="flex-1">
-												<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Categoria</p>
-												<p class="text-[13px] font-semibold text-slate-800 px-1">{activeTicket.category}</p>
-											</div>
-										{/if}
-										{#if activeTicket.location}
-											<div class="flex-1">
-												<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Posizione</p>
-												<p class="text-[13px] font-semibold text-slate-800 px-1">{activeTicket.location}</p>
-											</div>
-										{/if}
-									</div>
-								</div>
-
-								<div class="pt-4 grid gap-2">
-									{#if !getCurrentSupplier(activeTicket)}
-										<Button variant="default" class="h-11 text-[11px] font-bold uppercase tracking-widest bg-slate-900 hover:bg-slate-800 rounded-4xl shadow-lg shadow-slate-200" onclick={() => { handleAdminAssignToSupplier(); actionOpen = false; }}>
-											Assegna a {counterparty.name}
-										</Button>
-									{/if}
-									{#if getCurrentStatus(activeTicket) !== 'closed'}
-										<Button variant="ghost" class="h-10 text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-4xl" onclick={() => { handleAdminCloseTicket(); actionOpen = false; }}>
-											Chiudi ticket
-										</Button>
-									{/if}
-								</div>
-							</div>
+							<TicketChatInfo
+								ticket={activeTicket}
+								statusLabel={getCurrentStatus(activeTicket).replace('_', ' ')}
+								onAssign={!getCurrentSupplier(activeTicket) ? () => { handleAdminAssignToSupplier(); actionOpen = false; } : undefined}
+								onClose={getCurrentStatus(activeTicket) !== 'closed' ? () => { handleAdminCloseTicket(); actionOpen = false; } : undefined}
+								assignLabel={counterparty?.name ?? ''}
+							/>
 						</div>
 					{:else if actionOpen && activeTab === 'resident' && activeReport}
 						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 p-6 animate-in slide-in-from-bottom-2 duration-200">
-							<div class="space-y-5">
-								<div class="flex items-start justify-between">
-									<div class="space-y-1">
-										<p class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Segnalazione Residente</p>
-										<h3 class="text-lg font-bold text-slate-900 leading-tight">{activeReport.title}</h3>
-									</div>
-									<div class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider ring-1 ring-blue-100">
-										{inferReportStatus(activeReport).replace('_', ' ')}
-									</div>
-								</div>
-
-								<div class="space-y-4">
-									<div class="space-y-1.5">
-										<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">Descrizione</p>
-										<p class="text-[14px] text-slate-600 leading-relaxed font-medium px-1">
-											{activeReport.description || 'Nessuna descrizione fornita.'}
-										</p>
-									</div>
-
-									<div class="flex gap-4 pt-1 border-t border-slate-50 mt-2">
-										<div class="flex-1">
-											<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Priorità</p>
-											<p class="text-[13px] font-bold {activeReport.priority === 'alta' || activeReport.priority === 'critica' ? 'text-rose-600' : 'text-slate-800'} capitalize px-1">
-												{activeReport.priority}
-											</p>
-										</div>
-										{#if activeReport.category}
-											<div class="flex-1">
-												<p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Categoria</p>
-												<p class="text-[13px] font-semibold text-slate-800 px-1">{activeReport.category}</p>
-											</div>
-										{/if}
-									</div>
-								</div>
-
-								<div class="pt-4 grid gap-2">
-									{#if inferReportStatus(activeReport) === 'nuova'}
-										<Button variant="default" class="h-11 text-[11px] font-bold uppercase tracking-widest bg-slate-900 hover:bg-slate-800 rounded-4xl shadow-lg shadow-slate-200" onclick={() => { handleAdminAcknowledgeReport(); actionOpen = false; }}>
-											Prendi in carico
-										</Button>
-									{:else if inferReportStatus(activeReport) === 'presa_in_carico'}
-										<Button variant="default" class="h-11 text-[11px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 rounded-4xl shadow-lg shadow-emerald-50" onclick={() => { handleAdminResolveReport(); actionOpen = false; }}>
-											Risolvi segnalazione
-										</Button>
-									{/if}
-								</div>
-							</div>
+							<ReportChatInfo
+								report={activeReport}
+								statusLabel={inferReportStatus(activeReport).replace('_', ' ')}
+								onAcknowledge={inferReportStatus(activeReport) === 'nuova' ? () => { handleAdminAcknowledgeReport(); actionOpen = false; } : undefined}
+								onResolve={inferReportStatus(activeReport) === 'presa in carico' ? () => { handleAdminResolveReport(); actionOpen = false; } : undefined}
+							/>
 						</div>
 					{/if}
 
@@ -617,7 +537,7 @@
 						{/if}
 					</div>
 
-					{#if (activeTab === 'supplier' && activeTicket && getCurrentStatus(activeTicket) !== 'closed') || (activeTab === 'resident' && activeReport && inferReportStatus(activeReport) !== 'completata')}
+					{#if (activeTab === 'supplier' && activeTicket) || (activeTab === 'resident' && activeReport)}
 						<button 
 							onclick={() => { actionOpen = !actionOpen; showPlusMenu = false; }}
 							class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {actionOpen ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'} {actionOpen ? 'rotate-180' : ''}"

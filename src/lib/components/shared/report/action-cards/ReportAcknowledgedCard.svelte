@@ -13,7 +13,7 @@
     <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full ring-1 ring-amber-200 bg-amber-50 text-amber-700 shadow-sm">
         <div class="h-2 w-2 rounded-full bg-amber-500"></div>
         <span class="text-[11px] font-bold uppercase tracking-widest leading-none">
-            Presa in carico
+            Segnalazione Presa in carico
         </span>
     </div>
     <span class="mt-2 text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
