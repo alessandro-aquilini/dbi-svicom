@@ -2,7 +2,7 @@
 	import { ticketStatusLabels } from './presentation';
 
 	// Use report statuses
-	const ticketFlow: string[] = ['nuova', 'presa_in_carico', 'completata'];
+	const ticketFlow: string[] = ['nuova', 'presa in carico', 'completata'];
 
 	let { currentStatus }: { currentStatus?: string } = $props();
 

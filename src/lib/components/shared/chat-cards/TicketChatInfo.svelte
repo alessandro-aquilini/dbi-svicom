@@ -26,13 +26,13 @@
 
 <div class="space-y-5">
     {#if isInactive}
-        <div class="flex flex-col items-center text-center py-4 space-y-4">
-            <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ring-1 ring-slate-100">
+        <div class="flex flex-col items-center text-center py-2 space-y-4">
+            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ring-1 ring-slate-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-lock"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><rect width="8" height="6" x="8" y="12" rx="1"/><path d="M15 12v-2a3 3 0 1 0-6 0v2"/></svg>
             </div>
             <div class="space-y-1">
-                <h3 class="text-base font-bold text-slate-900">Ticket Concluso</h3>
-                <p class="text-sm text-slate-500 max-w-48">Questo ticket amministrativo è stato completato e archiviato.</p>
+                <h3 class="text-base font-bold text-slate-900">Nessun Ticket Attivo</h3>
+                <p class="text-sm text-slate-500">L'ultimo ticket amministrativo è stato completato.</p>
             </div>
             <div class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
                 Stato: {statusLabel}

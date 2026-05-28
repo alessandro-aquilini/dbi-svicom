@@ -1,6 +1,6 @@
 // NOTE: Segnalazioni
 
-export type ReportStatus = 'nuova' | 'presa_in_carico' | 'completata';
+export type ReportStatus = 'nuova' | 'presa in carico' | 'completata';
 export type ReportPriority = 'bassa' | 'media' | 'alta' | 'critica';
 
 // Timeline event kinds for reports
@@ -159,7 +159,7 @@ export function inferReportStatus(report: Report): ReportStatus {
 			return 'nuova';
 		case 'acknowledged':
 		case 'escalated':
-			return 'presa_in_carico';
+			return 'presa in carico';
 		case 'resolved':
 			return 'completata';
 		default:

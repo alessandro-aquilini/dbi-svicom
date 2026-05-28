@@ -27,12 +27,12 @@
 <div class="space-y-5">
     {#if isInactive}
         <div class="flex flex-col items-center text-center py-4 space-y-4">
-            <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ring-1 ring-slate-100">
+            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ring-1 ring-slate-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-archive"><polyline points="21 8 21 21 3 21 3 8"/><rect width="22" height="5" x="1" y="3"/><line x1="10" x2="14" y1="12" y2="12"/></svg>
             </div>
             <div class="space-y-1">
-                <h3 class="text-base font-bold text-slate-900">Servizio Concluso</h3>
-                <p class="text-sm text-slate-500 max-w-48">Questa pratica è stata archiviata e non accetta più modifiche.</p>
+                <h3 class="text-base font-bold text-slate-900">Nessuno prenotazione attiva</h3>
+                <p class="text-sm text-slate-500">L'ultimo servizio è stato chiuso.</p>
             </div>
             <div class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
                 Stato: {bookingInfo?.status ?? 'concluso'}

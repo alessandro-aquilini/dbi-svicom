@@ -18,13 +18,13 @@
 
 <div class="space-y-5">
     {#if isInactive}
-        <div class="flex flex-col items-center text-center py-4 space-y-4">
-            <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ring-1 ring-slate-100">
+        <div class="flex flex-col items-center text-center py-2 space-y-4">
+            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ring-1 ring-slate-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
             </div>
             <div class="space-y-1">
-                <h3 class="text-base font-bold text-slate-900">Segnalazione Risolta</h3>
-                <p class="text-sm text-slate-500 max-w-48">Questa segnalazione è stata chiusa e non richiede ulteriori azioni.</p>
+                <h3 class="text-base font-bold text-slate-900">Nessuna Segnalazione Attiva</h3>
+                <p class="text-sm text-slate-500">L'ultima segnalazione è stata chiusa.</p>
             </div>
             <div class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
                 Stato: {statusLabel}

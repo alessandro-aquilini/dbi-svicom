@@ -480,7 +480,7 @@
 								report={activeReport}
 								statusLabel={inferReportStatus(activeReport).replace('_', ' ')}
 								onAcknowledge={inferReportStatus(activeReport) === 'nuova' ? () => { handleAdminAcknowledgeReport(); actionOpen = false; } : undefined}
-								onResolve={inferReportStatus(activeReport) === 'presa_in_carico' ? () => { handleAdminResolveReport(); actionOpen = false; } : undefined}
+								onResolve={inferReportStatus(activeReport) === 'presa in carico' ? () => { handleAdminResolveReport(); actionOpen = false; } : undefined}
 							/>
 						</div>
 					{/if}
