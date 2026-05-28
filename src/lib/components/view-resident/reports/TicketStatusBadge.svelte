@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	// status is a string from Report.status (nuova | presa_in_carico | completata)
+	// status is a string from Report.status (nuova | presa_in_carico | chiusa)
 	import { ticketStatusLabels } from './presentation';
 
 	let {

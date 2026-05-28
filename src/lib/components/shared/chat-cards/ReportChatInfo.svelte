@@ -14,7 +14,7 @@
     }: Props = $props();
 
     const isInactive = $derived(
-        statusLabel === "completata" || statusLabel === "archiviata",
+        statusLabel === "chiusa" || statusLabel === "archiviata",
     );
 </script>
 

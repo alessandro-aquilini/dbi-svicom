@@ -96,7 +96,7 @@
                         class="w-full h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90"
                         onclick={onClose}
                     >
-                        Chiudi Intervento
+                        Chiudi Servizio
                     </button>
                 {/if}
 

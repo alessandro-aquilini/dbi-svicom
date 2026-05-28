@@ -2469,7 +2469,7 @@
 		@apply border-transparent bg-primary/12 text-primary;
 	}
 	.ticket-status-badge--completed,
-	.ticket-status-badge--completata,
+	.ticket-status-badge--chiusa,
 	.ticket-status-badge--paid {
 		@apply border-transparent bg-[color:var(--success)]/15 text-[color:var(--success)];
 	}

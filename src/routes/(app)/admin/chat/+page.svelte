@@ -188,7 +188,7 @@
 	const statusColors: Record<string, string> = {
 		nuova: 'bg-amber-100 text-amber-700',
 		presa_in_carico: 'bg-blue-100 text-blue-700',
-		completata: 'bg-emerald-100 text-emerald-700',
+		chiusa: 'bg-emerald-100 text-emerald-700',
 		archiviata: 'bg-slate-100 text-slate-500',
 		opened: 'bg-amber-100 text-amber-700',
 		estimating: 'bg-blue-100 text-blue-700',
