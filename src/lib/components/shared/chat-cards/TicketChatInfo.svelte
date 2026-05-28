@@ -57,16 +57,16 @@
 
             {#if ticket?.category || ticket?.location}
                 <div class="flex gap-4 pt-1 border-t border-slate-50 mt-2">
+                    {#if ticket?.priority}
+                        <div class="flex-1">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Priorità</p>
+                            <p class="text-[13px] font-bold {ticket?.priority === 'alta' || ticket?.priority === 'critica' ? 'text-rose-600' : 'text-slate-800'} capitalize px-1">{ticket?.priority || 'media'}</p>
+                        </div>
+                    {/if}
                     {#if ticket?.category}
                         <div class="flex-1">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Categoria</p>
                             <p class="text-[13px] font-semibold text-slate-800 px-1">{ticket.category}</p>
-                        </div>
-                    {/if}
-                    {#if ticket?.location}
-                        <div class="flex-1">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 px-1">Posizione</p>
-                            <p class="text-[13px] font-semibold text-slate-800 px-1">{ticket.location}</p>
                         </div>
                     {/if}
                 </div>
@@ -74,13 +74,13 @@
         </div>
 
         {#if onAccept || onDecline || onReportCompletion || onAssign || onClose}
-            <div class="pt-4 space-y-2">
+            <div class="pt-2 space-y-2">
                 {#if onAccept || onDecline}
                     <div class="flex gap-2">
                         {#if onAccept}
                             <button
                                 type="button"
-                                class="flex-1 h-11 rounded-2xl bg-slate-900 text-[11px] font-bold uppercase tracking-widest text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
+                                class="flex-1 h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90"
                                 onclick={onAccept}
                             >
                                 Accetta
@@ -89,7 +89,7 @@
                         {#if onDecline}
                             <button
                                 type="button"
-                                class="flex-1 h-11 rounded-2xl text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                                class="flex-1 h-11 rounded-2xl text-[11px] font-bold uppercase tracking-widest text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onclick={onDecline}
                             >
                                 Rifiuta
@@ -101,7 +101,7 @@
                 {#if onReportCompletion}
                     <button
                         type="button"
-                        class="w-full h-11 rounded-2xl bg-emerald-600 text-[11px] font-bold uppercase tracking-widest text-white shadow-lg shadow-emerald-50 hover:bg-emerald-700"
+                        class="w-full h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90"
                         onclick={onReportCompletion}
                     >
                         Segnala completamento
@@ -111,7 +111,7 @@
                 {#if onAssign}
                     <button
                         type="button"
-                        class="w-full h-11 rounded-2xl bg-slate-900 text-[11px] font-bold uppercase tracking-widest text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
+                        class="w-full h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90"
                         onclick={onAssign}
                     >
                         Assegna a {assignLabel}
@@ -121,7 +121,7 @@
                 {#if onClose}
                     <button
                         type="button"
-                        class="w-full h-10 rounded-2xl text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                        class="w-full h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90"
                         onclick={onClose}
                     >
                         Chiudi ticket

@@ -66,14 +66,14 @@
         </div>
 
         {#if onConfirm || onDecline || onClose || onCancel}
-            <div class="pt-4 space-y-2">
+            <div class="pt-2 space-y-2">
                 {#if onConfirm || onDecline}
                     <div class="flex items-center gap-2">
                         {#if onConfirm}
                             <button
                                 type="button"
                                 disabled={isProcessing}
-                                class="flex-1 h-11 rounded-2xl bg-slate-900 text-[11px] font-bold uppercase tracking-widest text-white shadow-lg shadow-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="flex-1 h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90 disabled:cursor-not-allowed disabled:opacity-50"
                                 onclick={onConfirm}
                             >
                                 Approva
@@ -83,7 +83,7 @@
                             <button
                                 type="button"
                                 disabled={isProcessing}
-                                class="flex-1 h-11 rounded-2xl text-[11px] font-bold uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="flex-1 h-11 rounded-2xl text-[11px] font-bold uppercase tracking-widest text-red-600 hover:text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                                 onclick={onDecline}
                             >
                                 Rifiuta
@@ -93,10 +93,10 @@
                 {:else if onClose}
                     <button
                         type="button"
-                        class="w-full h-11 rounded-2xl bg-emerald-600 text-[11px] font-bold uppercase tracking-widest text-white shadow-lg shadow-emerald-50 hover:bg-emerald-700"
+                        class="w-full h-11 rounded-2xl bg-[#5D7D94] text-[11px] font-bold uppercase tracking-widest text-white hover:bg-[#5D7D94]/90"
                         onclick={onClose}
                     >
-                        Concludi Intervento
+                        Chiudi Intervento
                     </button>
                 {/if}
 

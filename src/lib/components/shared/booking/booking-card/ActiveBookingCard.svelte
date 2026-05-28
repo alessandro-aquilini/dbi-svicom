@@ -96,7 +96,7 @@
 <div
 	role="button"
 	tabindex="0"
-	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 hover:shadow-md active:scale-[0.98] cursor-pointer"
+	class="group relative overflow-hidden rounded-[1.25rem] border border-border bg-card p-5 transition-all duration-300 hover:border-[#5D7D94]/30 active:scale-[0.98] cursor-pointer"
 	onclick={openChat}
 	onkeydown={(event: KeyboardEvent) => {
 		if (event.key === 'Enter' || event.key === ' ') {
@@ -175,7 +175,7 @@
 					disabled={isProcessingStatus}
 					onclick={() => handleUpdateStatus('closed')}
 				>
-					Completa
+					Chiudi
 				</Button>
 				<Button
 					size="sm"
