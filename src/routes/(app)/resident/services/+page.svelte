@@ -9,6 +9,7 @@
 	} from '$lib/data/ticket/booking';
 	import ActiveBookingCard from '$lib/components/shared/booking/booking-card/ActiveBookingCard.svelte';
 	import HistoryBookingCard from '$lib/components/shared/booking/booking-card/HistoryBookingCard.svelte';
+	import { ResidentProBadge } from '$lib/components/view-resident/resident';
 	import { onMount } from 'svelte';
 
 	const currentUser = getCurrentUser();
@@ -40,8 +41,8 @@
 				<h1 class="mt-1 text-3xl font-black tracking-tight text-foreground">Le mie prenotazioni</h1>
 			</div>
 			<a href="/resident/services/marketplace" class="group inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
-				<span>Nuova</span>
-				<span class="hidden sm:inline">Prenotazione</span>
+				<span>Marketplace</span>
+				<ResidentProBadge tone="inverse" />
 			</a>
 		</div>
 		<p class="mt-3 text-[15px] leading-relaxed text-muted-foreground/80">Controlla le richieste che hai già inviato e consulta lo storico dei servizi completati.</p>

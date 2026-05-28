@@ -3,10 +3,8 @@
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		ArrowUp01Icon,
-		Chat01Icon,
 		CreditCardIcon,
-		Megaphone01Icon,
-		Notification01Icon
+		Megaphone01Icon
 	} from '@hugeicons/core-free-icons';
 	import { getCurrentUser } from '$lib/auth';
 	import { ResidentEmptyCard } from '$lib/components/view-resident/resident';

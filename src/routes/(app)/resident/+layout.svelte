@@ -7,7 +7,6 @@
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import {
 		Calendar03Icon,
-		Chat01Icon,
 		CreditCardIcon,
 		Home01Icon,
 		MenuSquareIcon,
@@ -25,7 +24,7 @@
 
 	const navItems = [
 		{ label: 'Home', href: '/resident', icon: Home01Icon },
-		{ label: 'Chat', href: '/resident/chat', icon: Chat01Icon },
+		{ label: 'Segnala', href: '/resident/reports', icon: Megaphone01Icon },
 		{ label: 'Servizi', href: '/resident/services', icon: Bookmark01Icon },
 		{ label: 'Pagamenti', href: '/resident/payments', icon: CreditCardIcon },
 		{ label: 'Profilo', href: '/resident/profile', icon: UserIcon }
