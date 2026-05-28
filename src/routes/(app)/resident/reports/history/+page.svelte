@@ -42,7 +42,7 @@
 		}))
 	);
 
-	let statusFilter = $state<'all' | 'open' | 'presa_in_carico' | 'completata'>('all');
+	let statusFilter = $state<'all' | 'open' | 'presa in carico' | 'chiusa'>('all');
 	let sortMode = $state<'updated' | 'created' | 'priority' | 'title'>('updated');
 
 	const filterStats = $derived([
@@ -57,20 +57,20 @@
 			label: 'Aperte',
 			value: allReports.filter((report) => {
 				const status = inferReportStatus(report);
-				return status === 'nuova' || status === 'presa_in_carico';
+				return status === 'nuova' || status === 'presa in carico';
 			}).length,
 			copy: 'Segnalazioni ancora aperte o in lavorazione.'
 		},
 		{
-			key: 'presa_in_carico' as const,
+			key: 'presa in carico' as const,
 			label: 'In carico',
-			value: allReports.filter((report) => inferReportStatus(report) === 'presa_in_carico').length,
+			value: allReports.filter((report) => inferReportStatus(report) === 'presa in carico').length,
 			copy: 'Pratiche gia prese in gestione.'
 		},
 		{
-			key: 'completata' as const,
+			key: 'chiusa' as const,
 			label: 'Completate',
-			value: allReports.filter((report) => inferReportStatus(report) === 'completata').length,
+			value: allReports.filter((report) => inferReportStatus(report) === 'chiusa').length,
 			copy: 'Segnalazioni concluse.'
 		}
 	]);
@@ -84,7 +84,7 @@
 		if (statusFilter !== 'all') {
 			items = items.filter(({ report }) => {
 				const status = inferReportStatus(report);
-				if (statusFilter === 'open') return status === 'nuova' || status === 'presa_in_carico';
+				if (statusFilter === 'open') return status === 'nuova' || status === 'presa in carico';
 				return status === statusFilter;
 			});
 		}
@@ -124,7 +124,7 @@
 			? 'tutti gli stati'
 			: statusFilter === 'open'
 				? 'solo pratiche aperte'
-				: statusFilter === 'presa_in_carico'
+				: statusFilter === 'presa in carico'
 					? 'solo pratiche in carico'
 					: 'solo pratiche completate'
 	);
