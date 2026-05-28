@@ -13,14 +13,14 @@
     import { chats } from '$lib/data/chats';
 
 	const statusLabels: Record<ReportStatus, string> = {
-		nuova: 'Nuova',
-		presa_in_carico: 'In carico',
-		chiusa: 'chiusa',
+		'nuova': 'Nuova',
+		'presa in carico': 'Presa in carico',
+		'chiusa': 'Chiusa',
 	};
 
 	const statusColors: Record<ReportStatus, string> = {
 		nuova: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-		presa_in_carico: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+		'presa in carico': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
 		chiusa: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
 	};
 
