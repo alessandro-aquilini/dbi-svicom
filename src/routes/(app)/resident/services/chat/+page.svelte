@@ -211,13 +211,13 @@
             <footer class="p-4 bg-white border-t border-slate-100 sticky bottom-0 z-20">
                 <div class="w-full flex flex-col gap-3 relative">
                     <!-- Active Booking Info Popup -->
-                    {#if booking && isBookingActive(booking) && accordionOpen}
+                    {#if booking && accordionOpen}
                         <div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-2xl shadow-xl ring-1 ring-black/5 p-4 animate-in slide-in-from-bottom-2 duration-200">
                             <BookingChatInfo
                                 bookingInfo={bookingInfo}
                                 serviceName={bookingInfo?.serviceName ?? ''}
                                 place={bookingInfo?.place ?? ''}
-                                onCancel={() => { handleCancelBooking(); accordionOpen = false; }}
+                                onCancel={isBookingActive(booking) ? () => { handleCancelBooking(); accordionOpen = false; } : undefined}
                             />
                         </div>
                     {/if}
@@ -252,7 +252,7 @@
                                 <HugeiconsIcon icon={Add01Icon} size={24} />
                             </button>
 
-                            {#if booking && isBookingActive(booking)}
+                            {#if booking}
                                 <button 
                                     onclick={() => { accordionOpen = !accordionOpen; showPlusMenu = false; }}
                                     class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0 {accordionOpen ? 'rotate-180 text-[#5D7D94]' : ''}"

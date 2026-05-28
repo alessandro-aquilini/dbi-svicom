@@ -755,7 +755,7 @@
 					<!-- Active Booking Info Popup -->
 					{#if accordionOpen}
 						<div class="absolute bottom-full left-0 mb-4 w-full md:max-w-md bg-white rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 p-6 animate-in slide-in-from-bottom-2 duration-200">
-							{#if activeTab === 'resident' && activeBooking && isBookingActive(activeBooking)}
+							{#if activeTab === 'resident' && activeBooking}
 								<BookingChatInfo
 									bookingInfo={bookingInfo}
 									serviceName={bookingInfo?.serviceName ?? ''}
@@ -827,7 +827,7 @@
 								<HugeiconsIcon icon={Add01Icon} size={24} />
 							</button>
 
-							{#if (activeTab === "resident" && activeBooking && isBookingActive(activeBooking)) || (activeTab === "admin" && activeTicket && getCurrentStatus(activeTicket) !== "closed")}
+							{#if (activeTab === 'resident' && activeBooking) || (activeTab === 'admin' && activeTicket)}
 								<button
 									onclick={() => {
 										accordionOpen = !accordionOpen;

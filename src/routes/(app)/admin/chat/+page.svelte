@@ -537,7 +537,7 @@
 						{/if}
 					</div>
 
-					{#if (activeTab === 'supplier' && activeTicket && getCurrentStatus(activeTicket) !== 'closed') || (activeTab === 'resident' && activeReport && inferReportStatus(activeReport) !== 'completata')}
+					{#if (activeTab === 'supplier' && activeTicket) || (activeTab === 'resident' && activeReport)}
 						<button 
 							onclick={() => { actionOpen = !actionOpen; showPlusMenu = false; }}
 							class="w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 {actionOpen ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'} {actionOpen ? 'rotate-180' : ''}"
