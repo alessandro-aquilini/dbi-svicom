@@ -1,19 +1,21 @@
-	<script lang="ts">
+<script lang="ts">
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { ArrowRight01Icon, CalendarCheckOut01Icon } from '@hugeicons/core-free-icons';
 	import {
-		ResidentPaymentCard,
 		formatMoney,
 		formatPaymentDate,
 		getPaymentFootnote,
+		getResidentFeeBreakdown,
 		getResidentLatestReceipt,
 		getResidentPaymentReminder,
 		getResidentPaymentStatus,
-		getResidentPaymentsContext
+		getResidentPaymentsContext,
+		ResidentPaymentCard
 	} from '$lib/components/view-resident/payments';
 	import {
 		ResidentEmptyCard,
 		ResidentPieChart
 	} from '$lib/components/view-resident/resident';
-	import { InfoTip } from '$lib/components/shared';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,
@@ -23,82 +25,41 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 	import { getCurrentUser } from '$lib/auth';
-	import { getUserById } from '$lib/data/users';
 
 	const currentUser = getCurrentUser();
 	const context = getResidentPaymentsContext(currentUser?.id);
 	const paymentReminder = getResidentPaymentReminder(context);
-	const latestReceipt = getResidentLatestReceipt(currentUser?.id);
+	const latestReceipt = currentUser ? getResidentLatestReceipt(currentUser.id) : undefined;
 
-	const totalPaidByResident = context.personalPayments
-		.filter((payment) => Boolean(payment.paidAt))
-		.reduce((total, payment) => total + payment.amount, 0);
+	const personalPaidPayments = context.personalPayments.filter((payment) => Boolean(payment.paidAt));
+	const totalPaidByResident = personalPaidPayments.reduce(
+		(total, payment) => total + payment.amount,
+		0
+	);
 	const outstandingResidentTotal = context.personalPayments
 		.filter((payment) => !payment.paidAt)
 		.reduce((total, payment) => total + payment.amount, 0);
-	const lastVisibleMovement = context.allVisiblePayments[0];
-	let paymentChartMode = $state<'movements' | 'amount'>('movements');
 
-	const summaryCopy =
-		context.property && context.resident
-			? `${context.property.name}, ${context.resident.apartment}. Qui trovi le tue quote, i movimenti del condominio e i riferimenti utili.`
-			: 'Profilo residente non disponibile.';
-	const summaryStats = [
-		{ label: 'Quote personali', value: context.personalPayments.length },
-		{ label: 'Totale registrato', value: formatMoney(totalPaidByResident, 'EUR') },
-		{ label: 'Da saldare', value: formatMoney(outstandingResidentTotal, 'EUR') }
-	];
-	const summaryChips = context.property
-		? [
-				context.property.address.street,
-				context.admin ? `Admin: ${context.admin.name}` : 'Admin non disponibile',
-				lastVisibleMovement
-					? `Ultimo movimento ${formatPaymentDate(lastVisibleMovement.paidAt ?? lastVisibleMovement.createdAt)}`
-					: 'Nessun movimento visibile'
-			]
-		: [];
-	const paymentChartItems = $derived([
-		{
-			key: 'personal',
-			label: 'Quote personali',
-			value:
-				paymentChartMode === 'movements'
-					? context.personalPayments.length
-					: context.personalPayments.reduce((total, payment) => total + payment.amount, 0),
-			valueLabel:
-				paymentChartMode === 'movements'
-					? `${context.personalPayments.length} movimenti`
-					: formatMoney(
-							context.personalPayments.reduce((total, payment) => total + payment.amount, 0),
-							'EUR'
-						),
-			color: 'var(--chart-1)',
-			copy: 'Quota dei movimenti direttamente collegati al tuo profilo residente.'
-		},
-		{
-			key: 'property',
-			label: 'Movimenti stabile',
-			value:
-				paymentChartMode === 'movements'
-					? context.propertyOperationalPayments.length
-					: context.propertyOperationalPayments.reduce((total, payment) => total + payment.amount, 0),
-			valueLabel:
-				paymentChartMode === 'movements'
-					? `${context.propertyOperationalPayments.length} movimenti`
-					: formatMoney(
-							context.propertyOperationalPayments.reduce((total, payment) => total + payment.amount, 0),
-							'EUR'
-						),
-			color: 'var(--chart-2)',
-			copy: 'Movimenti operativi visibili sul condominio per dare contesto alle spese.'
-		}
-	]);
+	const currency = paymentReminder?.currency ?? context.personalPayments[0]?.currency ?? 'EUR';
+	const monthlyFeeAmount =
+		paymentReminder?.amount ??
+		context.personalPayments[0]?.amount ??
+		(personalPaidPayments.length > 0 ? totalPaidByResident / personalPaidPayments.length : 0);
+	const monthlyFeeLabel = formatMoney(monthlyFeeAmount, currency);
+	const breakdown = getResidentFeeBreakdown(monthlyFeeAmount);
+	const breakdownChartItems = breakdown.map((item) => ({
+		key: item.key,
+		label: item.label,
+		value: item.amount,
+		color: item.color,
+		copy: item.copy,
+		valueLabel: `${formatMoney(item.amount, currency)} · ${item.percentLabel}`
+	}));
 
-	function getDocumentButtonLabel(documentStatus: string) {
-		if (documentStatus === 'draft') return 'Modifica';
-		if (documentStatus === 'published') return 'Visualizza';
-		return 'Apri';
-	}
+	const reminderStatus = paymentReminder ? 'In scadenza' : 'Nessuna rata in scadenza';
+
+	let breakdownSelectedKey = $state<string | null>(null);
+	const visibleRecentProperty = context.propertyOperationalPayments.slice(0, 3);
 </script>
 
 <svelte:head>
@@ -106,284 +67,228 @@
 </svelte:head>
 
 <div class="resident-module-page">
-	<div class="resident-module-stack">
-		<section class="report-page-header">
-			<div class="report-page-header__main">
-				<p class="report-page-header__eyebrow">Area economica</p>
-				<div class="resident-heading-with-tip">
-					<h1 class="report-page-header__title">Pagamenti</h1>
-					<InfoTip text="Qui trovi le tue quote, i movimenti visibili sul condominio e i riferimenti utili per gestire pagamenti e verifiche." />
+	<div class="payments-stack">
+		<header class="payments-header">
+			<p class="payments-header__eyebrow">Area economica</p>
+			<h1 class="payments-header__title">I tuoi pagamenti</h1>
+			<p class="payments-header__copy">
+				La tua rata, le ricevute e i movimenti del condominio in un solo posto.
+			</p>
+		</header>
+
+		{#if !context.resident || !context.property}
+			<ResidentEmptyCard
+				title="Profilo residente non disponibile"
+				copy="Collega un profilo residente al tuo account per vedere quote e movimenti."
+			/>
+		{:else}
+			<!-- 1. Hero rata corrente -->
+			<section class="payments-hero">
+				<div class="payments-hero__top">
+					<p class="payments-hero__eyebrow">Prossima rata</p>
+					<span class="payments-hero__status">{reminderStatus}</span>
 				</div>
-				<p class="report-page-header__copy">{summaryCopy}</p>
-			</div>
-
-			<div class="report-page-header__stats" aria-label="Panoramica pagamenti">
-				{#each summaryStats as stat}
-					<div class="report-page-header__stat">
-						<p class="report-page-header__stat-label">{stat.label}</p>
-						<p class="report-page-header__stat-value">{stat.value}</p>
-					</div>
-				{/each}
-			</div>
-
-			{#if summaryChips.length > 0}
-				<div class="report-page-header__chips">
-					{#each summaryChips as chip}
-						<span class="report-page-header__chip">{chip}</span>
-					{/each}
-				</div>
-			{/if}
-		</section>
-
-		<section class="resident-module-section">
-			<div class="resident-module-section__header">
-				<div class="resident-heading-with-tip">
-					<h2 class="resident-module-section__title">Panoramica movimenti</h2>
-					<InfoTip text="Questa vista confronta le tue quote personali con i movimenti operativi che risultano visibili sul tuo stabile." />
-				</div>
-				<p class="resident-module-section__copy">
-					Leggi la situazione per numero di movimenti oppure per importo economico complessivo.
-				</p>
-			</div>
-
-			<div class="resident-chart-toggle">
-				<Button
-					type="button"
-					size="sm"
-					variant={paymentChartMode === 'movements' ? 'default' : 'outline'}
-					class="resident-chart-toggle__button"
-					onclick={() => (paymentChartMode = 'movements')}
-				>
-					Numero movimenti
-				</Button>
-				<Button
-					type="button"
-					size="sm"
-					variant={paymentChartMode === 'amount' ? 'default' : 'outline'}
-					class="resident-chart-toggle__button"
-					onclick={() => (paymentChartMode = 'amount')}
-				>
-					Valore economico
-				</Button>
-			</div>
-
-			<div class="payment-visibility-panel">
-				<div class="payment-visibility-panel__chart">
-					<ResidentPieChart
-						items={paymentChartItems}
-						totalLabel={paymentChartMode === 'movements' ? 'Movimenti visibili' : 'Importo visibile'}
-						totalCopy={
-							paymentChartMode === 'movements'
-								? 'Quanti movimenti compaiono oggi nel profilo residente.'
-								: 'Quanto valgono complessivamente i movimenti oggi visibili.'
-						}
-						formatValue={(value) =>
-							paymentChartMode === 'movements' ? `${value} movimenti` : formatMoney(value, 'EUR')}
-					/>
-				</div>
-
-				<div class="payment-visibility-panel__legend">
-					{#each paymentChartItems as item}
-						<div class="payment-visibility-panel__item">
-							<div class="payment-visibility-panel__item-main">
-								<div class="payment-visibility-panel__item-topline">
-									<span
-										class="payment-visibility-panel__item-dot"
-										style={`background:${item.color};`}
-										aria-hidden="true"
-									></span>
-									<p class="payment-visibility-panel__item-title">{item.label}</p>
-								</div>
-								<p class="payment-visibility-panel__item-copy">{item.copy}</p>
-							</div>
-							<p class="payment-visibility-panel__item-value">{item.valueLabel}</p>
-						</div>
-					{/each}
-				</div>
-			</div>
-		</section>
-
-		{#if paymentReminder}
-			<Card class="payment-reminder-card">
-				<CardHeader class="payment-reminder-card__header">
-					<div>
-						<div class="resident-heading-with-tip resident-heading-with-tip--compact">
-							<p class="payment-reminder-card__eyebrow">Prossima azione</p>
-							<InfoTip text="Questo promemoria porta al flusso rapido di pagamento e alla ricevuta piu recente registrata sul browser." />
-						</div>
-						<CardTitle class="payment-reminder-card__title">{paymentReminder.title}</CardTitle>
-						<CardDescription class="payment-reminder-card__copy">
-							Scadenza {formatPaymentDate(paymentReminder.dueDate)} - {formatMoney(paymentReminder.amount, paymentReminder.currency)}
-						</CardDescription>
-					</div>
-				</CardHeader>
-				<CardContent class="payment-reminder-card__content">
-					<div class="payment-reminder-card__actions">
-						<Button href="/resident/payments/checkout" size="lg" class="payment-reminder-card__button">
+				<p class="payments-hero__amount">{monthlyFeeLabel}</p>
+				{#if paymentReminder}
+					<p class="payments-hero__period">
+						{paymentReminder.title} · scadenza {formatPaymentDate(paymentReminder.dueDate)}
+					</p>
+				{:else}
+					<p class="payments-hero__period">
+						Tutte le rate disponibili sono state registrate.
+					</p>
+				{/if}
+				<div class="payments-hero__actions">
+					{#if paymentReminder}
+						<Button href="/resident/payments/checkout" size="lg" class="payments-hero__cta">
 							Paga ora
 						</Button>
-						{#if latestReceipt}
-							<Button
-								href={`/resident/payments/receipt?reference=${latestReceipt.reference}`}
-								variant="outline"
-								size="lg"
-								class="payment-reminder-card__button"
-							>
-								Ultima ricevuta
-							</Button>
-						{/if}
-					</div>
-				</CardContent>
-			</Card>
-		{/if}
+					{/if}
+					{#if latestReceipt}
+						<Button
+							href={`/resident/payments/receipt?reference=${latestReceipt.reference}`}
+							variant="outline"
+							size="lg"
+							class="payments-hero__cta-secondary"
+						>
+							Ultima ricevuta
+						</Button>
+					{/if}
+				</div>
+			</section>
 
-		<section class="resident-module-section">
-			<div class="resident-module-section__header">
-				<h1 class="resident-module-section__title">Le tue quote</h1>
-				<p class="resident-module-section__copy">Movimenti personali collegati al tuo profilo residente.</p>
-			</div>
-
-			<div class="payment-cards-stack">
-				{#each context.personalPayments as payment}
-					{@const footnote = getPaymentFootnote(payment)}
-					<ResidentPaymentCard
-						eyebrow="Quota residente"
-						title={payment.description}
-						description={`Operazione prevista per ${formatPaymentDate(payment.paidAt ?? payment.createdAt)}.`}
-						amountLabel={formatMoney(payment.amount, payment.currency)}
-						status={getResidentPaymentStatus(payment)}
-						facts={[
-							{ label: 'Da', value: context.currentUser?.name ?? 'Residente' },
-							{ label: 'Verso', value: context.admin?.name ?? 'Svicom' }
-						]}
-						chips={[payment.id]}
-						footerLabel={footnote.label}
-						footerValue={footnote.value}
-						href={`/resident/payments/${payment.id}`}
-					/>
-				{/each}
-			</div>
-
-			{#if context.personalPayments.length === 0}
-				<ResidentEmptyCard
-					title="Nessun pagamento registrato"
-					copy="Quando saranno disponibili nuovi movimenti per il tuo profilo, li troverai qui."
-				/>
-			{/if}
-		</section>
-
-		{#if context.propertyOperationalPayments.length > 0}
-			<section class="resident-module-section">
-				<div class="resident-module-section__header">
-					<div class="resident-heading-with-tip">
-						<h2 class="resident-module-section__title">Movimenti del condominio</h2>
-						<InfoTip text="Mostra i movimenti operativi visibili sullo stabile, utili per contestualizzare quote, lavori e ripartizioni." />
-					</div>
-					<p class="resident-module-section__copy">
-						Spese operative visibili sul tuo stabile per dare contesto a quote e ripartizioni.
+			<!-- 2. Breakdown rata - elemento centrale -->
+			<section class="payments-section">
+				<div class="payments-section__heading">
+					<h2 class="payments-section__title">Come è composta la tua rata</h2>
+					<p class="payments-section__copy">
+						Ecco dove vanno {monthlyFeeLabel} ogni mese. Tocca una voce per scoprire di più.
 					</p>
 				</div>
 
-				<div class="payment-cards-stack">
-					{#each context.propertyOperationalPayments as payment}
-						{@const footnote = getPaymentFootnote(payment)}
-						<ResidentPaymentCard
-							eyebrow="Movimento stabile"
-							title={payment.description}
-							description="Movimento operativo registrato sul condominio."
-							amountLabel={formatMoney(payment.amount, payment.currency)}
-							status={getResidentPaymentStatus(payment)}
-							facts={[
-								{ label: 'Da', value: getUserById(payment.fromId)?.name ?? payment.fromId },
-								{ label: 'Verso', value: getUserById(payment.toId)?.name ?? payment.toId }
-							]}
-							chips={[payment.id]}
-							footerLabel={footnote.label}
-							footerValue={footnote.value}
-							href={`/resident/payments/${payment.id}`}
+				<Card class="payments-breakdown-card">
+					<CardContent class="payments-breakdown-card__content">
+						<ResidentPieChart
+							items={breakdownChartItems}
+							bind:selectedKey={breakdownSelectedKey}
+							totalLabel="Rata mensile"
+							totalCopy="Costo medio mensile suddiviso fra le voci principali di spesa del condominio."
+							formatValue={(value) => formatMoney(value, currency)}
+							showLegend={false}
 						/>
+					</CardContent>
+				</Card>
+
+				<ul class="payments-breakdown-grid" aria-label="Voci di spesa">
+					{#each breakdown as item}
+						<li>
+							<button
+								type="button"
+								class="payments-breakdown-cell"
+								class:payments-breakdown-cell--active={breakdownSelectedKey === item.key}
+								aria-pressed={breakdownSelectedKey === item.key}
+								onclick={() =>
+									(breakdownSelectedKey = breakdownSelectedKey === item.key ? null : item.key)}
+							>
+								<span
+									class="payments-breakdown-cell__icon"
+									style={`background:color-mix(in oklch,${item.color} 18%,transparent);color:${item.color};`}
+									aria-hidden="true"
+								>
+									<HugeiconsIcon icon={item.icon} size={16} strokeWidth={1.85} />
+								</span>
+								<div class="payments-breakdown-cell__main">
+									<p class="payments-breakdown-cell__label">{item.label}</p>
+									<p class="payments-breakdown-cell__meta">{item.percentLabel} della rata</p>
+								</div>
+								<p class="payments-breakdown-cell__amount">{formatMoney(item.amount, currency)}</p>
+							</button>
+						</li>
 					{/each}
+				</ul>
+			</section>
+
+			<!-- 3. Stats compatte -->
+			<section class="payments-stats">
+				<div class="payments-stats__item">
+					<p class="payments-stats__label">Versato a oggi</p>
+					<p class="payments-stats__value">{formatMoney(totalPaidByResident, currency)}</p>
+					<p class="payments-stats__meta">{personalPaidPayments.length} rate registrate</p>
+				</div>
+				<div class="payments-stats__divider" aria-hidden="true"></div>
+				<div class="payments-stats__item">
+					<p class="payments-stats__label">Da saldare</p>
+					<p class="payments-stats__value">{formatMoney(outstandingResidentTotal, currency)}</p>
+					<p class="payments-stats__meta">
+						{context.personalPayments.length - personalPaidPayments.length} in attesa
+					</p>
 				</div>
 			</section>
+
+			<!-- 4. Storico personale -->
+			<section class="payments-section">
+				<div class="payments-section__heading">
+					<h2 class="payments-section__title">Le tue ricevute</h2>
+					<p class="payments-section__copy">Le quote collegate al tuo profilo residente.</p>
+				</div>
+
+				{#if context.personalPayments.length > 0}
+					<div class="payment-cards-stack">
+						{#each context.personalPayments as payment}
+							{@const footnote = getPaymentFootnote(payment)}
+							<ResidentPaymentCard
+								eyebrow="Quota residente"
+								title={payment.description}
+								description={`Operazione prevista per ${formatPaymentDate(payment.paidAt ?? payment.createdAt)}.`}
+								amountLabel={formatMoney(payment.amount, payment.currency)}
+								status={getResidentPaymentStatus(payment)}
+								facts={[
+									{ label: 'Da', value: context.currentUser?.name ?? 'Residente' },
+									{ label: 'Verso', value: context.admin?.name ?? 'Svicom' }
+								]}
+								chips={[payment.id]}
+								footerLabel={footnote.label}
+								footerValue={footnote.value}
+								href={`/resident/payments/${payment.id}`}
+							/>
+						{/each}
+					</div>
+				{:else}
+					<ResidentEmptyCard
+						title="Nessuna ricevuta"
+						copy="Quando saranno disponibili nuovi movimenti, li troverai qui."
+					/>
+				{/if}
+			</section>
+
+			<!-- 5. Movimenti del condominio -->
+			{#if visibleRecentProperty.length > 0}
+				<section class="payments-section">
+					<div class="payments-section__heading payments-section__heading--row">
+						<div>
+							<h2 class="payments-section__title">Movimenti del condominio</h2>
+							<p class="payments-section__copy">
+								Spese operative recenti per dare contesto alle tue quote.
+							</p>
+						</div>
+						{#if context.propertyOperationalPayments.length > visibleRecentProperty.length}
+							<span class="payments-section__link" aria-hidden="true">
+								{context.propertyOperationalPayments.length} totali
+								<HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={1.85} />
+							</span>
+						{/if}
+					</div>
+
+					<ul class="payments-property-list">
+						{#each visibleRecentProperty as payment}
+							{@const footnote = getPaymentFootnote(payment)}
+							<li>
+								<a href={`/resident/payments/${payment.id}`} class="payments-property-list__item">
+									<span class="payments-property-list__icon" aria-hidden="true">
+										<HugeiconsIcon icon={CalendarCheckOut01Icon} size={16} strokeWidth={1.85} />
+									</span>
+									<div class="payments-property-list__main">
+										<p class="payments-property-list__title">{payment.description}</p>
+										<p class="payments-property-list__meta">{footnote.label} {footnote.value}</p>
+									</div>
+									<p class="payments-property-list__amount">
+										{formatMoney(payment.amount, payment.currency)}
+									</p>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</section>
+			{/if}
+
+			<!-- 6. Contatti amministratore -->
+			<Card class="payments-admin-card">
+				<CardHeader>
+					<CardTitle class="payments-admin-card__title">Amministrazione</CardTitle>
+					<CardDescription class="payments-admin-card__copy">
+						Il referente per quote, ricevute e ripartizioni del tuo stabile.
+					</CardDescription>
+				</CardHeader>
+				<CardContent class="payments-admin-card__content">
+					<dl class="payments-admin-card__facts">
+						<div>
+							<dt>Amministratore</dt>
+							<dd>{context.admin?.name ?? 'Operatore Svicom'}</dd>
+						</div>
+						<div>
+							<dt>Email</dt>
+							<dd>{context.admin?.email ?? 'Non disponibile'}</dd>
+						</div>
+						<div>
+							<dt>Telefono</dt>
+							<dd>{context.admin?.phone ?? 'Non disponibile'}</dd>
+						</div>
+					</dl>
+					<Button href="/resident/chat" size="lg" class="payments-admin-card__button">
+						Contatta amministrazione
+					</Button>
+				</CardContent>
+			</Card>
 		{/if}
-
-		<div class="payment-support-grid">
-			<Card class="payment-support-card">
-				<CardHeader class="payment-support-card__header">
-					<CardTitle class="payment-support-card__title">Documenti contabili</CardTitle>
-					<CardDescription class="payment-support-card__copy">
-						Riferimenti utili per verificare quote, regolamenti e ripartizioni.
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent class="payment-support-card__content">
-					{#if context.accountingDocuments.length > 0}
-						<div class="payment-support-list">
-							{#each context.accountingDocuments as document}
-								<div class="payment-support-list__item">
-									<div class="payment-support-list__main">
-										<p class="payment-support-list__eyebrow">{document.status}</p>
-										<p class="payment-support-list__title">{document.title}</p>
-										<p class="payment-support-list__copy">{document.summary}</p>
-									</div>
-
-									<div class="payment-support-list__meta">
-										<p class="payment-support-list__meta-copy">
-											Aggiornato {formatPaymentDate(document.updatedAt)}
-										</p>
-										<Button
-											href={`/resident/documents/${document.id}`}
-											variant="outline"
-											size="lg"
-											class="payment-support-list__button"
-										>
-											{getDocumentButtonLabel(document.status)}
-										</Button>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{:else}
-						<p class="payment-support-card__empty">Nessun documento contabile disponibile.</p>
-					{/if}
-				</CardContent>
-			</Card>
-
-			<Card class="payment-support-card">
-				<CardHeader class="payment-support-card__header">
-					<CardTitle class="payment-support-card__title">Supporto amministrativo</CardTitle>
-					<CardDescription class="payment-support-card__copy">
-						Il referente collegato al tuo stabile per richieste su quote e registrazioni.
-					</CardDescription>
-				</CardHeader>
-
-				<CardContent class="payment-support-card__content">
-					<div class="payment-support-card__facts">
-						<div class="payment-support-card__fact">
-							<p class="payment-support-card__fact-label">Amministratore</p>
-							<p class="payment-support-card__fact-value">{context.admin?.name ?? 'Operatore Svicom'}</p>
-						</div>
-						<div class="payment-support-card__fact">
-							<p class="payment-support-card__fact-label">Email</p>
-							<p class="payment-support-card__fact-value">{context.admin?.email ?? 'Non disponibile'}</p>
-						</div>
-						<div class="payment-support-card__fact">
-							<p class="payment-support-card__fact-label">Telefono</p>
-							<p class="payment-support-card__fact-value">{context.admin?.phone ?? 'Non disponibile'}</p>
-						</div>
-						<div class="payment-support-card__fact">
-							<p class="payment-support-card__fact-label">Condominio</p>
-							<p class="payment-support-card__fact-value">{context.property?.name ?? 'Non disponibile'}</p>
-						</div>
-					</div>
-
-					<div class="payment-support-card__actions">
-						<Button href="/resident/chat" size="lg" class="payment-support-card__button">
-							Contatta amministrazione
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-		</div>
 	</div>
 </div>
