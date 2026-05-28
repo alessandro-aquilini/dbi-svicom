@@ -630,6 +630,20 @@
 	.resident-profile-menu__logout {
 		@apply flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10;
 	}
+	.resident-pro-badge {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.18em] shadow-none;
+		border-color: color-mix(in oklch, var(--primary) 22%, var(--border));
+		background: color-mix(in oklch, var(--primary) 8%, var(--background));
+		color: var(--primary);
+	}
+	.resident-pro-badge--inverse {
+		border-color: color-mix(in oklch, var(--primary-foreground) 22%, transparent);
+		background: color-mix(in oklch, var(--primary-foreground) 14%, transparent);
+		color: var(--primary-foreground);
+	}
+	.resident-pro-badge svg {
+		flex-shrink: 0;
+	}
 	.resident-mobile-content {
 		@apply flex-1 overflow-y-auto;
 	}
@@ -969,13 +983,11 @@
 		@apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
 	}
 	.resident-chat-context-card__title,
-		.resident-chat-context-card__title,
-		.resident-profile-card__title {
+	.resident-profile-card__title {
 		@apply text-base font-semibold tracking-tight text-foreground;
 	}
 	.resident-chat-context-card__copy,
-		.resident-chat-context-card__copy,
-		.resident-profile-card__copy {
+	.resident-profile-card__copy {
 		@apply text-sm leading-6 text-muted-foreground;
 	}
 	.resident-chat-layout {
@@ -1411,6 +1423,9 @@
 	.document-assistant-launcher__main {
 		@apply space-y-2;
 	}
+	.document-assistant-launcher__topline {
+		@apply flex flex-wrap items-center gap-2;
+	}
 	.document-assistant-launcher__eyebrow {
 		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
 	}
@@ -1423,6 +1438,9 @@
 	.document-assistant-launcher__button {
 		@apply min-h-11 w-full rounded-full px-4;
 	}
+	.document-assistant-launcher__button-badge {
+		@apply ml-1 shrink-0;
+	}
 	.document-assistant-dialog {
 		width: min(calc(100vw - 1rem), 64rem);
 		max-width: min(calc(100vw - 1rem), 64rem);
@@ -1432,6 +1450,9 @@
 	}
 	.document-assistant-dialog__header {
 		@apply pr-8;
+	}
+	.document-assistant-dialog__title-row {
+		@apply flex flex-wrap items-center gap-2;
 	}
 	.document-assistant-dialog__title {
 		@apply text-lg font-semibold tracking-tight text-foreground;
@@ -2229,8 +2250,14 @@
 	.report-page-header__title {
 		@apply text-[1.7rem] font-semibold tracking-tight text-foreground;
 	}
+	.report-page-header__title-row {
+		@apply flex flex-wrap items-center gap-2;
+	}
 	.report-page-header__copy {
 		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-page-header--compact {
+		@apply space-y-2;
 	}
 	.report-page-header__stats {
 		@apply grid grid-cols-3 gap-3;
@@ -2294,6 +2321,51 @@
 	}
 	.report-list-shell__empty {
 		@apply flex flex-col items-center justify-center gap-2 py-10 text-center;
+	}
+	.report-entry-card {
+		@apply rounded-[1.5rem] border-border shadow-sm;
+	}
+	.report-entry-card__header {
+		@apply gap-2 pb-3;
+	}
+	.report-entry-card__heading {
+		@apply space-y-1;
+	}
+	.report-entry-card__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.report-entry-card__title {
+		@apply text-xl font-semibold tracking-tight text-foreground;
+	}
+	.report-entry-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.report-entry-card__content {
+		@apply grid gap-4 pt-0;
+	}
+	.report-entry-card__facts {
+		@apply grid gap-3;
+	}
+	.report-entry-card__fact {
+		@apply flex items-start gap-3 rounded-2xl border border-border/80 bg-background/70 px-4 py-3;
+	}
+	.report-entry-card__fact-icon {
+		@apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-primary;
+	}
+	.report-entry-card__fact-label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.report-entry-card__fact-value {
+		@apply mt-1 text-sm font-medium text-foreground;
+	}
+	.report-entry-card__actions {
+		@apply grid gap-3;
+	}
+	.report-entry-card__button {
+		@apply inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4;
+	}
+	.report-entry-card__hint {
+		@apply text-sm leading-6 text-muted-foreground;
 	}
 	.report-list-shell__empty-title {
 		@apply text-base font-semibold text-foreground;
@@ -3354,6 +3426,9 @@
 	/* Documents additions */
 	.document-card-shell__actions {
 		@apply flex w-full flex-col gap-2;
+	}
+	.document-card-shell__pro-badge {
+		@apply ml-1 shrink-0;
 	}
 	.document-assistant-overview {
 		@apply rounded-[1.25rem] border border-border/80 bg-secondary/40 p-4;

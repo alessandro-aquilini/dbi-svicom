@@ -6,6 +6,7 @@
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import { getCurrentUser } from '$lib/auth';
 	import { createBooking, type Booking } from '$lib/data/ticket/booking';
+	import { ResidentProBadge } from '$lib/components/view-resident/resident';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { 
 		StarIcon, 
@@ -116,8 +117,11 @@
 			<!-- Hero Info -->
 			<div class="mt-4 space-y-6">
 				<div class="space-y-2">
-					<div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary">
-						{service.category.replace('-', ' ')}
+					<div class="flex flex-wrap items-center gap-2">
+						<div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary">
+							{service.category.replace('-', ' ')}
+						</div>
+						<ResidentProBadge />
 					</div>
 					<h1 class="text-3xl font-black tracking-tight text-foreground leading-tight">{service.name}</h1>
 				</div>

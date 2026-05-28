@@ -9,6 +9,7 @@
 		CardHeader,
 		CardTitle
 	} from '$lib/components/ui/card';
+	import { ResidentProBadge } from '$lib/components/view-resident/resident';
 	import type { PropertyDocument } from '$lib/data/documents';
 	import { documentCategoryLabels } from './presentation';
 	import DocumentStatusBadge from './DocumentStatusBadge.svelte';
@@ -68,7 +69,8 @@
 		<div class="document-card-shell__actions">
 			{#if assistantHref}
 				<Button href={assistantHref} variant="outline" size="lg" class="document-card-shell__button">
-					Apri assistente
+					<span>Apri assistente</span>
+					<ResidentProBadge class="document-card-shell__pro-badge" />
 				</Button>
 			{/if}
 			{#if href}

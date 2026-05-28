@@ -336,7 +336,7 @@
 
 <div class="reports-page reports-page--detail">
 	<Button href="/resident/reports" variant="link" class="report-back-button">
-		&lt; Tutte le segnalazioni
+		&lt; Torna a Segnala
 	</Button>
 
 	{#if !currentUser || !resident || !property}
@@ -672,7 +672,7 @@
 								class="report-form__cancel"
 								disabled={isSubmitting}
 							>
-								Annulla
+								Torna a Segnala
 							</Button>
 						</div>
 					</form>

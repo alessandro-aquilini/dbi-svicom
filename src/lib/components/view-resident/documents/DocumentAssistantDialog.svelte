@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import { ResidentProBadge } from '$lib/components/view-resident/resident';
 	import {
 		Dialog,
 		DialogContent,
@@ -39,7 +40,8 @@
 		</div>
 
 		<Button size="lg" class="document-assistant-launcher__button" onclick={() => (isOpen = true)}>
-			Interroga documento
+			<span>Apri assistente</span>
+			<ResidentProBadge class="document-assistant-launcher__button-badge" />
 		</Button>
 	</CardContent>
 </Card>
@@ -47,7 +49,10 @@
 <Dialog bind:open={isOpen}>
 	<DialogContent class="document-assistant-dialog">
 		<DialogHeader class="document-assistant-dialog__header">
-			<DialogTitle class="document-assistant-dialog__title">Assistente documento</DialogTitle>
+			<div class="document-assistant-dialog__title-row">
+				<DialogTitle class="document-assistant-dialog__title">Assistente documento</DialogTitle>
+				<ResidentProBadge />
+			</div>
 			<DialogDescription class="document-assistant-dialog__copy">
 				Consulta i punti chiave del documento, la cronologia delle risposte e le fonti richiamate durante la conversazione.
 			</DialogDescription>

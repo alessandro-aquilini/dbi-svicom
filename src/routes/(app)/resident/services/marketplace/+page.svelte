@@ -2,6 +2,7 @@
 	import { services, type ServiceCategory } from '$lib/data/services';
 	import { propertySelection } from '$lib/state/property-selection.svelte';
 	import ServiceCard from '$lib/components/view-resident/marketplace/ServiceCard.svelte';
+	import { ResidentProBadge } from '$lib/components/view-resident/resident';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Search01Icon, FilterIcon } from '@hugeicons/core-free-icons';
 
@@ -50,7 +51,10 @@
 		<a href="/resident/services" class="text-xs font-bold uppercase tracking-widest text-primary/60 hover:text-primary transition-colors flex items-center gap-2 mb-4">
 			<span class="rotate-180 inline-block">→</span> Le mie prenotazioni
 		</a>
-		<h1 class="text-4xl font-black tracking-tight text-foreground">Marketplace</h1>
+		<div class="flex flex-wrap items-center gap-2">
+			<h1 class="text-4xl font-black tracking-tight text-foreground">Marketplace</h1>
+			<ResidentProBadge />
+		</div>
 		<p class="mt-2 text-[15px] leading-relaxed text-muted-foreground/80">Scopri e prenota i servizi esclusivi per il tuo condominio.</p>
 	</div>
 
