@@ -16,17 +16,22 @@
 		selectedKey = $bindable<string | null>(null),
 		totalLabel = 'Totale',
 		totalCopy = 'Distribuzione aggiornata sulla base dei dati visibili in questa sezione.',
-		formatValue = (value: number) => String(value)
+		formatValue = (value: number) => String(value),
+		padAngle,
+		showLegend = true
 	}: {
 		items?: ResidentPieChartItem[];
 		selectedKey?: string | null;
 		totalLabel?: string;
 		totalCopy?: string;
 		formatValue?: (value: number) => string;
+		padAngle?: number;
+		showLegend?: boolean;
 	} = $props();
 	let PieChartComponent = $state<any>(null);
 
 	const total = $derived(items.reduce((sum, item) => sum + item.value, 0));
+	const resolvedPadAngle = $derived(padAngle ?? (items.length > 4 ? 0.02 : 0.05));
 	const resolvedSelectedKey = $derived(selectedKey ?? items[0]?.key ?? null);
 	const activeItem = $derived(items.find((item) => item.key === resolvedSelectedKey) ?? items[0]);
 	const activeValueLabel = $derived(
@@ -56,8 +61,8 @@
 					c="color"
 					height={220}
 					innerRadius={0.66}
-					cornerRadius={10}
-					padAngle={1.5}
+					cornerRadius={6}
+					padAngle={resolvedPadAngle}
 					legend={false}
 				/>
 			{:else}
@@ -72,6 +77,7 @@
 		</div>
 	</div>
 
+	{#if showLegend}
 	<div class="resident-pie-chart__legend" aria-label="Filtri grafico">
 		{#each items as item}
 			<Button
@@ -96,4 +102,5 @@
 			</Button>
 		{/each}
 	</div>
+	{/if}
 {/if}

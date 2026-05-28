@@ -760,6 +760,12 @@
 	.resident-bar-chart__visual {
 		@apply overflow-hidden rounded-[1.25rem] border border-border/80 bg-background/80 p-3;
 	}
+	.resident-pie-chart__visual {
+		min-height: 240px;
+	}
+	.resident-pie-chart__visual > div {
+		min-height: 220px;
+	}
 	.resident-chart-skeleton {
 		@apply h-[220px] w-full rounded-[1rem] bg-gradient-to-br from-accent via-background to-accent/60;
 	}
@@ -3468,6 +3474,280 @@
 	}
 	.document-chat-thread__citation-index {
 		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-primary;
+	}
+
+	.resident-report-sheet__file {
+		@apply sr-only;
+	}
+	.resident-report-sheet__overlay {
+		@apply fixed inset-0 z-50 bg-foreground/50 backdrop-blur-[2px] data-open:animate-in data-closed:animate-out data-open:fade-in-0 data-closed:fade-out-0;
+	}
+	.resident-report-sheet__content {
+		@apply fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-[28rem] flex-col gap-4 rounded-t-[1.75rem] border border-b-0 border-border bg-card px-5 pt-3 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.18)] outline-none data-open:animate-in data-closed:animate-out data-open:slide-in-from-bottom data-closed:slide-out-to-bottom;
+		padding-bottom: calc(1.75rem + env(safe-area-inset-bottom));
+	}
+	.resident-report-sheet__handle {
+		@apply mx-auto h-1 w-10 shrink-0 rounded-full bg-muted-foreground/25;
+	}
+	.resident-report-sheet__head {
+		@apply flex flex-col gap-1;
+	}
+	.resident-report-sheet__title {
+		@apply text-base font-semibold leading-tight text-foreground;
+	}
+	.resident-report-sheet__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.resident-report-sheet__list {
+		@apply flex flex-col gap-2;
+	}
+	.resident-report-sheet__option {
+		@apply relative flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-3 py-3 text-left transition-all hover:border-primary/40 hover:bg-accent hover:shadow-sm active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:border-border disabled:hover:bg-background disabled:hover:shadow-none disabled:active:scale-100;
+	}
+	.resident-report-sheet__option-icon {
+		@apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary;
+	}
+	.resident-report-sheet__option-text {
+		@apply flex min-w-0 flex-1 flex-col;
+	}
+	.resident-report-sheet__option-label {
+		@apply text-sm font-semibold text-foreground;
+	}
+	.resident-report-sheet__option-copy {
+		@apply text-xs leading-5 text-muted-foreground;
+	}
+	.resident-report-sheet__option-chevron {
+		@apply ml-auto text-muted-foreground/60;
+	}
+	.resident-report-sheet__option-soon {
+		@apply ml-auto rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
+	}
+	.resident-report-sheet__cancel {
+		@apply mt-1 inline-flex h-11 w-full items-center justify-center rounded-full border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent;
+	}
+
+	.quick-photo-page {
+		@apply mx-auto flex min-h-full w-full max-w-3xl flex-col gap-4 px-4 pt-4 pb-6;
+	}
+	.quick-photo-page__file {
+		@apply sr-only;
+	}
+	.quick-photo-page__header {
+		@apply flex items-center gap-3;
+	}
+	.quick-photo-page__back {
+		@apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-accent;
+	}
+	.quick-photo-page__heading {
+		@apply flex min-w-0 flex-1 flex-col;
+	}
+	.quick-photo-page__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.quick-photo-page__title {
+		@apply text-lg font-semibold leading-tight text-foreground;
+	}
+	.quick-photo-page__retake {
+		@apply inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+	}
+	.quick-photo-page__preview {
+		@apply relative m-0 flex flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] border border-border bg-gradient-to-b from-muted/60 to-muted shadow-sm;
+	}
+	.quick-photo-page__preview img {
+		@apply h-full max-h-[58vh] w-full object-contain;
+	}
+	.quick-photo-page__caption {
+		@apply absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-2xl bg-card/90 px-3 py-2 text-xs text-foreground shadow-sm backdrop-blur;
+	}
+	.quick-photo-page__caption-icon {
+		@apply inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary;
+	}
+	.quick-photo-page__caption-name {
+		@apply min-w-0 flex-1 truncate font-medium;
+	}
+	.quick-photo-page__caption-meta {
+		@apply shrink-0 text-muted-foreground;
+	}
+	.quick-photo-page__hint {
+		@apply rounded-2xl bg-muted/60 px-4 py-3 text-xs leading-5 text-muted-foreground;
+	}
+	.quick-photo-page__actions {
+		@apply sticky bottom-3 flex flex-col gap-2;
+	}
+	.quick-photo-page__submit {
+		@apply h-14 w-full gap-2 rounded-full text-base font-semibold shadow-lg shadow-primary/20;
+	}
+
+	.quick-photo-confirm {
+		@apply gap-3 text-left;
+	}
+	.quick-photo-confirm__icon {
+		@apply inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary;
+	}
+	.quick-photo-confirm__footer {
+		@apply flex-col gap-2 sm:flex-row sm:justify-end;
+	}
+
+	.payments-stack {
+		@apply flex flex-col gap-6;
+	}
+	.payments-header {
+		@apply flex flex-col gap-1;
+	}
+	.payments-header__eyebrow {
+		@apply text-xs font-semibold uppercase tracking-[0.16em] text-primary;
+	}
+	.payments-header__title {
+		@apply text-2xl font-semibold tracking-tight text-foreground;
+	}
+	.payments-header__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+
+	.payments-hero {
+		@apply flex flex-col gap-3 rounded-[1.5rem] border border-border bg-gradient-to-br from-primary/95 to-primary p-5 text-primary-foreground shadow-lg shadow-primary/15;
+	}
+	.payments-hero__top {
+		@apply flex items-center justify-between gap-2;
+	}
+	.payments-hero__eyebrow {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-primary-foreground/80;
+	}
+	.payments-hero__status {
+		@apply rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-primary-foreground;
+	}
+	.payments-hero__amount {
+		@apply text-4xl font-semibold tracking-tight;
+	}
+	.payments-hero__period {
+		@apply text-sm leading-6 text-primary-foreground/85;
+	}
+	.payments-hero__actions {
+		@apply mt-1 flex flex-col gap-2 sm:flex-row;
+	}
+	.payments-hero__cta {
+		@apply h-12 w-full rounded-full bg-background text-base font-semibold text-primary shadow-md hover:bg-background/95 sm:w-auto sm:px-6;
+	}
+	.payments-hero__cta-secondary {
+		@apply h-12 w-full rounded-full border-primary-foreground/30 bg-transparent text-base font-medium text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:w-auto sm:px-6;
+	}
+
+	.payments-section {
+		@apply flex flex-col gap-3;
+	}
+	.payments-section__heading {
+		@apply flex flex-col gap-1;
+	}
+	.payments-section__heading--row {
+		@apply flex-row items-end justify-between gap-3;
+	}
+	.payments-section__title {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.payments-section__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payments-section__link {
+		@apply inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary transition-colors hover:text-foreground;
+	}
+
+	.payments-breakdown-card {
+		@apply overflow-hidden rounded-[1.5rem] border-border bg-card shadow-sm;
+	}
+	.payments-breakdown-card__content {
+		@apply flex flex-col gap-4 p-4;
+	}
+	.payments-breakdown-grid {
+		@apply m-0 grid gap-2 p-0 sm:grid-cols-2;
+		list-style: none;
+	}
+	.payments-breakdown-cell {
+		@apply flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/30 hover:bg-accent/40;
+	}
+	.payments-breakdown-cell--active {
+		@apply border-primary/50 bg-primary/5 shadow-sm hover:bg-primary/5;
+	}
+	.payments-breakdown-cell__icon {
+		@apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+	}
+	.payments-breakdown-cell__main {
+		@apply min-w-0 flex-1;
+	}
+	.payments-breakdown-cell__label {
+		@apply text-sm font-medium text-foreground;
+	}
+	.payments-breakdown-cell__meta {
+		@apply text-xs text-muted-foreground;
+	}
+	.payments-breakdown-cell__amount {
+		@apply shrink-0 text-sm font-semibold text-foreground;
+	}
+
+	.payments-stats {
+		@apply flex items-stretch gap-2 rounded-[1.5rem] border border-border bg-card p-4 shadow-sm;
+	}
+	.payments-stats__item {
+		@apply flex flex-1 flex-col gap-1;
+	}
+	.payments-stats__divider {
+		@apply w-px self-stretch bg-border;
+	}
+	.payments-stats__label {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payments-stats__value {
+		@apply text-lg font-semibold tracking-tight text-foreground;
+	}
+	.payments-stats__meta {
+		@apply text-xs text-muted-foreground;
+	}
+
+	.payments-property-list {
+		@apply m-0 flex flex-col gap-2 p-0;
+		list-style: none;
+	}
+	.payments-property-list__item {
+		@apply flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition-colors hover:border-primary/30 hover:bg-accent;
+	}
+	.payments-property-list__icon {
+		@apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary;
+	}
+	.payments-property-list__main {
+		@apply min-w-0 flex-1;
+	}
+	.payments-property-list__title {
+		@apply truncate text-sm font-medium text-foreground;
+	}
+	.payments-property-list__meta {
+		@apply text-xs text-muted-foreground;
+	}
+	.payments-property-list__amount {
+		@apply shrink-0 text-sm font-semibold text-foreground;
+	}
+
+	.payments-admin-card {
+		@apply rounded-[1.5rem] border-border bg-card shadow-sm;
+	}
+	.payments-admin-card__title {
+		@apply text-base font-semibold text-foreground;
+	}
+	.payments-admin-card__copy {
+		@apply text-sm leading-6 text-muted-foreground;
+	}
+	.payments-admin-card__content {
+		@apply flex flex-col gap-4;
+	}
+	.payments-admin-card__facts {
+		@apply m-0 grid gap-3 sm:grid-cols-3;
+	}
+	.payments-admin-card__facts dt {
+		@apply text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+	}
+	.payments-admin-card__facts dd {
+		@apply mt-1 text-sm font-medium text-foreground;
+	}
+	.payments-admin-card__button {
+		@apply h-12 w-full rounded-full sm:w-auto sm:self-start sm:px-6;
 	}
 
 	@media (min-width: 640px) {
