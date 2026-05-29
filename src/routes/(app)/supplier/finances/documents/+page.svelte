@@ -78,7 +78,7 @@
 			if (!groups[monthKey]) groups[monthKey] = [];
 			groups[monthKey].push(doc);
 		}
-		return groups;
+		return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
 	});
 </script>
 
@@ -146,7 +146,7 @@
 
 <!-- List -->
 <div class="w-full max-w-full p-4 pb-20">
-	{#each Object.entries(groupedDocs()) as [monthKey, ds]}
+	{#each groupedDocs() as [monthKey, ds]}
 		<div class="mb-8">
 			<h2 class="px-1 text-sm font-bold uppercase tracking-[0.24em] text-muted-foreground">
 				{format(new Date(`${monthKey}-01`), 'LLLL yyyy', { locale: it })}
