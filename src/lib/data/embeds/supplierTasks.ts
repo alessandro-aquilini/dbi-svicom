@@ -43,6 +43,45 @@ export const supplierTasks: supplierTask[] = [
 		propertyId: 'cnd-marconi-14',
 		ticketId: 'tkt-001'
 		,createdAt: '2026-05-01T14:30:00'
+	},
+	{
+		id: 'int-003',
+		title: 'Verifica perdite piano terra',
+		type: 'sopralluogo',
+		date: '2026-06-02',
+		startTime: '09:00',
+		endTime: '10:00',
+		location: 'Corso Europa 7',
+		supplierId: 'frn-idroclima-nord',
+		customerId: 'adm-giorgio-01',
+		propertyId: 'cnd-europa-7',
+		createdAt: '2026-06-01T08:00:00'
+	},
+	{
+		id: 'int-004',
+		title: 'Sostituzione radiatori scala B',
+		type: 'intervento',
+		date: '2026-06-03',
+		startTime: '08:30',
+		endTime: '12:30',
+		location: 'Viale Monza 43',
+		supplierId: 'frn-idroclima-nord',
+		customerId: 'adm-giulia-02',
+		propertyId: 'cnd-monza-43',
+		createdAt: '2026-06-01T09:30:00'
+	},
+	{
+		id: 'int-005',
+		title: 'Manutenzione caldaia annuale',
+		type: 'intervento',
+		date: '2026-06-05',
+		startTime: '14:00',
+		endTime: '16:00',
+		location: 'Via Plinio 12',
+		supplierId: 'frn-idroclima-nord',
+		customerId: 'adm-giorgio-01',
+		propertyId: 'cnd-plinio-12',
+		createdAt: '2026-06-01T10:00:00'
 	}
 ];
 
