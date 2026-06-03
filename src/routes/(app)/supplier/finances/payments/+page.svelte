@@ -46,7 +46,7 @@
 			});
 	});
 
-	const groupedPayments: () => Array<[string, Payment[]]> = $derived(() => {
+	const groupedPayments = $derived(() => {
 		const groups: Record<string, Payment[]> = {};
 		for (const p of filteredPayments()) {
 			const d = new Date(p.paidAt || p.createdAt || '');
@@ -54,7 +54,7 @@
 			if (!groups[monthKey]) groups[monthKey] = [];
 			groups[monthKey].push(p);
 		}
-		return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+		return groups;
 	});
 </script>
 
@@ -121,7 +121,7 @@
 </div>
 
 <div class="w-full max-w-full p-4 pb-20">
-	{#each groupedPayments() as [monthKey, ps]}
+	{#each Object.entries(groupedPayments()) as [monthKey, ps]}
 		<div class="mb-8">
 			<h2 class="px-1 text-sm font-bold uppercase tracking-[0.24em] text-muted-foreground">
 				{format(new Date(`${monthKey}-01`), 'LLLL yyyy', { locale: it })}
@@ -134,7 +134,7 @@
 		</div>
 	{/each}
 
-	{#if groupedPayments().length === 0}
+	{#if Object.keys(groupedPayments()).length === 0}
 		<div class="flex flex-col items-center justify-center py-20 text-center">
 			<div class="mb-4 rounded-full bg-muted/40 p-5 text-muted-foreground/40">
 				<HugeiconsIcon icon={FilterIcon} size={32} />
